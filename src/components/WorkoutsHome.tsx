@@ -1,0 +1,662 @@
+import { useState } from 'react';
+import { Plus, Dumbbell, Calendar, Clock, Play, ChevronRight, CheckCircle, Circle, Edit3, X, ChevronLeft } from 'lucide-react';
+import { HamburgerMenu } from './HamburgerMenu';
+import type { UserRole } from '../App';
+
+interface WorkoutsHomeProps {
+  onStartSession: () => void;
+  onCreatePlan: () => void;
+  userRole: UserRole;
+  onNavigate: (view: string) => void;
+}
+
+interface AssignedPlan {
+  id: string;
+  name: string;
+  coachName: string;
+  coachAvatar: string;
+  totalDays: number;
+  completedDays: number;
+  currentDay: number;
+  todayWorkout?: {
+    exercises: number;
+    duration: string;
+  };
+}
+
+interface ScheduledWorkout {
+  planId: string;
+  planName: string;
+  completed: boolean;
+}
+
+interface DaySchedule {
+  date: Date;
+  workouts: ScheduledWorkout[];
+}
+
+interface WorkoutPlan {
+  id: string;
+  name: string;
+  exerciseCount: number;
+  duration: string;
+  type: 'strength' | 'climbing' | 'mixed';
+}
+
+export function WorkoutsHome({ onStartSession, onCreatePlan, userRole, onNavigate }: WorkoutsHomeProps) {
+  const [activeTab, setActiveTab] = useState<'assigned' | 'my-plans'>('assigned');
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [currentWeekOffset, setCurrentWeekOffset] = useState(0); // 0 = this week, 1 = next week, etc.
+  
+  // Initialize schedule with some example data
+  const [schedule, setSchedule] = useState<DaySchedule[]>(() => {
+    const initialSchedule: DaySchedule[] = [];
+    const today = new Date();
+    
+    // Create schedule for 4 weeks (past and future)
+    for (let i = -7; i < 28; i++) {
+      const date = new Date(today);
+      date.setDate(today.getDate() + i);
+      date.setHours(0, 0, 0, 0);
+      
+      initialSchedule.push({
+        date,
+        workouts: [],
+      });
+    }
+    
+    // Add some example scheduled workouts
+    const mondayNext = new Date(today);
+    mondayNext.setDate(today.getDate() + ((1 + 7 - today.getDay()) % 7 || 7));
+    mondayNext.setHours(0, 0, 0, 0);
+    
+    const exampleIndex = initialSchedule.findIndex(d => d.date.getTime() === mondayNext.getTime());
+    if (exampleIndex !== -1) {
+      initialSchedule[exampleIndex].workouts.push({
+        planId: '1',
+        planName: 'Upper Body Push',
+        completed: false,
+      });
+    }
+    
+    return initialSchedule;
+  });
+
+  // Assigned plans from coach
+  const assignedPlans: AssignedPlan[] = [
+    {
+      id: '1',
+      name: 'Upper Body Push',
+      coachName: 'Sarah Martinez',
+      coachAvatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop',
+      totalDays: 5,
+      completedDays: 3,
+      currentDay: 4,
+      todayWorkout: {
+        exercises: 5,
+        duration: '45 min',
+      },
+    },
+    {
+      id: '2',
+      name: 'Climbing Endurance',
+      coachName: 'Mike Chen',
+      coachAvatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop',
+      totalDays: 7,
+      completedDays: 5,
+      currentDay: 6,
+      todayWorkout: {
+        exercises: 6,
+        duration: '60 min',
+      },
+    },
+    {
+      id: '3',
+      name: 'Core & Stability',
+      coachName: 'Sarah Martinez',
+      coachAvatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop',
+      totalDays: 4,
+      completedDays: 1,
+      currentDay: 2,
+    },
+  ];
+
+  // User's own workout plans
+  const myWorkoutPlans: WorkoutPlan[] = [
+    {
+      id: '1',
+      name: 'Quick Morning Routine',
+      exerciseCount: 4,
+      duration: '20 min',
+      type: 'strength',
+    },
+    {
+      id: '2',
+      name: 'Boulder Session',
+      exerciseCount: 6,
+      duration: '60 min',
+      type: 'climbing',
+    },
+  ];
+
+  const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+  const getWeekDays = (offset: number): Date[] => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    // Get the start of the current week (Sunday)
+    const startOfWeek = new Date(today);
+    const dayOfWeek = today.getDay();
+    startOfWeek.setDate(today.getDate() - dayOfWeek);
+    
+    // Add offset in weeks
+    startOfWeek.setDate(startOfWeek.getDate() + (offset * 7));
+    
+    const week: Date[] = [];
+    for (let i = 0; i < 7; i++) {
+      const day = new Date(startOfWeek);
+      day.setDate(startOfWeek.getDate() + i);
+      week.push(day);
+    }
+    
+    return week;
+  };
+
+  const getScheduleForDate = (date: Date): DaySchedule | undefined => {
+    const normalizedDate = new Date(date);
+    normalizedDate.setHours(0, 0, 0, 0);
+    return schedule.find(s => s.date.getTime() === normalizedDate.getTime());
+  };
+
+  const handleAssignPlanToDate = (planId: string) => {
+    if (!selectedDate) return;
+    
+    const plan = assignedPlans.find(p => p.id === planId);
+    if (!plan) return;
+
+    const normalizedDate = new Date(selectedDate);
+    normalizedDate.setHours(0, 0, 0, 0);
+
+    setSchedule(prev => {
+      const existingIndex = prev.findIndex(s => s.date.getTime() === normalizedDate.getTime());
+      
+      if (existingIndex !== -1) {
+        // Date exists, add workout to it
+        const updated = [...prev];
+        updated[existingIndex] = {
+          ...updated[existingIndex],
+          workouts: [
+            ...updated[existingIndex].workouts,
+            {
+              planId,
+              planName: plan.name,
+              completed: false,
+            },
+          ],
+        };
+        return updated;
+      } else {
+        // Date doesn't exist, create it
+        return [
+          ...prev,
+          {
+            date: normalizedDate,
+            workouts: [{
+              planId,
+              planName: plan.name,
+              completed: false,
+            }],
+          },
+        ];
+      }
+    });
+
+    setSelectedDate(null);
+    alert(`${plan.name} scheduled for ${monthNames[normalizedDate.getMonth()]} ${normalizedDate.getDate()}!`);
+  };
+
+  const handleRemoveWorkout = (date: Date, workoutIndex: number) => {
+    const normalizedDate = new Date(date);
+    normalizedDate.setHours(0, 0, 0, 0);
+
+    setSchedule(prev => {
+      const index = prev.findIndex(s => s.date.getTime() === normalizedDate.getTime());
+      if (index === -1) return prev;
+
+      const updated = [...prev];
+      updated[index] = {
+        ...updated[index],
+        workouts: updated[index].workouts.filter((_, i) => i !== workoutIndex),
+      };
+      return updated;
+    });
+  };
+
+  const handleToggleComplete = (date: Date, workoutIndex: number) => {
+    const normalizedDate = new Date(date);
+    normalizedDate.setHours(0, 0, 0, 0);
+
+    setSchedule(prev => {
+      const index = prev.findIndex(s => s.date.getTime() === normalizedDate.getTime());
+      if (index === -1) return prev;
+
+      const updated = [...prev];
+      const workouts = [...updated[index].workouts];
+      workouts[workoutIndex] = {
+        ...workouts[workoutIndex],
+        completed: !workouts[workoutIndex].completed,
+      };
+      updated[index] = {
+        ...updated[index],
+        workouts,
+      };
+      return updated;
+    });
+  };
+
+  const isToday = (date: Date): boolean => {
+    const today = new Date();
+    return date.getDate() === today.getDate() &&
+           date.getMonth() === today.getMonth() &&
+           date.getFullYear() === today.getFullYear();
+  };
+
+  const isPast = (date: Date): boolean => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return date < today;
+  };
+
+  const weekDays = getWeekDays(currentWeekOffset);
+  const weekStart = weekDays[0];
+  const weekEnd = weekDays[6];
+  const weekLabel = weekStart.getMonth() === weekEnd.getMonth()
+    ? `${monthNames[weekStart.getMonth()]} ${weekStart.getDate()}-${weekEnd.getDate()}, ${weekStart.getFullYear()}`
+    : `${monthNames[weekStart.getMonth()]} ${weekStart.getDate()} - ${monthNames[weekEnd.getMonth()]} ${weekEnd.getDate()}, ${weekStart.getFullYear()}`;
+
+  const getProgressPercentage = (completed: number, total: number) => {
+    return Math.round((completed / total) * 100);
+  };
+
+  const handleCompleteDay = (planId: string) => {
+    alert('Day marked as complete! 🎉');
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-100 pb-20">
+      {/* Header */}
+      <div className="bg-[#0E0E55] px-4 py-6 sticky top-0 z-10">
+        <div className="flex items-center justify-between mb-4">
+          <h1 className="text-white text-xl">Workouts</h1>
+          <HamburgerMenu 
+            userRole={userRole}
+            onNavigate={onNavigate}
+          />
+        </div>
+
+        {/* Tabs */}
+        <div className="flex gap-3">
+          <button
+            onClick={() => setActiveTab('assigned')}
+            className={`flex-1 py-3 rounded-lg transition-all ${
+              activeTab === 'assigned'
+                ? 'bg-yellow-500 text-[#0E0E55]'
+                : 'bg-[#1A1A6E] text-gray-300 hover:bg-[#1A1A6E]/80'
+            }`}
+          >
+            Assigned Plans
+          </button>
+          <button
+            onClick={() => setActiveTab('my-plans')}
+            className={`flex-1 py-3 rounded-lg transition-all ${
+              activeTab === 'my-plans'
+                ? 'bg-yellow-500 text-[#0E0E55]'
+                : 'bg-[#1A1A6E] text-gray-300 hover:bg-[#1A1A6E]/80'
+            }`}
+          >
+            My Plans
+          </button>
+        </div>
+      </div>
+
+      <div className="p-4 space-y-4">
+        {/* ASSIGNED PLANS TAB */}
+        {activeTab === 'assigned' && (
+          <>
+            {/* Weekly Schedule Calendar */}
+            <div className="bg-white rounded-lg shadow-md border border-gray-200">
+              <div className="p-5 border-b border-gray-200">
+                <div className="flex items-center justify-between mb-3">
+                  <button
+                    onClick={() => setCurrentWeekOffset(currentWeekOffset - 1)}
+                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                  >
+                    <ChevronLeft className="w-5 h-5 text-[#0E0E55]" />
+                  </button>
+                  
+                  <div className="text-center">
+                    <h3 className="text-[#0E0E55]">Weekly Schedule</h3>
+                    <p className="text-gray-600 text-xs mt-1">{weekLabel}</p>
+                  </div>
+                  
+                  <button
+                    onClick={() => setCurrentWeekOffset(currentWeekOffset + 1)}
+                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                  >
+                    <ChevronRight className="w-5 h-5 text-[#0E0E55]" />
+                  </button>
+                </div>
+
+                {currentWeekOffset !== 0 && (
+                  <button
+                    onClick={() => setCurrentWeekOffset(0)}
+                    className="w-full py-2 text-yellow-600 text-sm hover:text-yellow-700"
+                  >
+                    Back to This Week
+                  </button>
+                )}
+              </div>
+
+              <div className="p-4">
+                <div className="grid grid-cols-7 gap-2">
+                  {weekDays.map((date) => {
+                    const daySchedule = getScheduleForDate(date);
+                    const hasWorkouts = daySchedule && daySchedule.workouts.length > 0;
+                    const today = isToday(date);
+                    const past = isPast(date);
+                    
+                    return (
+                      <div key={date.toISOString()} className="flex flex-col gap-1">
+                        <span className={`text-xs text-center mb-1 ${today ? 'text-yellow-600 font-bold' : 'text-gray-500'}`}>
+                          {daysOfWeek[date.getDay()]}
+                        </span>
+                        <span className={`text-xs text-center mb-1 ${today ? 'text-yellow-600 font-bold' : 'text-gray-400'}`}>
+                          {monthNames[date.getMonth()]} {date.getDate()}
+                        </span>
+                        <button
+                          onClick={() => setSelectedDate(date)}
+                          className={`relative min-h-24 rounded-lg p-2 transition-all text-xs ${
+                            today
+                              ? 'ring-2 ring-yellow-500 bg-yellow-50'
+                              : past
+                              ? 'bg-gray-50'
+                              : 'bg-white'
+                          } ${
+                            hasWorkouts
+                              ? 'border-2 border-yellow-500'
+                              : 'border-2 border-dashed border-gray-300 hover:border-gray-400'
+                          }`}
+                        >
+                          {hasWorkouts ? (
+                            <div className="space-y-1">
+                              {daySchedule.workouts.map((workout, idx) => (
+                                <div
+                                  key={idx}
+                                  className={`p-1 rounded text-[10px] leading-tight flex items-center gap-1 ${
+                                    workout.completed
+                                      ? 'bg-green-100 text-green-700'
+                                      : 'bg-yellow-500 text-[#0E0E55]'
+                                  }`}
+                                >
+                                  {workout.completed && <CheckCircle className="w-3 h-3 flex-shrink-0" />}
+                                  <span className="truncate flex-1">{workout.planName.split(' ')[0]}</span>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <div className="flex items-center justify-center h-full">
+                              <Plus className="w-5 h-5 text-gray-400" />
+                            </div>
+                          )}
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Plan Selector */}
+              {selectedDate && (
+                <div className="p-4 border-t border-gray-200 bg-yellow-50">
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="text-[#0E0E55] text-sm">
+                      Schedule for {monthNames[selectedDate.getMonth()]} {selectedDate.getDate()}
+                    </h4>
+                    <button
+                      onClick={() => setSelectedDate(null)}
+                      className="text-gray-500 hover:text-gray-700"
+                    >
+                      <X className="w-5 h-5" />
+                    </button>
+                  </div>
+
+                  {/* Currently Scheduled */}
+                  {(() => {
+                    const daySchedule = getScheduleForDate(selectedDate);
+                    return daySchedule && daySchedule.workouts.length > 0 ? (
+                      <div className="mb-4">
+                        <p className="text-gray-600 text-xs mb-2">Currently scheduled:</p>
+                        <div className="space-y-2">
+                          {daySchedule.workouts.map((workout, idx) => (
+                            <div key={idx} className="flex items-center gap-2 p-2 bg-white rounded-lg border border-gray-200">
+                              <button
+                                onClick={() => handleToggleComplete(selectedDate, idx)}
+                                className="flex-shrink-0"
+                              >
+                                {workout.completed ? (
+                                  <CheckCircle className="w-5 h-5 text-green-600" />
+                                ) : (
+                                  <Circle className="w-5 h-5 text-gray-400" />
+                                )}
+                              </button>
+                              <span className={`flex-1 text-sm ${workout.completed ? 'line-through text-gray-500' : 'text-[#0E0E55]'}`}>
+                                {workout.planName}
+                              </span>
+                              <button
+                                onClick={() => handleRemoveWorkout(selectedDate, idx)}
+                                className="p-1 hover:bg-red-50 rounded transition-colors"
+                              >
+                                <X className="w-4 h-4 text-red-500" />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ) : null;
+                  })()}
+
+                  <p className="text-gray-600 text-xs mb-2">Add a plan:</p>
+                  <div className="space-y-2 max-h-60 overflow-y-auto">
+                    {assignedPlans.map((plan) => (
+                      <button
+                        key={plan.id}
+                        onClick={() => handleAssignPlanToDate(plan.id)}
+                        className="w-full text-left p-3 bg-white rounded-lg hover:bg-yellow-100 border border-gray-200 hover:border-yellow-500 transition-colors"
+                      >
+                        <div className="flex items-center gap-3">
+                          <img
+                            src={plan.coachAvatar}
+                            alt={plan.coachName}
+                            className="w-8 h-8 rounded-full object-cover"
+                          />
+                          <div className="flex-1">
+                            <div className="text-[#0E0E55] text-sm mb-1">{plan.name}</div>
+                            <div className="text-gray-600 text-xs">by {plan.coachName}</div>
+                          </div>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Assigned Plans List */}
+            {assignedPlans.length > 0 ? (
+              <>
+                <div className="bg-white rounded-lg shadow-md border border-gray-200">
+                  <div className="p-5 border-b border-gray-200">
+                    <h3 className="text-[#0E0E55]">Your Assigned Plans</h3>
+                    <p className="text-gray-600 text-sm mt-1">Plans from your coaches</p>
+                  </div>
+
+                  <div className="divide-y divide-gray-200">
+                    {assignedPlans.map((plan) => (
+                      <div key={plan.id} className="p-5">
+                        <div className="flex items-start gap-3 mb-3">
+                          <img
+                            src={plan.coachAvatar}
+                            alt={plan.coachName}
+                            className="w-12 h-12 rounded-full object-cover"
+                          />
+                          <div className="flex-1">
+                            <h3 className="text-[#0E0E55] mb-1">{plan.name}</h3>
+                            <p className="text-gray-600 text-sm">by {plan.coachName}</p>
+                          </div>
+                          <span className="px-3 py-1 bg-yellow-500 text-[#0E0E55] rounded-lg text-xs font-medium">
+                            {getProgressPercentage(plan.completedDays, plan.totalDays)}%
+                          </span>
+                        </div>
+
+                        <div className="mb-3">
+                          <p className="text-gray-600 text-sm mb-2">
+                            Day {plan.currentDay} of {plan.totalDays} • {plan.completedDays} completed
+                          </p>
+                          <div className="w-full bg-gray-200 rounded-full h-2">
+                            <div
+                              className="bg-yellow-500 h-2 rounded-full transition-all"
+                              style={{
+                                width: `${getProgressPercentage(plan.completedDays, plan.totalDays)}%`,
+                              }}
+                            />
+                          </div>
+                        </div>
+
+                        {plan.todayWorkout && (
+                          <div className="bg-yellow-50 rounded-lg p-4 border border-yellow-200">
+                            <div className="flex items-center justify-between mb-3">
+                              <div>
+                                <p className="text-[#0E0E55] font-medium mb-1">Available Workout</p>
+                                <div className="flex items-center gap-4 text-sm text-gray-600">
+                                  <span className="flex items-center gap-1">
+                                    <Dumbbell className="w-4 h-4 text-yellow-600" />
+                                    {plan.todayWorkout.exercises} exercises
+                                  </span>
+                                  <span className="flex items-center gap-1">
+                                    <Clock className="w-4 h-4 text-yellow-600" />
+                                    {plan.todayWorkout.duration}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                            <div className="flex gap-2">
+                              <button
+                                onClick={onStartSession}
+                                className="flex-1 bg-[#0E0E55] text-white py-3 rounded-lg hover:bg-[#1A1A6E] transition-colors flex items-center justify-center gap-2"
+                              >
+                                <Play className="w-4 h-4" />
+                                <span>Start Workout</span>
+                              </button>
+                              <button
+                                onClick={() => handleCompleteDay(plan.id)}
+                                className="px-4 py-3 border-2 border-gray-300 text-[#0E0E55] rounded-lg hover:border-yellow-500 hover:bg-yellow-50 transition-colors"
+                              >
+                                <CheckCircle className="w-5 h-5" />
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </>
+            ) : (
+              <div className="bg-white rounded-lg shadow-md p-12 text-center border border-gray-200">
+                <Calendar className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                <h3 className="text-[#0E0E55] mb-2">No Assigned Plans</h3>
+                <p className="text-gray-600 text-sm mb-4">
+                  Your coach hasn't assigned you any workout plans yet
+                </p>
+                <button
+                  onClick={() => onNavigate('coach-marketplace')}
+                  className="px-6 py-3 bg-yellow-500 text-[#0E0E55] rounded-lg hover:bg-yellow-400 transition-colors"
+                >
+                  Find a Coach
+                </button>
+              </div>
+            )}
+          </>
+        )}
+
+        {/* MY PLANS TAB */}
+        {activeTab === 'my-plans' && (
+          <>
+            {/* Quick Start Card */}
+            <div className="bg-yellow-500 rounded-lg shadow-lg p-6">
+              <h3 className="text-[#0E0E55] mb-3">Quick Start</h3>
+              <p className="text-[#0E0E55]/80 text-sm mb-4">
+                Start a freestyle workout session without a plan
+              </p>
+              <button
+                onClick={onStartSession}
+                className="w-full bg-[#0E0E55] text-white py-3 rounded-lg hover:bg-[#1A1A6E] transition-colors flex items-center justify-center gap-2"
+              >
+                <Play className="w-5 h-5" />
+                <span>Start Freestyle Session</span>
+              </button>
+            </div>
+
+            {/* Create Plan Button */}
+            <button
+              onClick={onCreatePlan}
+              className="w-full bg-white border-2 border-dashed border-gray-300 text-[#0E0E55] py-5 rounded-lg hover:border-yellow-500 hover:bg-yellow-50 transition-colors flex items-center justify-center gap-3"
+            >
+              <Plus className="w-6 h-6 text-yellow-600" />
+              <span>Create New Plan</span>
+            </button>
+
+            {/* My Plans List */}
+            {myWorkoutPlans.length > 0 && (
+              <div className="bg-white rounded-lg shadow-md border border-gray-200">
+                <div className="p-5 border-b border-gray-200">
+                  <h3 className="text-[#0E0E55]">My Workout Plans</h3>
+                  <p className="text-gray-600 text-sm mt-1">Plans you've created</p>
+                </div>
+
+                <div className="divide-y divide-gray-200">
+                  {myWorkoutPlans.map((plan) => (
+                    <button
+                      key={plan.id}
+                      onClick={onStartSession}
+                      className="w-full p-5 hover:bg-gray-50 transition-colors text-left"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <h4 className="text-[#0E0E55] mb-2">{plan.name}</h4>
+                          <div className="flex items-center gap-4 text-sm text-gray-600">
+                            <span className="flex items-center gap-1">
+                              <Dumbbell className="w-4 h-4 text-yellow-600" />
+                              {plan.exerciseCount} exercises
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <Clock className="w-4 h-4 text-yellow-600" />
+                              {plan.duration}
+                            </span>
+                          </div>
+                        </div>
+                        <ChevronRight className="w-5 h-5 text-gray-400" />
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
