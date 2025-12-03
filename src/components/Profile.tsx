@@ -1,6 +1,8 @@
 import { useState } from 'react';
-import { CheckCircle2, Star, Trophy, Users, DollarSign, Menu, X, Bell, Shield, LogOut, Settings } from 'lucide-react';
+import { CheckCircle2, Star, Trophy, Users, DollarSign, Menu, X, Bell, Shield, LogOut, Settings, Globe } from 'lucide-react';
 import type { UserRole } from '../App';
+import { useLanguage } from '../contexts/LanguageContext';
+import type { Language } from '../translations';
 
 interface ProfileProps {
   userRole: UserRole;
@@ -12,6 +14,8 @@ type TabType = 'posts' | 'records' | 'testimonials';
 export function Profile({ userRole, onNavigate }: ProfileProps) {
   const [activeTab, setActiveTab] = useState<TabType>('posts');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { t, language, setLanguage, isRTL } = useLanguage();
+  const [showLanguageSelector, setShowLanguageSelector] = useState(false);
 
   const mockUser = {
     name: 'Jordan Smith',
@@ -120,7 +124,7 @@ export function Profile({ userRole, onNavigate }: ProfileProps) {
           {/* Menu Header */}
           <div className="bg-[#0E0E55] px-4 py-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-white text-lg">Menu</h2>
+              <h2 className="text-white text-lg">{t('menu')}</h2>
               <button 
                 onClick={() => setIsMenuOpen(false)}
                 className="p-2 hover:bg-[#1A1A6E] rounded-lg transition-colors"
@@ -156,7 +160,7 @@ export function Profile({ userRole, onNavigate }: ProfileProps) {
                     className="w-full flex items-center gap-3 p-3 bg-yellow-500 text-[#0E0E55] rounded-lg hover:bg-yellow-400 transition-colors"
                   >
                     <Users className="w-5 h-5" />
-                    <span>Dashboard</span>
+                    <span>{t('dashboard')}</span>
                   </button>
                   <button 
                     onClick={() => {
@@ -166,7 +170,7 @@ export function Profile({ userRole, onNavigate }: ProfileProps) {
                     className="w-full flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg transition-colors"
                   >
                     <DollarSign className="w-5 h-5 text-gray-600" />
-                    <span className="text-[#0E0E55]">Create Subscription Tier</span>
+                    <span className="text-[#0E0E55]">{t('createSubscriptionTier')}</span>
                   </button>
                   <div className="border-t border-gray-200 my-2"></div>
                 </>
@@ -183,7 +187,7 @@ export function Profile({ userRole, onNavigate }: ProfileProps) {
                     className="w-full flex items-center gap-3 p-3 bg-yellow-500 text-[#0E0E55] rounded-lg hover:bg-yellow-400 transition-colors"
                   >
                     <Users className="w-5 h-5" />
-                    <span>Become a Coach</span>
+                    <span>{t('becomeACoach')}</span>
                   </button>
                   <div className="border-t border-gray-200 my-2"></div>
                 </>
@@ -198,29 +202,66 @@ export function Profile({ userRole, onNavigate }: ProfileProps) {
                 className="w-full flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg transition-colors"
               >
                 <Users className="w-5 h-5 text-gray-600" />
-                <span className="text-[#0E0E55]">Find a Coach</span>
+                <span className="text-[#0E0E55]">{t('findACoach')}</span>
               </button>
 
               <button className="w-full flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg transition-colors">
                 <Bell className="w-5 h-5 text-gray-600" />
-                <span className="text-[#0E0E55]">Notifications</span>
+                <span className="text-[#0E0E55]">{t('notifications')}</span>
               </button>
 
               <button className="w-full flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg transition-colors">
                 <Settings className="w-5 h-5 text-gray-600" />
-                <span className="text-[#0E0E55]">Settings</span>
+                <span className="text-[#0E0E55]">{t('settings')}</span>
               </button>
 
               <button className="w-full flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg transition-colors">
                 <Shield className="w-5 h-5 text-gray-600" />
-                <span className="text-[#0E0E55]">Privacy & Security</span>
+                <span className="text-[#0E0E55]">{t('privacySecurity')}</span>
               </button>
+
+              {/* Language Selector */}
+              <button 
+                onClick={() => setShowLanguageSelector(!showLanguageSelector)}
+                className="w-full flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg transition-colors"
+              >
+                <Globe className="w-5 h-5 text-gray-600" />
+                <span className="text-[#0E0E55] flex-1">{t('language')}</span>
+                <span className="text-gray-500 text-sm">{language === 'en' ? 'EN' : 'فا'}</span>
+              </button>
+
+              {showLanguageSelector && (
+                <div className="bg-gray-50 rounded-lg p-2 space-y-1">
+                  <button
+                    onClick={() => {
+                      setLanguage('en');
+                      setShowLanguageSelector(false);
+                    }}
+                    className={`w-full text-left px-3 py-2 rounded transition-colors ${
+                      language === 'en' ? 'bg-yellow-500 text-[#0E0E55]' : 'hover:bg-gray-200 text-[#0E0E55]'
+                    }`}
+                  >
+                    {t('english')}
+                  </button>
+                  <button
+                    onClick={() => {
+                      setLanguage('fa');
+                      setShowLanguageSelector(false);
+                    }}
+                    className={`w-full text-left px-3 py-2 rounded transition-colors ${
+                      language === 'fa' ? 'bg-yellow-500 text-[#0E0E55]' : 'hover:bg-gray-200 text-[#0E0E55]'
+                    }`}
+                  >
+                    {t('persian')}
+                  </button>
+                </div>
+              )}
 
               <div className="border-t border-gray-200 my-2"></div>
 
               <button className="w-full flex items-center gap-3 p-3 hover:bg-red-50 rounded-lg transition-colors text-red-600">
                 <LogOut className="w-5 h-5" />
-                <span>Log Out</span>
+                <span>{t('logOut')}</span>
               </button>
             </div>
           </div>
@@ -302,21 +343,21 @@ export function Profile({ userRole, onNavigate }: ProfileProps) {
           <div className="grid grid-cols-3 gap-3 mb-3">
             <div className="bg-white rounded-lg p-4 text-center shadow-md border border-gray-200">
               <div className="text-2xl text-[#0E0E55]">42</div>
-              <div className="text-gray-600 text-xs">Workouts</div>
+              <div className="text-gray-600 text-xs">{t('workouts')}</div>
             </div>
             <div className="bg-white rounded-lg p-4 text-center shadow-md border border-gray-200">
               <div className="text-2xl text-[#0E0E55]">156</div>
-              <div className="text-gray-600 text-xs">Hours</div>
+              <div className="text-gray-600 text-xs">{t('hours')}</div>
             </div>
             <div className="bg-white rounded-lg p-4 text-center shadow-md border border-gray-200">
               <div className="text-2xl text-[#0E0E55]">8</div>
-              <div className="text-gray-600 text-xs">PRs</div>
+              <div className="text-gray-600 text-xs">{t('prs')}</div>
             </div>
           </div>
 
           {/* Action Button */}
           <button className="w-full bg-yellow-500 text-[#0E0E55] py-3 rounded-lg hover:bg-yellow-400 transition-colors">
-            Edit Profile
+            {t('editProfile')}
           </button>
         </div>
 
@@ -330,7 +371,7 @@ export function Profile({ userRole, onNavigate }: ProfileProps) {
                 : 'text-gray-600'
             }`}
           >
-            Posts
+            {t('posts')}
           </button>
           {userRole === 'athlete' && (
             <button
@@ -341,7 +382,7 @@ export function Profile({ userRole, onNavigate }: ProfileProps) {
                   : 'text-gray-600'
               }`}
             >
-              Records
+              {t('records')}
             </button>
           )}
           {userRole === 'coach' && (
@@ -353,7 +394,7 @@ export function Profile({ userRole, onNavigate }: ProfileProps) {
                   : 'text-gray-600'
               }`}
             >
-              Testimonials
+              {t('testimonials')}
             </button>
           )}
         </div>

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Plus, Dumbbell, Calendar, Clock, Play, ChevronRight, CheckCircle, Circle, Edit3, X, ChevronLeft } from 'lucide-react';
 import { HamburgerMenu } from './HamburgerMenu';
 import type { UserRole } from '../App';
+import { useLanguage } from '../contexts/LanguageContext';
 
 interface WorkoutsHomeProps {
   onStartSession: () => void;
@@ -44,6 +45,7 @@ interface WorkoutPlan {
 }
 
 export function WorkoutsHome({ onStartSession, onCreatePlan, userRole, onNavigate }: WorkoutsHomeProps) {
+  const { t, language } = useLanguage();
   const [activeTab, setActiveTab] = useState<'assigned' | 'my-plans'>('assigned');
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [currentWeekOffset, setCurrentWeekOffset] = useState(0); // 0 = this week, 1 = next week, etc.
@@ -139,8 +141,15 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, userRole, onNavigat
     },
   ];
 
-  const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-  const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const daysOfWeek = [
+    t('sunday'), t('monday'), t('tuesday'), t('wednesday'),
+    t('thursday'), t('friday'), t('saturday')
+  ];
+  const monthNames = [
+    t('january'), t('february'), t('march'), t('april'),
+    t('may'), t('june'), t('july'), t('august'),
+    t('september'), t('october'), t('november'), t('december')
+  ];
 
   const getWeekDays = (offset: number): Date[] => {
     const today = new Date();
@@ -289,7 +298,7 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, userRole, onNavigat
       {/* Header */}
       <div className="bg-[#0E0E55] px-4 py-6 sticky top-0 z-10">
         <div className="flex items-center justify-between mb-4">
-          <h1 className="text-white text-xl">Workouts</h1>
+          <h1 className="text-white text-xl">{t('workouts')}</h1>
           <HamburgerMenu 
             userRole={userRole}
             onNavigate={onNavigate}
@@ -306,7 +315,7 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, userRole, onNavigat
                 : 'bg-[#1A1A6E] text-gray-300 hover:bg-[#1A1A6E]/80'
             }`}
           >
-            Assigned Plans
+            {t('assignedPlans')}
           </button>
           <button
             onClick={() => setActiveTab('my-plans')}
@@ -316,7 +325,7 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, userRole, onNavigat
                 : 'bg-[#1A1A6E] text-gray-300 hover:bg-[#1A1A6E]/80'
             }`}
           >
-            My Plans
+            {t('myPlans')}
           </button>
         </div>
       </div>
@@ -337,7 +346,7 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, userRole, onNavigat
                   </button>
                   
                   <div className="text-center">
-                    <h3 className="text-[#0E0E55]">Weekly Schedule</h3>
+                    <h3 className="text-[#0E0E55]">{t('weeklySchedule')}</h3>
                     <p className="text-gray-600 text-xs mt-1">{weekLabel}</p>
                   </div>
                   
@@ -354,7 +363,7 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, userRole, onNavigat
                     onClick={() => setCurrentWeekOffset(0)}
                     className="w-full py-2 text-yellow-600 text-sm hover:text-yellow-700"
                   >
-                    Back to This Week
+                    {t('backToThisWeek')}
                   </button>
                 )}
               </div>
@@ -422,7 +431,7 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, userRole, onNavigat
                 <div className="p-4 border-t border-gray-200 bg-yellow-50">
                   <div className="flex items-center justify-between mb-3">
                     <h4 className="text-[#0E0E55] text-sm">
-                      Schedule for {monthNames[selectedDate.getMonth()]} {selectedDate.getDate()}
+                      {t('scheduleFor')} {monthNames[selectedDate.getMonth()]} {selectedDate.getDate()}
                     </h4>
                     <button
                       onClick={() => setSelectedDate(null)}
@@ -437,7 +446,7 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, userRole, onNavigat
                     const daySchedule = getScheduleForDate(selectedDate);
                     return daySchedule && daySchedule.workouts.length > 0 ? (
                       <div className="mb-4">
-                        <p className="text-gray-600 text-xs mb-2">Currently scheduled:</p>
+                        <p className="text-gray-600 text-xs mb-2">{t('currentlyScheduled')}:</p>
                         <div className="space-y-2">
                           {daySchedule.workouts.map((workout, idx) => (
                             <div key={idx} className="flex items-center gap-2 p-2 bg-white rounded-lg border border-gray-200">
@@ -467,7 +476,7 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, userRole, onNavigat
                     ) : null;
                   })()}
 
-                  <p className="text-gray-600 text-xs mb-2">Add a plan:</p>
+                  <p className="text-gray-600 text-xs mb-2">{t('addPlan')}:</p>
                   <div className="space-y-2 max-h-60 overflow-y-auto">
                     {assignedPlans.map((plan) => (
                       <button
@@ -498,8 +507,8 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, userRole, onNavigat
               <>
                 <div className="bg-white rounded-lg shadow-md border border-gray-200">
                   <div className="p-5 border-b border-gray-200">
-                    <h3 className="text-[#0E0E55]">Your Assigned Plans</h3>
-                    <p className="text-gray-600 text-sm mt-1">Plans from your coaches</p>
+                    <h3 className="text-[#0E0E55]">{t('yourAssignedPlans')}</h3>
+                    <p className="text-gray-600 text-sm mt-1">{t('plansFromCoaches')}</p>
                   </div>
 
                   <div className="divide-y divide-gray-200">
@@ -538,11 +547,11 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, userRole, onNavigat
                           <div className="bg-yellow-50 rounded-lg p-4 border border-yellow-200">
                             <div className="flex items-center justify-between mb-3">
                               <div>
-                                <p className="text-[#0E0E55] font-medium mb-1">Available Workout</p>
+                                <p className="text-[#0E0E55] font-medium mb-1">{t('availableWorkout')}</p>
                                 <div className="flex items-center gap-4 text-sm text-gray-600">
                                   <span className="flex items-center gap-1">
                                     <Dumbbell className="w-4 h-4 text-yellow-600" />
-                                    {plan.todayWorkout.exercises} exercises
+                                    {plan.todayWorkout.exercises} {t('exercises')}
                                   </span>
                                   <span className="flex items-center gap-1">
                                     <Clock className="w-4 h-4 text-yellow-600" />
@@ -557,7 +566,7 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, userRole, onNavigat
                                 className="flex-1 bg-[#0E0E55] text-white py-3 rounded-lg hover:bg-[#1A1A6E] transition-colors flex items-center justify-center gap-2"
                               >
                                 <Play className="w-4 h-4" />
-                                <span>Start Workout</span>
+                                <span>{t('startWorkout')}</span>
                               </button>
                               <button
                                 onClick={() => handleCompleteDay(plan.id)}
@@ -576,15 +585,15 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, userRole, onNavigat
             ) : (
               <div className="bg-white rounded-lg shadow-md p-12 text-center border border-gray-200">
                 <Calendar className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                <h3 className="text-[#0E0E55] mb-2">No Assigned Plans</h3>
+                <h3 className="text-[#0E0E55] mb-2">{t('noAssignedPlans')}</h3>
                 <p className="text-gray-600 text-sm mb-4">
-                  Your coach hasn't assigned you any workout plans yet
+                  {t('noAssignedPlansDesc')}
                 </p>
                 <button
                   onClick={() => onNavigate('coach-marketplace')}
                   className="px-6 py-3 bg-yellow-500 text-[#0E0E55] rounded-lg hover:bg-yellow-400 transition-colors"
                 >
-                  Find a Coach
+                  {t('findACoach')}
                 </button>
               </div>
             )}
@@ -596,16 +605,16 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, userRole, onNavigat
           <>
             {/* Quick Start Card */}
             <div className="bg-yellow-500 rounded-lg shadow-lg p-6">
-              <h3 className="text-[#0E0E55] mb-3">Quick Start</h3>
+              <h3 className="text-[#0E0E55] mb-3">{t('quickStart')}</h3>
               <p className="text-[#0E0E55]/80 text-sm mb-4">
-                Start a freestyle workout session without a plan
+                {t('startFreestyleSession')}
               </p>
               <button
                 onClick={onStartSession}
                 className="w-full bg-[#0E0E55] text-white py-3 rounded-lg hover:bg-[#1A1A6E] transition-colors flex items-center justify-center gap-2"
               >
                 <Play className="w-5 h-5" />
-                <span>Start Freestyle Session</span>
+                <span>{t('startFreestyleSession')}</span>
               </button>
             </div>
 
@@ -615,15 +624,15 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, userRole, onNavigat
               className="w-full bg-white border-2 border-dashed border-gray-300 text-[#0E0E55] py-5 rounded-lg hover:border-yellow-500 hover:bg-yellow-50 transition-colors flex items-center justify-center gap-3"
             >
               <Plus className="w-6 h-6 text-yellow-600" />
-              <span>Create New Plan</span>
+              <span>{t('createNewPlan')}</span>
             </button>
 
             {/* My Plans List */}
             {myWorkoutPlans.length > 0 && (
               <div className="bg-white rounded-lg shadow-md border border-gray-200">
                 <div className="p-5 border-b border-gray-200">
-                  <h3 className="text-[#0E0E55]">My Workout Plans</h3>
-                  <p className="text-gray-600 text-sm mt-1">Plans you've created</p>
+                  <h3 className="text-[#0E0E55]">{t('myWorkoutPlans')}</h3>
+                  <p className="text-gray-600 text-sm mt-1">{t('plansYouCreated')}</p>
                 </div>
 
                 <div className="divide-y divide-gray-200">

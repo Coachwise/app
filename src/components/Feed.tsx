@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Heart, MessageCircle, Share2, Trophy, Plus, Video } from 'lucide-react';
 import { HamburgerMenu } from './HamburgerMenu';
 import type { UserRole } from '../App';
+import { useLanguage } from '../contexts/LanguageContext';
 
 interface FeedProps {
   onCreatePost: () => void;
@@ -36,6 +37,7 @@ interface Post {
 }
 
 export function Feed({ onCreatePost, userRole, onNavigate }: FeedProps) {
+  const { t } = useLanguage();
   const [posts, setPosts] = useState<Post[]>([
     {
       id: '1',
@@ -126,7 +128,7 @@ export function Feed({ onCreatePost, userRole, onNavigate }: FeedProps) {
       {/* Header */}
       <div className="bg-[#0E0E55] px-4 py-4 sticky top-0 z-10">
         <div className="flex items-center justify-between">
-          <h1 className="text-white text-xl">Feed</h1>
+          <h1 className="text-white text-xl">{t('feed')}</h1>
           <HamburgerMenu 
             userRole={userRole}
             onNavigate={onNavigate}

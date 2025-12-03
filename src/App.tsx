@@ -14,6 +14,8 @@ import { SubscriptionTierBuilder } from './components/SubscriptionTierBuilder';
 import { TierComparison } from './components/TierComparison';
 import { WorkoutsHome } from './components/WorkoutsHome';
 import { WorkoutSession } from './components/WorkoutSession';
+import { Auth } from './components/Auth';
+import { LanguageProvider } from './contexts/LanguageContext';
 
 export type SportType = 'fitness' | 'climbing';
 export type UserRole = 'athlete' | 'coach';
@@ -21,10 +23,15 @@ export type UserTier = 'free' | 'premium';
 export type ViewType = 'sport-selection' | 'logging' | 'feed' | 'profile' | 'coach-dashboard' | 'post-creation' | 'exercise-builder' | 'plan-builder' | 'coach-application' | 'coach-marketplace' | 'tier-builder' | 'tier-comparison' | 'workouts-home' | 'workout-session';
 
 export default function App() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [currentView, setCurrentView] = useState<ViewType>('feed');
   const [selectedSport, setSelectedSport] = useState<SportType>('fitness');
   const [userRole, setUserRole] = useState<UserRole>('athlete');
   const [userTier, setUserTier] = useState<UserTier>('free');
+
+  const handleLogin = () => {
+    setIsAuthenticated(true);
+  };
 
   const handleSportSelect = (sport: SportType) => {
     setSelectedSport(sport);
@@ -123,38 +130,47 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col max-w-md mx-auto">
-      {/* Quick Access Menu - For Demo Purposes */}
-      <div className="bg-[#0E0E55] p-2">
-        <details className="cursor-pointer">
-          <summary className="text-xs text-gray-300 font-medium">🚀 Demo Menu</summary>
-          <div className="mt-2 grid grid-cols-2 gap-1">
-            <button onClick={() => setCurrentView('feed')} className="text-xs bg-[#1A1A6E] text-gray-200 p-1.5 rounded hover:bg-[#1A1A6E]/80">Feed</button>
-            <button onClick={() => setCurrentView('workouts-home')} className="text-xs bg-[#1A1A6E] text-gray-200 p-1.5 rounded hover:bg-[#1A1A6E]/80">Workouts</button>
-            <button onClick={() => setCurrentView('plan-builder')} className="text-xs bg-[#1A1A6E] text-gray-200 p-1.5 rounded hover:bg-[#1A1A6E]/80">Plan Builder</button>
-            <button onClick={() => setCurrentView('exercise-builder')} className="text-xs bg-[#1A1A6E] text-gray-200 p-1.5 rounded hover:bg-[#1A1A6E]/80">Exercise Builder</button>
-            <button onClick={() => setCurrentView('coach-marketplace')} className="text-xs bg-[#1A1A6E] text-gray-200 p-1.5 rounded hover:bg-[#1A1A6E]/80">Find Coach</button>
-            <button onClick={() => setCurrentView('tier-comparison')} className="text-xs bg-[#1A1A6E] text-gray-200 p-1.5 rounded hover:bg-[#1A1A6E]/80">Compare Tiers</button>
-            <button onClick={() => setCurrentView('coach-application')} className="text-xs bg-[#1A1A6E] text-gray-200 p-1.5 rounded hover:bg-[#1A1A6E]/80">Apply as Coach</button>
-            <button onClick={() => setCurrentView('tier-builder')} className="text-xs bg-[#1A1A6E] text-gray-200 p-1.5 rounded hover:bg-[#1A1A6E]/80">Create Tier</button>
-            <button onClick={() => { setUserRole('athlete'); setCurrentView('profile'); }} className="text-xs bg-[#1A1A6E] text-gray-200 p-1.5 rounded hover:bg-[#1A1A6E]/80">User Profile</button>
-            <button onClick={() => { setUserRole('coach'); setCurrentView('profile'); }} className="text-xs bg-[#1A1A6E] text-gray-200 p-1.5 rounded hover:bg-[#1A1A6E]/80">Coach Profile</button>
-            <button onClick={() => { setUserRole('coach'); setCurrentView('coach-dashboard'); }} className="text-xs bg-[#1A1A6E] text-gray-200 p-1.5 rounded hover:bg-[#1A1A6E]/80">Coach Dashboard</button>
-            <button onClick={() => setUserTier(userTier === 'free' ? 'premium' : 'free')} className="text-xs bg-yellow-500 text-[#0E0E55] p-1.5 rounded hover:bg-yellow-400">
-              {userTier === 'free' ? '🆓 Free' : '⭐ Premium'}
-            </button>
+    <LanguageProvider>
+      {!isAuthenticated ? (
+        <Auth onLogin={handleLogin} />
+      ) : (
+        <div className="min-h-screen bg-gray-100 flex flex-col max-w-md mx-auto">
+          {/* Quick Access Menu - For Demo Purposes */}
+          <div className="bg-[#0E0E55] p-2">
+            <details className="cursor-pointer">
+              <summary className="text-xs text-gray-300 font-medium">🚀 Demo Menu</summary>
+              <div className="mt-2 grid grid-cols-2 gap-1">
+                <button onClick={() => setCurrentView('feed')} className="text-xs bg-[#1A1A6E] text-gray-200 p-1.5 rounded hover:bg-[#1A1A6E]/80">Feed</button>
+                <button onClick={() => setCurrentView('workouts-home')} className="text-xs bg-[#1A1A6E] text-gray-200 p-1.5 rounded hover:bg-[#1A1A6E]/80">Workouts</button>
+                <button onClick={() => setCurrentView('plan-builder')} className="text-xs bg-[#1A1A6E] text-gray-200 p-1.5 rounded hover:bg-[#1A1A6E]/80">Plan Builder</button>
+                <button onClick={() => setCurrentView('exercise-builder')} className="text-xs bg-[#1A1A6E] text-gray-200 p-1.5 rounded hover:bg-[#1A1A6E]/80">Exercise Builder</button>
+                <button onClick={() => setCurrentView('coach-marketplace')} className="text-xs bg-[#1A1A6E] text-gray-200 p-1.5 rounded hover:bg-[#1A1A6E]/80">Find Coach</button>
+                <button onClick={() => setCurrentView('tier-comparison')} className="text-xs bg-[#1A1A6E] text-gray-200 p-1.5 rounded hover:bg-[#1A1A6E]/80">Compare Tiers</button>
+                <button onClick={() => setCurrentView('coach-application')} className="text-xs bg-[#1A1A6E] text-gray-200 p-1.5 rounded hover:bg-[#1A1A6E]/80">Apply as Coach</button>
+                <button onClick={() => setCurrentView('tier-builder')} className="text-xs bg-[#1A1A6E] text-gray-200 p-1.5 rounded hover:bg-[#1A1A6E]/80">Create Tier</button>
+                <button onClick={() => { setUserRole('athlete'); setCurrentView('profile'); }} className="text-xs bg-[#1A1A6E] text-gray-200 p-1.5 rounded hover:bg-[#1A1A6E]/80">User Profile</button>
+                <button onClick={() => { setUserRole('coach'); setCurrentView('profile'); }} className="text-xs bg-[#1A1A6E] text-gray-200 p-1.5 rounded hover:bg-[#1A1A6E]/80">Coach Profile</button>
+                <button onClick={() => { setUserRole('coach'); setCurrentView('coach-dashboard'); }} className="text-xs bg-[#1A1A6E] text-gray-200 p-1.5 rounded hover:bg-[#1A1A6E]/80">Coach Dashboard</button>
+                <button onClick={() => setUserTier(userTier === 'free' ? 'premium' : 'free')} className="text-xs bg-yellow-500 text-[#0E0E55] p-1.5 rounded hover:bg-yellow-400">
+                  {userTier === 'free' ? '�� Free' : '⭐ Premium'}
+                </button>
+                <button onClick={() => setIsAuthenticated(false)} className="text-xs bg-red-600 text-white p-1.5 rounded hover:bg-red-700">
+                  Log Out
+                </button>
+              </div>
+            </details>
           </div>
-        </details>
-      </div>
 
-      <div className="flex-1 overflow-auto pb-16">
-        {renderView()}
-      </div>
-      <Navigation 
-        currentView={currentView} 
-        setCurrentView={setCurrentView}
-        userRole={userRole}
-      />
-    </div>
+          <div className="flex-1 overflow-auto pb-16">
+            {renderView()}
+          </div>
+          <Navigation 
+            currentView={currentView} 
+            setCurrentView={setCurrentView}
+            userRole={userRole}
+          />
+        </div>
+      )}
+    </LanguageProvider>
   );
 }

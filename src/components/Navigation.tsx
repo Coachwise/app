@@ -1,5 +1,6 @@
-import { Home, Dumbbell, User } from 'lucide-react';
+import { Home, Dumbbell, User, LayoutDashboard } from 'lucide-react';
 import type { ViewType, UserRole } from '../App';
+import { useLanguage } from '../contexts/LanguageContext';
 
 interface NavigationProps {
   currentView: ViewType;
@@ -8,11 +9,13 @@ interface NavigationProps {
 }
 
 export function Navigation({ currentView, setCurrentView, userRole }: NavigationProps) {
+  const { t } = useLanguage();
+  
   const navItems = [
-    { id: 'feed' as ViewType, icon: Home, label: 'Feed' },
-    { id: 'workouts-home' as ViewType, icon: Dumbbell, label: 'Workouts' },
-    ...(userRole === 'coach' ? [{ id: 'coach-dashboard' as ViewType, icon: User, label: 'Dashboard' }] : []),
-    { id: 'profile' as ViewType, icon: User, label: 'Profile' },
+    { id: 'feed' as ViewType, icon: Home, label: t('feed') },
+    { id: 'workouts-home' as ViewType, icon: Dumbbell, label: t('workouts') },
+    ...(userRole === 'coach' ? [{ id: 'coach-dashboard' as ViewType, icon: LayoutDashboard, label: t('dashboard') }] : []),
+    { id: 'profile' as ViewType, icon: User, label: t('profile') },
   ];
 
   return (

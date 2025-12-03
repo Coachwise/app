@@ -1,6 +1,8 @@
 import { useState } from 'react';
-import { Menu, X, Bell, Shield, LogOut, Settings, Users, DollarSign } from 'lucide-react';
+import { Menu, X, Bell, Shield, LogOut, Settings, Users, DollarSign, Globe } from 'lucide-react';
 import type { UserRole } from '../App';
+import { useLanguage } from '../contexts/LanguageContext';
+import type { Language } from '../translations';
 
 interface HamburgerMenuProps {
   userRole: UserRole;
@@ -18,6 +20,8 @@ export function HamburgerMenu({
   userUsername = '@jordansmith'
 }: HamburgerMenuProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { t, language, setLanguage, isRTL } = useLanguage();
+  const [showLanguageSelector, setShowLanguageSelector] = useState(false);
 
   return (
     <>
@@ -37,7 +41,7 @@ export function HamburgerMenu({
           {/* Menu Header */}
           <div className="bg-[#0E0E55] px-4 py-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-white text-lg">Menu</h2>
+              <h2 className="text-white text-lg">{t('menu')}</h2>
               <button 
                 onClick={() => setIsMenuOpen(false)}
                 className="p-2 hover:bg-[#1A1A6E] rounded-lg transition-colors"
@@ -73,7 +77,7 @@ export function HamburgerMenu({
                     className="w-full flex items-center gap-3 p-3 bg-yellow-500 text-[#0E0E55] rounded-lg hover:bg-yellow-400 transition-colors"
                   >
                     <Users className="w-5 h-5" />
-                    <span>Dashboard</span>
+                    <span>{t('dashboard')}</span>
                   </button>
                   <button 
                     onClick={() => {
@@ -83,7 +87,7 @@ export function HamburgerMenu({
                     className="w-full flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg transition-colors"
                   >
                     <DollarSign className="w-5 h-5 text-gray-600" />
-                    <span className="text-[#0E0E55]">Create Subscription Tier</span>
+                    <span className="text-[#0E0E55]">{t('createSubscriptionTier')}</span>
                   </button>
                   <div className="border-t border-gray-200 my-2"></div>
                 </>
@@ -100,7 +104,7 @@ export function HamburgerMenu({
                     className="w-full flex items-center gap-3 p-3 bg-yellow-500 text-[#0E0E55] rounded-lg hover:bg-yellow-400 transition-colors"
                   >
                     <Users className="w-5 h-5" />
-                    <span>Become a Coach</span>
+                    <span>{t('becomeACoach')}</span>
                   </button>
                   <div className="border-t border-gray-200 my-2"></div>
                 </>
@@ -115,29 +119,66 @@ export function HamburgerMenu({
                 className="w-full flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg transition-colors"
               >
                 <Users className="w-5 h-5 text-gray-600" />
-                <span className="text-[#0E0E55]">Find a Coach</span>
+                <span className="text-[#0E0E55]">{t('findACoach')}</span>
               </button>
 
               <button className="w-full flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg transition-colors">
                 <Bell className="w-5 h-5 text-gray-600" />
-                <span className="text-[#0E0E55]">Notifications</span>
+                <span className="text-[#0E0E55]">{t('notifications')}</span>
               </button>
 
               <button className="w-full flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg transition-colors">
                 <Settings className="w-5 h-5 text-gray-600" />
-                <span className="text-[#0E0E55]">Settings</span>
+                <span className="text-[#0E0E55]">{t('settings')}</span>
               </button>
 
               <button className="w-full flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg transition-colors">
                 <Shield className="w-5 h-5 text-gray-600" />
-                <span className="text-[#0E0E55]">Privacy & Security</span>
+                <span className="text-[#0E0E55]">{t('privacySecurity')}</span>
               </button>
+
+              {/* Language Selector */}
+              <button 
+                onClick={() => setShowLanguageSelector(!showLanguageSelector)}
+                className="w-full flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg transition-colors"
+              >
+                <Globe className="w-5 h-5 text-gray-600" />
+                <span className="text-[#0E0E55] flex-1">{t('language')}</span>
+                <span className="text-gray-500 text-sm">{language === 'en' ? 'EN' : 'فا'}</span>
+              </button>
+
+              {showLanguageSelector && (
+                <div className="bg-gray-50 rounded-lg p-2 space-y-1">
+                  <button
+                    onClick={() => {
+                      setLanguage('en');
+                      setShowLanguageSelector(false);
+                    }}
+                    className={`w-full text-left px-3 py-2 rounded transition-colors ${
+                      language === 'en' ? 'bg-yellow-500 text-[#0E0E55]' : 'hover:bg-gray-200 text-[#0E0E55]'
+                    }`}
+                  >
+                    {t('english')}
+                  </button>
+                  <button
+                    onClick={() => {
+                      setLanguage('fa');
+                      setShowLanguageSelector(false);
+                    }}
+                    className={`w-full text-left px-3 py-2 rounded transition-colors ${
+                      language === 'fa' ? 'bg-yellow-500 text-[#0E0E55]' : 'hover:bg-gray-200 text-[#0E0E55]'
+                    }`}
+                  >
+                    {t('persian')}
+                  </button>
+                </div>
+              )}
 
               <div className="border-t border-gray-200 my-2"></div>
 
               <button className="w-full flex items-center gap-3 p-3 hover:bg-red-50 rounded-lg transition-colors text-red-600">
                 <LogOut className="w-5 h-5" />
-                <span>Log Out</span>
+                <span>{t('logOut')}</span>
               </button>
             </div>
           </div>
