@@ -1,10 +1,9 @@
 import { useState } from 'react';
-import { Navigation } from './components/Navigation';
+import { Auth } from './components/Auth';
 import { SportSelection } from './components/SportSelection';
 import { WorkoutLogging } from './components/WorkoutLogging';
 import { Feed } from './components/Feed';
 import { Profile } from './components/Profile';
-import { CoachDashboard } from './components/CoachDashboard';
 import { PostCreation } from './components/PostCreation';
 import { ExerciseBuilder } from './components/ExerciseBuilder';
 import { PlanBuilder } from './components/PlanBuilder';
@@ -12,15 +11,21 @@ import { CoachApplication } from './components/CoachApplication';
 import { CoachMarketplace } from './components/CoachMarketplace';
 import { SubscriptionTierBuilder } from './components/SubscriptionTierBuilder';
 import { TierComparison } from './components/TierComparison';
+import { Navigation } from './components/Navigation';
+import { CoachDashboard } from './components/CoachDashboard';
 import { WorkoutsHome } from './components/WorkoutsHome';
 import { WorkoutSession } from './components/WorkoutSession';
-import { Auth } from './components/Auth';
+import { AthleteSearch } from './components/AthleteSearch';
+import { MessagesWithChannels } from './components/MessagesWithChannels';
+import { MessageThread } from './components/MessageThread';
+import { ChannelView } from './components/ChannelView';
+import { MessagingDemo } from './components/MessagingDemo';
 import { LanguageProvider } from './contexts/LanguageContext';
 
 export type SportType = 'fitness' | 'climbing';
 export type UserRole = 'athlete' | 'coach';
 export type UserTier = 'free' | 'premium';
-export type ViewType = 'sport-selection' | 'logging' | 'feed' | 'profile' | 'coach-dashboard' | 'post-creation' | 'exercise-builder' | 'plan-builder' | 'coach-application' | 'coach-marketplace' | 'tier-builder' | 'tier-comparison' | 'workouts-home' | 'workout-session';
+export type ViewType = 'sport-selection' | 'logging' | 'feed' | 'profile' | 'coach-dashboard' | 'post-creation' | 'exercise-builder' | 'plan-builder' | 'coach-application' | 'coach-marketplace' | 'tier-builder' | 'tier-comparison' | 'workouts-home' | 'workout-session' | 'athlete-search' | 'messages' | 'message-thread' | 'channel-view' | 'messaging-demo';
 
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -28,9 +33,23 @@ export default function App() {
   const [selectedSport, setSelectedSport] = useState<SportType>('fitness');
   const [userRole, setUserRole] = useState<UserRole>('athlete');
   const [userTier, setUserTier] = useState<UserTier>('free');
+  const [viewingUserId, setViewingUserId] = useState<string | null>(null); // Track which user profile we're viewing
+  const [currentConversationId, setCurrentConversationId] = useState<string | null>(null); // Track current message thread
+  const [currentChannelId, setCurrentChannelId] = useState<string | null>(null); // Track current channel
+  const [messagesActiveTab, setMessagesActiveTab] = useState<'dms' | 'channels'>('dms'); // Track active tab in Messages
 
   const handleLogin = () => {
     setIsAuthenticated(true);
+  };
+
+  const handleViewProfile = (userId: string) => {
+    setViewingUserId(userId);
+    setCurrentView('profile');
+  };
+
+  const handleViewOwnProfile = () => {
+    setViewingUserId(null);
+    setCurrentView('profile');
   };
 
   const handleSportSelect = (sport: SportType) => {
@@ -78,11 +97,14 @@ export default function App() {
           onCreatePost={() => setCurrentView('post-creation')} 
           userRole={userRole}
           onNavigate={(view) => setCurrentView(view as ViewType)}
+          onViewProfile={handleViewProfile}
         />; 
       case 'profile':
         return <Profile 
           userRole={userRole} 
           onNavigate={(view) => setCurrentView(view as ViewType)}
+          viewingUserId={viewingUserId}
+          onViewProfile={handleViewProfile}
         />; 
       case 'coach-dashboard':
         return <CoachDashboard 
@@ -124,6 +146,30 @@ export default function App() {
         />; 
       case 'workout-session':
         return <WorkoutSession onBack={() => setCurrentView('workouts-home')} onEndSession={handleSessionEnd} />;
+      case 'athlete-search':
+        return <AthleteSearch 
+          userRole={userRole}
+          onNavigate={(view) => setCurrentView(view as ViewType)}
+          onViewProfile={handleViewProfile}
+        />; 
+      case 'messages':
+        return <MessagesWithChannels 
+          userRole={userRole}
+          onNavigate={(view) => setCurrentView(view as ViewType)}
+          onViewProfile={handleViewProfile}
+          setCurrentConversationId={setCurrentConversationId}
+          setCurrentChannelId={setCurrentChannelId}
+          activeTab={messagesActiveTab}
+          setActiveTab={setMessagesActiveTab}
+        />; 
+      case 'message-thread':
+        // Rendered as overlay below
+        return null;
+      case 'channel-view':
+        // Rendered as overlay below
+        return null;
+      case 'messaging-demo':
+        return <MessagingDemo />;
       default:
         return <Feed onCreatePost={() => setCurrentView('post-creation')} />;
     }
@@ -134,42 +180,72 @@ export default function App() {
       {!isAuthenticated ? (
         <Auth onLogin={handleLogin} />
       ) : (
-        <div className="min-h-screen bg-gray-100 flex flex-col max-w-md mx-auto">
-          {/* Quick Access Menu - For Demo Purposes */}
-          <div className="bg-[#0E0E55] p-2">
-            <details className="cursor-pointer">
-              <summary className="text-xs text-gray-300 font-medium">🚀 Demo Menu</summary>
-              <div className="mt-2 grid grid-cols-2 gap-1">
-                <button onClick={() => setCurrentView('feed')} className="text-xs bg-[#1A1A6E] text-gray-200 p-1.5 rounded hover:bg-[#1A1A6E]/80">Feed</button>
-                <button onClick={() => setCurrentView('workouts-home')} className="text-xs bg-[#1A1A6E] text-gray-200 p-1.5 rounded hover:bg-[#1A1A6E]/80">Workouts</button>
-                <button onClick={() => setCurrentView('plan-builder')} className="text-xs bg-[#1A1A6E] text-gray-200 p-1.5 rounded hover:bg-[#1A1A6E]/80">Plan Builder</button>
-                <button onClick={() => setCurrentView('exercise-builder')} className="text-xs bg-[#1A1A6E] text-gray-200 p-1.5 rounded hover:bg-[#1A1A6E]/80">Exercise Builder</button>
-                <button onClick={() => setCurrentView('coach-marketplace')} className="text-xs bg-[#1A1A6E] text-gray-200 p-1.5 rounded hover:bg-[#1A1A6E]/80">Find Coach</button>
-                <button onClick={() => setCurrentView('tier-comparison')} className="text-xs bg-[#1A1A6E] text-gray-200 p-1.5 rounded hover:bg-[#1A1A6E]/80">Compare Tiers</button>
-                <button onClick={() => setCurrentView('coach-application')} className="text-xs bg-[#1A1A6E] text-gray-200 p-1.5 rounded hover:bg-[#1A1A6E]/80">Apply as Coach</button>
-                <button onClick={() => setCurrentView('tier-builder')} className="text-xs bg-[#1A1A6E] text-gray-200 p-1.5 rounded hover:bg-[#1A1A6E]/80">Create Tier</button>
-                <button onClick={() => { setUserRole('athlete'); setCurrentView('profile'); }} className="text-xs bg-[#1A1A6E] text-gray-200 p-1.5 rounded hover:bg-[#1A1A6E]/80">User Profile</button>
-                <button onClick={() => { setUserRole('coach'); setCurrentView('profile'); }} className="text-xs bg-[#1A1A6E] text-gray-200 p-1.5 rounded hover:bg-[#1A1A6E]/80">Coach Profile</button>
-                <button onClick={() => { setUserRole('coach'); setCurrentView('coach-dashboard'); }} className="text-xs bg-[#1A1A6E] text-gray-200 p-1.5 rounded hover:bg-[#1A1A6E]/80">Coach Dashboard</button>
-                <button onClick={() => setUserTier(userTier === 'free' ? 'premium' : 'free')} className="text-xs bg-yellow-500 text-[#0E0E55] p-1.5 rounded hover:bg-yellow-400">
-                  {userTier === 'free' ? '�� Free' : '⭐ Premium'}
-                </button>
-                <button onClick={() => setIsAuthenticated(false)} className="text-xs bg-red-600 text-white p-1.5 rounded hover:bg-red-700">
-                  Log Out
-                </button>
-              </div>
-            </details>
+        <>
+          <div className="min-h-screen bg-gray-100 flex flex-col max-w-md mx-auto">
+            {/* Quick Access Menu - For Demo Purposes */}
+            <div className="bg-[#0E0E55] p-2">
+              <details className="cursor-pointer">
+                <summary className="text-xs text-gray-300 font-medium">🚀 Demo Menu</summary>
+                <div className="mt-2 grid grid-cols-2 gap-1">
+                  <button onClick={() => setCurrentView('messaging-demo')} className="col-span-2 text-xs bg-yellow-500 text-[#0E0E55] p-2 rounded hover:bg-yellow-400 font-bold">
+                    💬 See Messaging Inputs Demo
+                  </button>
+                  <button onClick={() => setCurrentView('feed')} className="text-xs bg-[#1A1A6E] text-gray-200 p-1.5 rounded hover:bg-[#1A1A6E]/80">Feed</button>
+                  <button onClick={() => setCurrentView('workouts-home')} className="text-xs bg-[#1A1A6E] text-gray-200 p-1.5 rounded hover:bg-[#1A1A6E]/80">Workouts</button>
+                  <button onClick={() => setCurrentView('messages')} className="text-xs bg-[#1A1A6E] text-gray-200 p-1.5 rounded hover:bg-[#1A1A6E]/80">Messages</button>
+                  <button onClick={() => setCurrentView('plan-builder')} className="text-xs bg-[#1A1A6E] text-gray-200 p-1.5 rounded hover:bg-[#1A1A6E]/80">Plan Builder</button>
+                  <button onClick={() => setCurrentView('exercise-builder')} className="text-xs bg-[#1A1A6E] text-gray-200 p-1.5 rounded hover:bg-[#1A1A6E]/80">Exercise Builder</button>
+                  <button onClick={() => setCurrentView('coach-marketplace')} className="text-xs bg-[#1A1A6E] text-gray-200 p-1.5 rounded hover:bg-[#1A1A6E]/80">Find Coach</button>
+                  <button onClick={() => setCurrentView('tier-comparison')} className="text-xs bg-[#1A1A6E] text-gray-200 p-1.5 rounded hover:bg-[#1A1A6E]/80">Compare Tiers</button>
+                  <button onClick={() => setCurrentView('coach-application')} className="text-xs bg-[#1A1A6E] text-gray-200 p-1.5 rounded hover:bg-[#1A1A6E]/80">Apply as Coach</button>
+                  <button onClick={() => setCurrentView('tier-builder')} className="text-xs bg-[#1A1A6E] text-gray-200 p-1.5 rounded hover:bg-[#1A1A6E]/80">Create Tier</button>
+                  <button onClick={() => { setUserRole('athlete'); setCurrentView('profile'); }} className="text-xs bg-[#1A1A6E] text-gray-200 p-1.5 rounded hover:bg-[#1A1A6E]/80">User Profile</button>
+                  <button onClick={() => { setUserRole('coach'); setCurrentView('profile'); }} className="text-xs bg-[#1A1A6E] text-gray-200 p-1.5 rounded hover:bg-[#1A1A6E]/80">Coach Profile</button>
+                  <button onClick={() => { setUserRole('coach'); setCurrentView('coach-dashboard'); }} className="text-xs bg-[#1A1A6E] text-gray-200 p-1.5 rounded hover:bg-[#1A1A6E]/80">Coach Dashboard</button>
+                  <button onClick={() => setCurrentView('athlete-search')} className="text-xs bg-[#1A1A6E] text-gray-200 p-1.5 rounded hover:bg-[#1A1A6E]/80">Athletes Search</button>
+                  <button onClick={() => setUserTier(userTier === 'free' ? 'premium' : 'free')} className="text-xs bg-yellow-500 text-[#0E0E55] p-1.5 rounded hover:bg-yellow-400">
+                    {userTier === 'free' ? '🆓 Free' : '⭐ Premium'}
+                  </button>
+                  <button onClick={() => setIsAuthenticated(false)} className="text-xs bg-red-600 text-white p-1.5 rounded hover:bg-red-700">
+                    Log Out
+                  </button>
+                </div>
+              </details>
+            </div>
+
+            <div className="flex-1 overflow-auto pb-16">
+              {renderView()}
+            </div>
+            <Navigation 
+              currentView={currentView} 
+              setCurrentView={setCurrentView}
+              userRole={userRole}
+            />
           </div>
 
-          <div className="flex-1 overflow-auto pb-16">
-            {renderView()}
-          </div>
-          <Navigation 
-            currentView={currentView} 
-            setCurrentView={setCurrentView}
-            userRole={userRole}
-          />
-        </div>
+          {/* Render MessageThread and ChannelView as overlays */}
+          {currentView === 'message-thread' && (
+            <MessageThread 
+              conversationId={currentConversationId}
+              onBack={() => setCurrentView('messages')}
+              onJoinChannel={(channelId) => {
+                setCurrentChannelId(channelId);
+                setCurrentView('channel-view');
+              }}
+            />
+          )}
+          
+          {currentView === 'channel-view' && (
+            <ChannelView 
+              channelId={currentChannelId}
+              userRole={userRole}
+              onBack={() => {
+                setMessagesActiveTab('channels');
+                setCurrentView('messages');
+              }}
+            />
+          )}
+        </>
       )}
     </LanguageProvider>
   );

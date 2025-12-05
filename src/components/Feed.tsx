@@ -8,10 +8,12 @@ interface FeedProps {
   onCreatePost: () => void;
   userRole: UserRole;
   onNavigate: (view: string) => void;
+  onViewProfile?: (userId: string) => void;
 }
 
 interface Post {
   id: string;
+  userId: string; // Add userId to track which user's profile to show
   author: {
     name: string;
     username: string;
@@ -36,82 +38,68 @@ interface Post {
   };
 }
 
-export function Feed({ onCreatePost, userRole, onNavigate }: FeedProps) {
-  const { t } = useLanguage();
+export function Feed({ onCreatePost, userRole, onNavigate, onViewProfile }: FeedProps) {
+  const { t, isRTL } = useLanguage();
   const [posts, setPosts] = useState<Post[]>([
     {
       id: '1',
+      userId: 'user-123',
       author: {
-        name: 'Sarah Martinez',
-        username: '@sarahm',
-        avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop',
+        name: 'Sarah Johnson',
+        username: '@sarahjohnson',
+        avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop',
         isCoach: true,
       },
-      content: 'Just hit a new PR on deadlifts! 200kg × 3 reps 💪 The programming has been perfect lately.',
-      timestamp: '2 hours ago',
-      likes: 47,
+      content: 'Just wrapped up an amazing session with my client! Great progress on deadlifts today 💪',
+      timestamp: '2h ago',
+      likes: 45,
       comments: 12,
       isLiked: false,
-      isPR: true,
-      prDetails: {
-        exercise: 'Deadlift',
-        weight: '200kg',
-        reps: 3,
-      },
-      media: {
-        type: 'image',
-        url: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=600&h=400&fit=crop'
-      }
     },
     {
       id: '2',
+      userId: 'user-456',
       author: {
-        name: 'Mike Johnson',
-        username: '@mikej',
-        avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop',
+        name: 'Mike Chen',
+        username: '@mikechen',
+        avatar: 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?w=100&h=100&fit=crop',
         isCoach: false,
       },
-      content: 'Finally sent my project! V7 after 4 weeks of attempts 🧗',
-      timestamp: '5 hours ago',
+      content: 'New gym PR! 🎉',
+      timestamp: '4h ago',
       likes: 89,
       comments: 23,
       isLiked: true,
-      isPR: false,
+      isPR: true,
+      prDetails: {
+        exercise: 'Deadlift',
+        weight: '180kg',
+        reps: 5,
+      },
       media: {
-        type: 'video',
-        url: 'https://images.unsplash.com/photo-1522163182402-834f871fd851?w=600&h=400&fit=crop',
-        thumbnail: 'https://images.unsplash.com/photo-1522163182402-834f871fd851?w=600&h=400&fit=crop'
+        type: 'image',
+        url: 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=800&h=600&fit=crop',
       }
     },
     {
       id: '3',
+      userId: 'user-789',
       author: {
-        name: 'Alex Chen',
-        username: '@alexc',
-        avatar: 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?w=100&h=100&fit=crop',
+        name: 'Emily Rodriguez',
+        username: '@emilyrodriguez',
+        avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop',
         isCoach: false,
       },
-      content: 'Recovery day thoughts: Don\'t underestimate the importance of rest. Your gains happen during recovery, not just in the gym!',
-      timestamp: '1 day ago',
+      content: 'Crushed my V7 project today! Check it out! 🧗‍♀️',
+      timestamp: '6h ago',
       likes: 156,
       comments: 34,
-      isLiked: true,
-      isPR: false,
-    },
-    {
-      id: '4',
-      author: {
-        name: 'Jordan Smith',
-        username: '@jordansmith',
-        avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop',
-        isCoach: true,
-      },
-      content: 'New training cycle starting next week! Focus on building a solid foundation with compound movements 🎯',
-      timestamp: '2 days ago',
-      likes: 203,
-      comments: 45,
       isLiked: false,
-      isPR: false,
+      media: {
+        type: 'video',
+        url: 'https://images.unsplash.com/photo-1522163182402-834f871fd851?w=800&h=600&fit=crop',
+        thumbnail: 'https://images.unsplash.com/photo-1522163182402-834f871fd851?w=800&h=600&fit=crop'
+      }
     },
   ]);
 
@@ -142,20 +130,28 @@ export function Feed({ onCreatePost, userRole, onNavigate }: FeedProps) {
           <div key={post.id} className="bg-white rounded-lg p-4 shadow-md border border-gray-200">
             {/* User Info */}
             <div className="flex items-start gap-3 mb-3">
-              <img 
-                src={post.author.avatar} 
-                alt={post.author.name}
-                className="w-10 h-10 rounded-full object-cover"
-              />
+              <button 
+                onClick={() => onViewProfile && onViewProfile(post.userId)}
+                className="flex-shrink-0"
+              >
+                <img 
+                  src={post.author.avatar} 
+                  alt={post.author.name}
+                  className="w-10 h-10 rounded-full object-cover hover:opacity-80 transition-opacity"
+                />
+              </button>
               <div className="flex-1">
-                <div className="flex items-center gap-2">
+                <button 
+                  onClick={() => onViewProfile && onViewProfile(post.userId)}
+                  className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+                >
                   <span className="text-[#0E0E55]">{post.author.name}</span>
                   {post.author.isCoach && (
                     <span className="px-2 py-0.5 bg-yellow-500 text-[#0E0E55] rounded text-xs">
                       Coach
                     </span>
                   )}
-                </div>
+                </button>
                 <span className="text-gray-500 text-sm">{post.timestamp}</span>
               </div>
             </div>

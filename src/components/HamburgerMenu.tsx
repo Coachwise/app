@@ -113,13 +113,13 @@ export function HamburgerMenu({
               {/* Common actions */}
               <button 
                 onClick={() => {
-                  onNavigate('coach-marketplace');
+                  onNavigate('athlete-search');
                   setIsMenuOpen(false);
                 }}
                 className="w-full flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg transition-colors"
               >
                 <Users className="w-5 h-5 text-gray-600" />
-                <span className="text-[#0E0E55]">{t('findACoach')}</span>
+                <span className="text-[#0E0E55]">{t('athletesAndCoaches')}</span>
               </button>
 
               <button className="w-full flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg transition-colors">

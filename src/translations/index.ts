@@ -8,6 +8,7 @@ export const translations = {
     dashboard: 'Dashboard',
     profile: 'Profile',
     menu: 'Menu',
+    messages: 'Messages',
     
     // Common
     save: 'Save',
@@ -179,6 +180,23 @@ export const translations = {
     termsOfService: 'Terms of Service',
     and: 'and',
     privacyPolicy: 'Privacy Policy',
+    
+    // Follow System
+    follow: 'Follow',
+    unfollow: 'Unfollow',
+    following: 'Following',
+    followers: 'Followers',
+    noFollowers: 'No followers yet',
+    noFollowing: 'Not following anyone yet',
+    loadMore: 'Load More',
+    searchAthletes: 'Search Athletes',
+    discoverAthletes: 'Discover Athletes',
+    athletes: 'Athletes',
+    searchPlaceholder: 'Search by name or username...',
+    suggestedForYou: 'Suggested For You',
+    allAthletes: 'All Athletes',
+    viewProfile: 'View Profile',
+    athletesAndCoaches: 'Athletes & Coaches',
   },
   
   fa: {
@@ -188,6 +206,7 @@ export const translations = {
     dashboard: 'داشبورد',
     profile: 'پروفایل',
     menu: 'منو',
+    messages: 'پیام‌ها',
     
     // Common
     save: 'ذخیره',
@@ -247,7 +266,7 @@ export const translations = {
     saturday: 'شنبه',
     
     // Months
-    january: 'ژانویه',
+    january: 'ژانوه',
     february: 'فوریه',
     march: 'مارس',
     april: 'آوریل',
@@ -359,6 +378,23 @@ export const translations = {
     termsOfService: 'شرایط خدمات',
     and: 'و',
     privacyPolicy: 'سیاست حفظ حریم خصوصی',
+    
+    // Follow System
+    follow: 'دنبال کردن',
+    unfollow: 'دنبال نکردن',
+    following: 'دنبال‌شونده',
+    followers: 'دنبال‌کنندگان',
+    noFollowers: 'هنوز دنبال‌کننده‌ای ندارید',
+    noFollowing: 'هنوز به کسی دنبال نکرده‌اید',
+    loadMore: 'بارگذاری بیشتر',
+    searchAthletes: 'جستجوی ورزشکاران',
+    discoverAthletes: 'کشف ورزشکاران',
+    athletes: 'ورزشکاران',
+    searchPlaceholder: 'جستجو بر اساس نام یا نام کاربری...',
+    suggestedForYou: 'پیشنهاد برای شما',
+    allAthletes: 'همه ورزشکاران',
+    viewProfile: 'مشاهده پروفایل',
+    athletesAndCoaches: 'ورزشکاران و مربیان',
   },
 };
 

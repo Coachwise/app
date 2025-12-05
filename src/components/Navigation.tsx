@@ -1,4 +1,4 @@
-import { Home, Dumbbell, User, LayoutDashboard } from 'lucide-react';
+import { Home, Dumbbell, User, LayoutDashboard, MessageCircle } from 'lucide-react';
 import type { ViewType, UserRole } from '../App';
 import { useLanguage } from '../contexts/LanguageContext';
 
@@ -14,6 +14,7 @@ export function Navigation({ currentView, setCurrentView, userRole }: Navigation
   const navItems = [
     { id: 'feed' as ViewType, icon: Home, label: t('feed') },
     { id: 'workouts-home' as ViewType, icon: Dumbbell, label: t('workouts') },
+    { id: 'messages' as ViewType, icon: MessageCircle, label: t('messages') },
     ...(userRole === 'coach' ? [{ id: 'coach-dashboard' as ViewType, icon: LayoutDashboard, label: t('dashboard') }] : []),
     { id: 'profile' as ViewType, icon: User, label: t('profile') },
   ];
@@ -24,7 +25,8 @@ export function Navigation({ currentView, setCurrentView, userRole }: Navigation
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = currentView === item.id || 
-            (item.id === 'workouts-home' && (currentView === 'workout-session' || currentView === 'logging'));
+            (item.id === 'workouts-home' && (currentView === 'workout-session' || currentView === 'logging')) ||
+            (item.id === 'messages' && (currentView === 'message-thread' || currentView === 'channel-view'));
           
           return (
             <button
