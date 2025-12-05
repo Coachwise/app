@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Search, Star, Filter, CheckCircle2, MapPin, ArrowLeft } from 'lucide-react';
+import { useLanguage } from '../contexts/LanguageContext';
 
 interface Coach {
   id: string;
@@ -20,21 +21,24 @@ interface Coach {
 
 interface CoachMarketplaceProps {
   onBack: () => void;
+  onViewProfile?: (userId: string) => void;
 }
 
-export function CoachMarketplace({ onBack }: CoachMarketplaceProps) {
+export function CoachMarketplace({ onBack, onViewProfile }: CoachMarketplaceProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSpecialty, setSelectedSpecialty] = useState('all');
 
+  const { t } = useLanguage();
+
   const specialties = [
-    'All',
-    'Powerlifting',
-    'Olympic Weightlifting',
-    'Bodybuilding',
-    'CrossFit',
-    'Rock Climbing',
-    'Calisthenics',
-    'General Fitness',
+    { key: 'all', label: t('all') },
+    { key: 'powerlifting', label: t('powerlifting') },
+    { key: 'olympicWeightlifting', label: t('olympicWeightlifting') },
+    { key: 'bodybuilding', label: t('bodybuilding') },
+    { key: 'crossfit', label: t('crossfit') },
+    { key: 'rockClimbing', label: t('rockClimbing') },
+    { key: 'calisthenics', label: t('calisthenics') },
+    { key: 'generalFitness', label: t('generalFitness') },
   ];
 
   const mockCoaches: Coach[] = [
@@ -107,7 +111,7 @@ export function CoachMarketplace({ onBack }: CoachMarketplaceProps) {
           >
             <ArrowLeft className="w-6 h-6 text-white" />
           </button>
-          <h1 className="text-white">Find Your Coach</h1>
+          <h1 className="text-white">{t('findYourCoach')}</h1>
         </div>
         
         {/* Search */}
@@ -117,8 +121,8 @@ export function CoachMarketplace({ onBack }: CoachMarketplaceProps) {
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search by name or specialty..."
-            className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            placeholder={t('searchByNameOrSpecialty')}
+            className="w-full pl-12 pr-4 py-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
           />
         </div>
 
@@ -126,15 +130,15 @@ export function CoachMarketplace({ onBack }: CoachMarketplaceProps) {
         <div className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4">
           {specialties.map(specialty => (
             <button
-              key={specialty}
-              onClick={() => setSelectedSpecialty(specialty.toLowerCase())}
+              key={specialty.key}
+              onClick={() => setSelectedSpecialty(specialty.key)}
               className={`px-4 py-2 rounded-full whitespace-nowrap transition-colors ${
-                selectedSpecialty === specialty.toLowerCase()
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                selectedSpecialty === specialty.key
+                  ? 'bg-yellow-500 text-[#0E0E55]'
+                  : 'bg-white/10 text-white border border-white/20 hover:bg-white/20'
               }`}
             >
-              {specialty}
+              {specialty.label}
             </button>
           ))}
         </div>
@@ -154,15 +158,19 @@ export function CoachMarketplace({ onBack }: CoachMarketplaceProps) {
                 <img
                   src={coach.avatar}
                   alt={coach.name}
-                  className="w-24 h-24 rounded-full object-cover border-4 border-white"
+                  onClick={() => onViewProfile?.(coach.id)}
+                  className="w-24 h-24 rounded-full object-cover border-4 border-white cursor-pointer hover:opacity-80 transition-opacity"
                 />
               </div>
             </div>
 
             <div className="pt-14 px-4 pb-4">
               <div className="flex items-start justify-between mb-3">
-                <div>
-                  <h3 className="text-[#3D3D3D] mb-1">{coach.name}</h3>
+                <div 
+                  onClick={() => onViewProfile?.(coach.id)}
+                  className="cursor-pointer hover:opacity-80 transition-opacity"
+                >
+                  <h3 className="text-[#0E0E55] mb-1">{coach.name}</h3>
                   <p className="text-gray-600 text-sm">{coach.specialty}</p>
                 </div>
                 <div className="text-right">
@@ -170,7 +178,7 @@ export function CoachMarketplace({ onBack }: CoachMarketplaceProps) {
                     <Star className="w-4 h-4 fill-yellow-600" />
                     <span className="text-sm">{coach.rating}</span>
                   </div>
-                  <p className="text-gray-600 text-xs">{coach.clients} clients</p>
+                  <p className="text-gray-600 text-xs">{coach.clientCount} {t('clients_lower')}</p>
                 </div>
               </div>
 
@@ -183,11 +191,11 @@ export function CoachMarketplace({ onBack }: CoachMarketplaceProps) {
 
               <div className="flex items-center justify-between pt-4 border-t border-gray-200">
                 <div>
-                  <span className="text-gray-600 text-sm">From </span>
-                  <span className="text-[#3D3D3D]">${coach.priceFrom}/mo</span>
+                  <span className="text-gray-600 text-sm">{t('from')} </span>
+                  <span className="text-[#0E0E55]">${coach.priceFrom}/{t('month')}</span>
                 </div>
-                <button className="px-6 py-2 bg-yellow-500 text-[#3D3D3D] rounded-lg hover:bg-yellow-400 transition-colors">
-                  View Profile
+                <button className="px-6 py-2 bg-yellow-500 text-[#0E0E55] rounded-lg hover:bg-yellow-400 transition-colors" onClick={() => onViewProfile?.(coach.id)}>
+                  {t('viewProfile')}
                 </button>
               </div>
             </div>

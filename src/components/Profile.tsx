@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Camera, MapPin, Calendar, Trophy, Star, CheckCircle2, UserPlus, UserCheck, Edit2, DollarSign, Users } from 'lucide-react';
+import { Camera, MapPin, Calendar, Trophy, Star, CheckCircle2, UserPlus, UserCheck, Edit2, DollarSign, Users, Check } from 'lucide-react';
 import type { UserRole } from '../App';
 import { useLanguage } from '../contexts/LanguageContext';
 import { FollowersModal } from './FollowersModal';
@@ -12,7 +12,7 @@ interface ProfileProps {
   onViewProfile?: (userId: string) => void;
 }
 
-type TabType = 'posts' | 'records' | 'testimonials';
+type TabType = 'posts' | 'records' | 'testimonials' | 'subscription';
 type FollowModalMode = 'followers' | 'following' | null;
 
 export function Profile({ userRole, onNavigate, viewingUserId = null, onViewProfile }: ProfileProps) {
@@ -209,7 +209,10 @@ export function Profile({ userRole, onNavigate, viewingUserId = null, onViewProf
 
           {/* Action Button */}
           {isOwnProfile ? (
-            <button className="w-full bg-yellow-500 text-[#0E0E55] py-3 rounded-lg hover:bg-yellow-400 transition-colors">
+            <button 
+              onClick={() => onNavigate?.('profile-settings')}
+              className="w-full bg-yellow-500 text-[#0E0E55] py-3 rounded-lg hover:bg-yellow-400 transition-colors"
+            >
               {t('editProfile')}
             </button>
           ) : (
@@ -273,6 +276,19 @@ export function Profile({ userRole, onNavigate, viewingUserId = null, onViewProf
               }`}
             >
               {t('testimonials')}
+            </button>
+          )}
+          {/* Only show subscription tab for coaches when viewing someone else's profile */}
+          {userRole === 'coach' && !isOwnProfile && (
+            <button
+              onClick={() => setActiveTab('subscription')}
+              className={`flex-1 py-3 text-center transition-colors ${
+                activeTab === 'subscription' 
+                  ? 'text-yellow-600 border-b-2 border-yellow-500' 
+                  : 'text-gray-600'
+              }`}
+            >
+              {t('subscription')}
             </button>
           )}
         </div>
@@ -375,6 +391,177 @@ export function Profile({ userRole, onNavigate, viewingUserId = null, onViewProf
                 </div>
               </div>
             ))}
+          </div>
+        )}
+
+        {/* Subscription Plans Tab */}
+        {activeTab === 'subscription' && (
+          <div className="space-y-4">
+            {/* Header */}
+            <div className="bg-[#0E0E55] rounded-lg p-6 text-center">
+              <h3 className="text-white text-xl mb-2">Subscription Plans</h3>
+              <p className="text-gray-300 text-sm">Choose the perfect plan for your fitness journey</p>
+            </div>
+
+            {/* Subscription Tiers */}
+            <div className="space-y-4">
+              {/* Basic Tier */}
+              <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200">
+                <div className="flex items-start justify-between mb-4">
+                  <div>
+                    <h4 className="text-[#0E0E55] text-xl mb-1">Basic</h4>
+                    <p className="text-gray-600 text-sm">Perfect for beginners</p>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-2xl text-[#0E0E55]">$30</div>
+                    <div className="text-gray-600 text-sm">/month</div>
+                  </div>
+                </div>
+
+                <ul className="space-y-2 mb-4">
+                  <li className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                    <span className="text-gray-700 text-sm">1 workout plan per month</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                    <span className="text-gray-700 text-sm">Monthly check-ins</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                    <span className="text-gray-700 text-sm">Email support</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                    <span className="text-gray-700 text-sm">Basic progress tracking</span>
+                  </li>
+                </ul>
+
+                {!isOwnProfile && (
+                  <button 
+                    onClick={() => onNavigate?.('tier-comparison')}
+                    className="w-full bg-yellow-500 text-[#0E0E55] py-3 rounded-lg hover:bg-yellow-400 transition-colors"
+                  >
+                    Subscribe
+                  </button>
+                )}
+              </div>
+
+              {/* Pro Tier - Most Popular */}
+              <div className="bg-white rounded-lg shadow-lg p-6 border-2 border-yellow-500 relative">
+                <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                  <span className="bg-yellow-500 text-[#0E0E55] px-4 py-1 rounded-full text-sm">
+                    Most Popular
+                  </span>
+                </div>
+
+                <div className="flex items-start justify-between mb-4 mt-2">
+                  <div>
+                    <h4 className="text-[#0E0E55] text-xl mb-1">Pro</h4>
+                    <p className="text-gray-600 text-sm">For serious athletes</p>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-2xl text-[#0E0E55]">$60</div>
+                    <div className="text-gray-600 text-sm">/month</div>
+                  </div>
+                </div>
+
+                <ul className="space-y-2 mb-4">
+                  <li className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                    <span className="text-gray-700 text-sm">3 workout plans per month</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                    <span className="text-gray-700 text-sm">Weekly check-ins</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                    <span className="text-gray-700 text-sm">Video form analysis</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                    <span className="text-gray-700 text-sm">Nutrition guides</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                    <span className="text-gray-700 text-sm">Priority support</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                    <span className="text-gray-700 text-sm">Custom programming</span>
+                  </li>
+                </ul>
+
+                {!isOwnProfile && (
+                  <button 
+                    onClick={() => onNavigate?.('tier-comparison')}
+                    className="w-full bg-yellow-500 text-[#0E0E55] py-3 rounded-lg hover:bg-yellow-400 transition-colors"
+                  >
+                    Subscribe
+                  </button>
+                )}
+              </div>
+
+              {/* Elite Tier */}
+              <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200">
+                <div className="flex items-start justify-between mb-4">
+                  <div>
+                    <h4 className="text-[#0E0E55] text-xl mb-1">Elite</h4>
+                    <p className="text-gray-600 text-sm">Maximum support</p>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-2xl text-[#0E0E55]">$100</div>
+                    <div className="text-gray-600 text-sm">/month</div>
+                  </div>
+                </div>
+
+                <ul className="space-y-2 mb-4">
+                  <li className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                    <span className="text-gray-700 text-sm">Unlimited workout plans</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                    <span className="text-gray-700 text-sm">Daily check-ins</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                    <span className="text-gray-700 text-sm">1-on-1 video calls (2x/month)</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                    <span className="text-gray-700 text-sm">Competition prep planning</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                    <span className="text-gray-700 text-sm">Nutrition macro tracking</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                    <span className="text-gray-700 text-sm">Everything in Pro</span>
+                  </li>
+                </ul>
+
+                {!isOwnProfile && (
+                  <button 
+                    onClick={() => onNavigate?.('tier-comparison')}
+                    className="w-full bg-yellow-500 text-[#0E0E55] py-3 rounded-lg hover:bg-yellow-400 transition-colors"
+                  >
+                    Subscribe
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Trial Info */}
+            {!isOwnProfile && (
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                <p className="text-[#0E0E55] text-center text-sm">
+                  ✨ All plans include a 7-day free trial!
+                </p>
+              </div>
+            )}
           </div>
         )}
 

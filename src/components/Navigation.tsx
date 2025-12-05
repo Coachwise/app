@@ -1,4 +1,4 @@
-import { Home, Dumbbell, User, LayoutDashboard, MessageCircle } from 'lucide-react';
+import { Home, Dumbbell, LayoutDashboard, MessageCircle } from 'lucide-react';
 import type { ViewType, UserRole } from '../App';
 import { useLanguage } from '../contexts/LanguageContext';
 
@@ -14,9 +14,12 @@ export function Navigation({ currentView, setCurrentView, userRole }: Navigation
   const navItems = [
     { id: 'feed' as ViewType, icon: Home, label: t('feed') },
     { id: 'workouts-home' as ViewType, icon: Dumbbell, label: t('workouts') },
-    { id: 'messages' as ViewType, icon: MessageCircle, label: t('messages') },
-    ...(userRole === 'coach' ? [{ id: 'coach-dashboard' as ViewType, icon: LayoutDashboard, label: t('dashboard') }] : []),
-    { id: 'profile' as ViewType, icon: User, label: t('profile') },
+    ...(userRole === 'coach' ? [
+      { id: 'messages' as ViewType, icon: MessageCircle, label: t('messages') },
+      { id: 'coach-dashboard' as ViewType, icon: LayoutDashboard, label: t('dashboard') }
+    ] : [
+      { id: 'messages' as ViewType, icon: MessageCircle, label: t('messages') }
+    ]),
   ];
 
   return (

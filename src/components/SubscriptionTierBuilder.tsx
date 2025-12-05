@@ -25,6 +25,7 @@ export interface SubscriptionTier {
   };
   trialDays: number;
   isActive: boolean;
+  popular?: boolean;
 }
 
 export function SubscriptionTierBuilder({ onCancel, onSave, existingTier }: SubscriptionTierBuilderProps) {

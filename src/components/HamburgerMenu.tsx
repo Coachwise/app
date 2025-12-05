@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Menu, X, Bell, Shield, LogOut, Settings, Users, DollarSign, Globe } from 'lucide-react';
+import { Menu, X, Bell, Shield, LogOut, Settings, Users, DollarSign, Globe, User } from 'lucide-react';
 import type { UserRole } from '../App';
 import { useLanguage } from '../contexts/LanguageContext';
 import type { Language } from '../translations';
@@ -50,17 +50,23 @@ export function HamburgerMenu({
               </button>
             </div>
             {/* User Info in Menu */}
-            <div className="flex items-center gap-3">
+            <button 
+              onClick={() => {
+                onNavigate('profile');
+                setIsMenuOpen(false);
+              }}
+              className="flex items-center gap-3 w-full hover:bg-[#1A1A6E] p-2 rounded-lg transition-colors"
+            >
               <img 
                 src={userAvatar} 
                 alt={userName}
                 className="w-12 h-12 rounded-full object-cover border-2 border-white"
               />
-              <div>
+              <div className="text-left">
                 <p className="text-white font-medium">{userName}</p>
                 <p className="text-gray-300 text-sm">{userUsername}</p>
               </div>
-            </div>
+            </button>
           </div>
 
           {/* Menu Items */}
@@ -127,12 +133,13 @@ export function HamburgerMenu({
                 <span className="text-[#0E0E55]">{t('notifications')}</span>
               </button>
 
-              <button className="w-full flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg transition-colors">
-                <Settings className="w-5 h-5 text-gray-600" />
-                <span className="text-[#0E0E55]">{t('settings')}</span>
-              </button>
-
-              <button className="w-full flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg transition-colors">
+              <button 
+                onClick={() => {
+                  onNavigate('privacy-settings');
+                  setIsMenuOpen(false);
+                }}
+                className="w-full flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg transition-colors"
+              >
                 <Shield className="w-5 h-5 text-gray-600" />
                 <span className="text-[#0E0E55]">{t('privacySecurity')}</span>
               </button>

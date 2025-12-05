@@ -162,56 +162,51 @@ export function AthleteSearch({ userRole, onNavigate, onViewProfile }: AthleteSe
             <div className="space-y-3">
               {suggestedAthletes.map((athlete) => (
                 <div key={athlete.id} className="bg-white rounded-lg p-4 shadow-md border border-gray-200">
-                  <div className="flex items-start gap-3">
+                  <div className="flex items-center gap-3">
                     <img 
                       src={athlete.avatar} 
                       alt={athlete.name}
-                      className="w-12 h-12 rounded-full object-cover"
+                      onClick={() => onViewProfile(athlete.id)}
+                      className="w-12 h-12 rounded-full object-cover cursor-pointer hover:opacity-80 transition-opacity"
                     />
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="text-[#0E0E55] truncate">{athlete.name}</span>
-                        {athlete.isCoach && (
-                          <CheckCircle2 className="w-4 h-4 text-yellow-500 flex-shrink-0" />
-                        )}
+                      <div 
+                        onClick={() => onViewProfile(athlete.id)}
+                        className="cursor-pointer hover:opacity-80 transition-opacity"
+                      >
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-[#0E0E55] truncate">{athlete.name}</span>
+                          {athlete.isCoach && (
+                            <CheckCircle2 className="w-4 h-4 text-yellow-500 flex-shrink-0" />
+                          )}
+                        </div>
+                        <p className="text-gray-600 text-sm mb-1">{athlete.username}</p>
                       </div>
-                      <p className="text-gray-600 text-sm mb-1">{athlete.username}</p>
-                      <p className="text-gray-700 text-sm mb-2 line-clamp-2">{athlete.bio}</p>
-                      
-                      <div className="flex items-center gap-4 text-xs text-gray-600 mb-3">
+                      <div className="flex items-center gap-3 text-xs text-gray-600 mb-2">
                         <span>{athlete.followers.toLocaleString()} {t('followers')}</span>
                         <span>{athlete.workouts} {t('workouts')}</span>
                       </div>
-
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => toggleFollow(athlete.id)}
-                          className={`flex-1 py-2 rounded-lg transition-colors flex items-center justify-center gap-2 ${
-                            athlete.isFollowing
-                              ? 'bg-gray-200 text-[#0E0E55] hover:bg-gray-300'
-                              : 'bg-yellow-500 text-[#0E0E55] hover:bg-yellow-400'
-                          }`}
-                        >
-                          {athlete.isFollowing ? (
-                            <>
-                              <UserCheck className="w-4 h-4" />
-                              <span>{t('following')}</span>
-                            </>
-                          ) : (
-                            <>
-                              <UserPlus className="w-4 h-4" />
-                              <span>{t('follow')}</span>
-                            </>
-                          )}
-                        </button>
-                        <button
-                          onClick={() => onViewProfile(athlete.id)}
-                          className="px-4 py-2 border border-[#0E0E55] text-[#0E0E55] rounded-lg hover:bg-gray-50 transition-colors"
-                        >
-                          {t('viewProfile')}
-                        </button>
-                      </div>
                     </div>
+                    <button
+                      onClick={() => toggleFollow(athlete.id)}
+                      className={`px-4 py-2 rounded-lg transition-colors flex items-center gap-2 ${
+                        athlete.isFollowing
+                          ? 'bg-gray-200 text-[#0E0E55] hover:bg-gray-300'
+                          : 'bg-yellow-500 text-[#0E0E55] hover:bg-yellow-400'
+                      }`}
+                    >
+                      {athlete.isFollowing ? (
+                        <>
+                          <UserCheck className="w-4 h-4" />
+                          <span className="hidden sm:inline">{t('following')}</span>
+                        </>
+                      ) : (
+                        <>
+                          <UserPlus className="w-4 h-4" />
+                          <span className="hidden sm:inline">{t('follow')}</span>
+                        </>
+                      )}
+                    </button>
                   </div>
                 </div>
               ))}
@@ -237,17 +232,23 @@ export function AthleteSearch({ userRole, onNavigate, onViewProfile }: AthleteSe
                     <img 
                       src={athlete.avatar} 
                       alt={athlete.name}
-                      className="w-12 h-12 rounded-full object-cover"
+                      onClick={() => onViewProfile(athlete.id)}
+                      className="w-12 h-12 rounded-full object-cover cursor-pointer hover:opacity-80 transition-opacity"
                     />
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="text-[#0E0E55] truncate">{athlete.name}</span>
-                        {athlete.isCoach && (
-                          <CheckCircle2 className="w-4 h-4 text-yellow-500 flex-shrink-0" />
-                        )}
+                      <div 
+                        onClick={() => onViewProfile(athlete.id)}
+                        className="cursor-pointer hover:opacity-80 transition-opacity"
+                      >
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-[#0E0E55] truncate">{athlete.name}</span>
+                          {athlete.isCoach && (
+                            <CheckCircle2 className="w-4 h-4 text-yellow-500 flex-shrink-0" />
+                          )}
+                        </div>
+                        <p className="text-gray-600 text-sm mb-1">{athlete.username}</p>
                       </div>
-                      <p className="text-gray-600 text-sm">{athlete.username}</p>
-                      <div className="flex items-center gap-3 text-xs text-gray-600 mt-1">
+                      <div className="flex items-center gap-3 text-xs text-gray-600">
                         <span>{athlete.followers.toLocaleString()} {t('followers')}</span>
                         <span>{athlete.workouts} {t('workouts')}</span>
                       </div>

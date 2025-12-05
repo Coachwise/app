@@ -20,12 +20,14 @@ import { MessagesWithChannels } from './components/MessagesWithChannels';
 import { MessageThread } from './components/MessageThread';
 import { ChannelView } from './components/ChannelView';
 import { MessagingDemo } from './components/MessagingDemo';
+import { PrivacySettings } from './components/PrivacySettings';
+import { ProfileSettings } from './components/ProfileSettings';
 import { LanguageProvider } from './contexts/LanguageContext';
 
 export type SportType = 'fitness' | 'climbing';
 export type UserRole = 'athlete' | 'coach';
 export type UserTier = 'free' | 'premium';
-export type ViewType = 'sport-selection' | 'logging' | 'feed' | 'profile' | 'coach-dashboard' | 'post-creation' | 'exercise-builder' | 'plan-builder' | 'coach-application' | 'coach-marketplace' | 'tier-builder' | 'tier-comparison' | 'workouts-home' | 'workout-session' | 'athlete-search' | 'messages' | 'message-thread' | 'channel-view' | 'messaging-demo';
+export type ViewType = 'sport-selection' | 'logging' | 'feed' | 'profile' | 'coach-dashboard' | 'post-creation' | 'exercise-builder' | 'plan-builder' | 'coach-application' | 'coach-marketplace' | 'tier-builder' | 'tier-comparison' | 'workouts-home' | 'workout-session' | 'athlete-search' | 'messages' | 'message-thread' | 'channel-view' | 'messaging-demo' | 'privacy-settings' | 'profile-settings';
 
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -50,6 +52,14 @@ export default function App() {
   const handleViewOwnProfile = () => {
     setViewingUserId(null);
     setCurrentView('profile');
+  };
+
+  const handleNavigate = (view: string) => {
+    // Reset viewingUserId when navigating to profile from menu
+    if (view === 'profile') {
+      setViewingUserId(null);
+    }
+    setCurrentView(view as ViewType);
   };
 
   const handleSportSelect = (sport: SportType) => {
@@ -96,20 +106,20 @@ export default function App() {
         return <Feed 
           onCreatePost={() => setCurrentView('post-creation')} 
           userRole={userRole}
-          onNavigate={(view) => setCurrentView(view as ViewType)}
+          onNavigate={handleNavigate}
           onViewProfile={handleViewProfile}
         />; 
       case 'profile':
         return <Profile 
           userRole={userRole} 
-          onNavigate={(view) => setCurrentView(view as ViewType)}
+          onNavigate={handleNavigate}
           viewingUserId={viewingUserId}
           onViewProfile={handleViewProfile}
         />; 
       case 'coach-dashboard':
         return <CoachDashboard 
           onBack={() => setCurrentView('profile')} 
-          onNavigate={(view) => setCurrentView(view as ViewType)}
+          onNavigate={handleNavigate}
           userRole={userRole}
         />; 
       case 'post-creation':
@@ -132,7 +142,7 @@ export default function App() {
           onSubmit={handleCoachApplicationSubmit} 
         />; 
       case 'coach-marketplace':
-        return <CoachMarketplace onBack={() => setCurrentView('profile')} />;
+        return <CoachMarketplace onBack={() => setCurrentView('profile')} onViewProfile={handleViewProfile} />;
       case 'tier-builder':
         return <SubscriptionTierBuilder onCancel={() => setCurrentView('coach-dashboard')} onSave={handleTierSaved} />;
       case 'tier-comparison':
@@ -142,20 +152,20 @@ export default function App() {
           onStartSession={() => setCurrentView('workout-session')} 
           onCreatePlan={() => setCurrentView('plan-builder')}
           userRole={userRole}
-          onNavigate={(view) => setCurrentView(view as ViewType)}
+          onNavigate={handleNavigate}
         />; 
       case 'workout-session':
         return <WorkoutSession onBack={() => setCurrentView('workouts-home')} onEndSession={handleSessionEnd} />;
       case 'athlete-search':
         return <AthleteSearch 
           userRole={userRole}
-          onNavigate={(view) => setCurrentView(view as ViewType)}
+          onNavigate={handleNavigate}
           onViewProfile={handleViewProfile}
         />; 
       case 'messages':
         return <MessagesWithChannels 
           userRole={userRole}
-          onNavigate={(view) => setCurrentView(view as ViewType)}
+          onNavigate={handleNavigate}
           onViewProfile={handleViewProfile}
           setCurrentConversationId={setCurrentConversationId}
           setCurrentChannelId={setCurrentChannelId}
@@ -170,6 +180,10 @@ export default function App() {
         return null;
       case 'messaging-demo':
         return <MessagingDemo />;
+      case 'privacy-settings':
+        return <PrivacySettings onBack={() => setCurrentView('profile')} />;
+      case 'profile-settings':
+        return <ProfileSettings userRole={userRole} onBack={() => setCurrentView('profile')} />;
       default:
         return <Feed onCreatePost={() => setCurrentView('post-creation')} />;
     }
