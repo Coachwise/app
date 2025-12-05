@@ -1,10 +1,13 @@
 import { useState, useEffect } from 'react';
 import { ArrowLeft, Play, Pause, Clock, Check, ChevronRight, ChevronLeft, Dumbbell, Mountain } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
+import { ProUpgradeModal } from './ProUpgradeModal';
 
 interface WorkoutSessionProps {
   onBack: () => void;
   onEndSession: () => void;
+  isPro?: boolean;
+  onNavigate?: (view: string) => void;
 }
 
 interface Exercise {
@@ -35,9 +38,12 @@ interface SetLog {
 
 type ExerciseStatus = 'not-started' | 'in-progress' | 'logging' | 'completed';
 
-export function WorkoutSession({ onBack, onEndSession }: WorkoutSessionProps) {
+export function WorkoutSession({ onBack, onEndSession, isPro = true, onNavigate }: WorkoutSessionProps) {
   const { t } = useLanguage();
   
+  // Pro modal state
+  const [showProModal, setShowProModal] = useState(false);
+
   // Mock workout plan with exercises
   const [exercises] = useState<Exercise[]>([
     {
@@ -122,6 +128,12 @@ export function WorkoutSession({ onBack, onEndSession }: WorkoutSessionProps) {
   };
 
   const handleStartExercise = () => {
+    // Block free users from logging
+    if (!isPro) {
+      setShowProModal(true);
+      return;
+    }
+    
     setExerciseStatus('in-progress');
     setIsTimerRunning(true);
     const currentLog = exerciseLogs.get(currentExercise.id) || {
@@ -139,6 +151,13 @@ export function WorkoutSession({ onBack, onEndSession }: WorkoutSessionProps) {
     }
     if (currentExercise.reps) {
       setRepsInput(currentExercise.reps.toString());
+    }
+  };
+
+  const handleProUpgrade = () => {
+    setShowProModal(false);
+    if (onNavigate) {
+      onNavigate('coach-marketplace');
     }
   };
 
@@ -512,6 +531,14 @@ export function WorkoutSession({ onBack, onEndSession }: WorkoutSessionProps) {
           </div>
         </div>
       </div>
+
+      {/* Pro Upgrade Modal */}
+      <ProUpgradeModal
+        isOpen={showProModal}
+        onClose={() => setShowProModal(false)}
+        onUpgrade={handleProUpgrade}
+        feature="log"
+      />
     </div>
   );
 }

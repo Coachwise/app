@@ -8,6 +8,7 @@ interface CoachDashboardProps {
   onBack: () => void;
   onNavigate?: (view: string) => void;
   userRole?: UserRole;
+  isPro?: boolean;
 }
 
 interface Client {
@@ -43,7 +44,7 @@ interface WorkoutPlan {
   usedBy?: number;
 }
 
-export function CoachDashboard({ onBack, onNavigate, userRole = 'coach' }: CoachDashboardProps) {
+export function CoachDashboard({ onBack, onNavigate, userRole = 'coach', isPro = false }: CoachDashboardProps) {
   const [activeSection, setActiveSection] = useState<'clients' | 'plans' | 'analytics'>('clients');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedClient, setSelectedClient] = useState<string | null>(null);
@@ -207,6 +208,7 @@ export function CoachDashboard({ onBack, onNavigate, userRole = 'coach' }: Coach
             <HamburgerMenu 
               userRole={userRole}
               onNavigate={onNavigate}
+              isPro={isPro}
             />
           ) : (
             <div className="w-10"></div>

@@ -9,6 +9,7 @@ interface WorkoutsHomeProps {
   onCreatePlan: () => void;
   userRole: UserRole;
   onNavigate: (view: string) => void;
+  isPro?: boolean; // Track pro status
 }
 
 interface AssignedPlan {
@@ -44,11 +45,13 @@ interface WorkoutPlan {
   type: 'strength' | 'climbing' | 'mixed';
 }
 
-export function WorkoutsHome({ onStartSession, onCreatePlan, userRole, onNavigate }: WorkoutsHomeProps) {
+export function WorkoutsHome({ onStartSession, onCreatePlan, userRole, onNavigate, isPro = true }: WorkoutsHomeProps) {
   const { t, language } = useLanguage();
   const [activeTab, setActiveTab] = useState<'assigned' | 'my-plans'>('assigned');
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [currentWeekOffset, setCurrentWeekOffset] = useState(0); // 0 = this week, 1 = next week, etc.
+  const [showProModal, setShowProModal] = useState(false);
+  const [proModalFeature, setProModalFeature] = useState<'schedule' | 'log' | 'post' | 'general'>('schedule');
   
   // Initialize schedule with some example data
   const [schedule, setSchedule] = useState<DaySchedule[]>(() => {
@@ -302,6 +305,7 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, userRole, onNavigat
           <HamburgerMenu 
             userRole={userRole}
             onNavigate={onNavigate}
+            isPro={isPro}
           />
         </div>
 

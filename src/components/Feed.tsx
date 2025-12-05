@@ -1,14 +1,15 @@
 import { useState } from 'react';
-import { Heart, MessageCircle, Share2, Trophy, Plus, Video } from 'lucide-react';
-import { HamburgerMenu } from './HamburgerMenu';
-import type { UserRole } from '../App';
+import { Plus, Heart, MessageCircle, Share2, TrendingUp, Users, Trophy, Award, Video } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
+import { ProBadge } from './ProBadge';
+import { HamburgerMenu } from './HamburgerMenu';
 
 interface FeedProps {
   onCreatePost: () => void;
-  userRole: UserRole;
-  onNavigate: (view: string) => void;
+  userRole?: 'athlete' | 'coach';
+  onNavigate?: (view: string) => void;
   onViewProfile?: (userId: string) => void;
+  isPro?: boolean;
 }
 
 interface Post {
@@ -19,6 +20,7 @@ interface Post {
     username: string;
     avatar: string;
     isCoach: boolean;
+    isPro?: boolean;
   };
   content: string;
   timestamp: string;
@@ -38,7 +40,7 @@ interface Post {
   };
 }
 
-export function Feed({ onCreatePost, userRole, onNavigate, onViewProfile }: FeedProps) {
+export function Feed({ onCreatePost, userRole, onNavigate, onViewProfile, isPro }: FeedProps) {
   const { t, isRTL } = useLanguage();
   const [posts, setPosts] = useState<Post[]>([
     {
@@ -49,6 +51,7 @@ export function Feed({ onCreatePost, userRole, onNavigate, onViewProfile }: Feed
         username: '@sarahjohnson',
         avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop',
         isCoach: true,
+        isPro: true,
       },
       content: 'Just wrapped up an amazing session with my client! Great progress on deadlifts today 💪',
       timestamp: '2h ago',
@@ -64,6 +67,7 @@ export function Feed({ onCreatePost, userRole, onNavigate, onViewProfile }: Feed
         username: '@mikechen',
         avatar: 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?w=100&h=100&fit=crop',
         isCoach: false,
+        isPro: true,
       },
       content: 'New gym PR! 🎉',
       timestamp: '4h ago',
@@ -89,6 +93,7 @@ export function Feed({ onCreatePost, userRole, onNavigate, onViewProfile }: Feed
         username: '@emilyrodriguez',
         avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop',
         isCoach: false,
+        isPro: false,
       },
       content: 'Crushed my V7 project today! Check it out! 🧗‍♀️',
       timestamp: '6h ago',
@@ -120,6 +125,7 @@ export function Feed({ onCreatePost, userRole, onNavigate, onViewProfile }: Feed
           <HamburgerMenu 
             userRole={userRole}
             onNavigate={onNavigate}
+            isPro={isPro}
           />
         </div>
       </div>
@@ -132,13 +138,16 @@ export function Feed({ onCreatePost, userRole, onNavigate, onViewProfile }: Feed
             <div className="flex items-start gap-3 mb-3">
               <button 
                 onClick={() => onViewProfile && onViewProfile(post.userId)}
-                className="flex-shrink-0"
+                className="flex-shrink-0 relative"
               >
                 <img 
                   src={post.author.avatar} 
                   alt={post.author.name}
                   className="w-10 h-10 rounded-full object-cover hover:opacity-80 transition-opacity"
                 />
+                {post.author.isPro && (
+                  <ProBadge size="sm" className="absolute -top-0.5 -right-0.5" />
+                )}
               </button>
               <div className="flex-1">
                 <button 

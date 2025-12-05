@@ -4,18 +4,20 @@ import type { UserRole } from '../App';
 import { useLanguage } from '../contexts/LanguageContext';
 import { FollowersModal } from './FollowersModal';
 import { HamburgerMenu } from './HamburgerMenu';
+import { ProBadge } from './ProBadge';
 
 interface ProfileProps {
   userRole: UserRole;
   onNavigate: (view: string) => void;
   viewingUserId?: string | null;
   onViewProfile?: (userId: string) => void;
+  isPro?: boolean;
 }
 
 type TabType = 'posts' | 'records' | 'testimonials' | 'subscription';
 type FollowModalMode = 'followers' | 'following' | null;
 
-export function Profile({ userRole, onNavigate, viewingUserId = null, onViewProfile }: ProfileProps) {
+export function Profile({ userRole, onNavigate, viewingUserId = null, onViewProfile, isPro = false }: ProfileProps) {
   const [activeTab, setActiveTab] = useState<TabType>('posts');
   const { t, language, setLanguage, isRTL } = useLanguage();
   const [isFollowing, setIsFollowing] = useState(false);
@@ -130,6 +132,7 @@ export function Profile({ userRole, onNavigate, viewingUserId = null, onViewProf
             userName={mockUser.name}
             userAvatar={mockUser.avatar}
             userUsername={mockUser.username}
+            isPro={isPro}
           />
         </div>
       </div>
@@ -144,6 +147,9 @@ export function Profile({ userRole, onNavigate, viewingUserId = null, onViewProf
               alt={mockUser.name}
               className="w-24 h-24 rounded-full object-cover border-4 border-white"
             />
+            {isPro && (
+              <ProBadge size="md" className="absolute top-0 right-0" />
+            )}
             {mockUser.isVerified && (
               <div className="absolute bottom-0 right-0 bg-yellow-500 rounded-full p-1 border-2 border-white">
                 <CheckCircle2 className="w-5 h-5 text-[#0E0E55]" />

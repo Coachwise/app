@@ -22,12 +22,13 @@ import { ChannelView } from './components/ChannelView';
 import { MessagingDemo } from './components/MessagingDemo';
 import { PrivacySettings } from './components/PrivacySettings';
 import { ProfileSettings } from './components/ProfileSettings';
+import { ProSubscription } from './components/ProSubscription';
 import { LanguageProvider } from './contexts/LanguageContext';
 
 export type SportType = 'fitness' | 'climbing';
 export type UserRole = 'athlete' | 'coach';
 export type UserTier = 'free' | 'premium';
-export type ViewType = 'sport-selection' | 'logging' | 'feed' | 'profile' | 'coach-dashboard' | 'post-creation' | 'exercise-builder' | 'plan-builder' | 'coach-application' | 'coach-marketplace' | 'tier-builder' | 'tier-comparison' | 'workouts-home' | 'workout-session' | 'athlete-search' | 'messages' | 'message-thread' | 'channel-view' | 'messaging-demo' | 'privacy-settings' | 'profile-settings';
+export type ViewType = 'sport-selection' | 'logging' | 'feed' | 'profile' | 'coach-dashboard' | 'post-creation' | 'exercise-builder' | 'plan-builder' | 'coach-application' | 'coach-marketplace' | 'tier-builder' | 'tier-comparison' | 'workouts-home' | 'workout-session' | 'athlete-search' | 'messages' | 'message-thread' | 'channel-view' | 'messaging-demo' | 'privacy-settings' | 'profile-settings' | 'pro-subscription';
 
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -35,6 +36,7 @@ export default function App() {
   const [selectedSport, setSelectedSport] = useState<SportType>('fitness');
   const [userRole, setUserRole] = useState<UserRole>('athlete');
   const [userTier, setUserTier] = useState<UserTier>('free');
+  const [isPro, setIsPro] = useState(false); // Track pro status
   const [viewingUserId, setViewingUserId] = useState<string | null>(null); // Track which user profile we're viewing
   const [currentConversationId, setCurrentConversationId] = useState<string | null>(null); // Track current message thread
   const [currentChannelId, setCurrentChannelId] = useState<string | null>(null); // Track current channel
@@ -42,6 +44,10 @@ export default function App() {
 
   const handleLogin = () => {
     setIsAuthenticated(true);
+    // For demo purposes: coaches are always pro, athletes start as free
+    if (userRole === 'coach') {
+      setIsPro(true);
+    }
   };
 
   const handleViewProfile = (userId: string) => {
@@ -108,6 +114,7 @@ export default function App() {
           userRole={userRole}
           onNavigate={handleNavigate}
           onViewProfile={handleViewProfile}
+          isPro={isPro}
         />; 
       case 'profile':
         return <Profile 
@@ -115,6 +122,7 @@ export default function App() {
           onNavigate={handleNavigate}
           viewingUserId={viewingUserId}
           onViewProfile={handleViewProfile}
+          isPro={isPro}
         />; 
       case 'coach-dashboard':
         return <CoachDashboard 
@@ -153,9 +161,15 @@ export default function App() {
           onCreatePlan={() => setCurrentView('plan-builder')}
           userRole={userRole}
           onNavigate={handleNavigate}
+          isPro={isPro}
         />; 
       case 'workout-session':
-        return <WorkoutSession onBack={() => setCurrentView('workouts-home')} onEndSession={handleSessionEnd} />;
+        return <WorkoutSession 
+          onBack={() => setCurrentView('workouts-home')} 
+          onEndSession={handleSessionEnd}
+          isPro={isPro}
+          onNavigate={handleNavigate}
+        />; 
       case 'athlete-search':
         return <AthleteSearch 
           userRole={userRole}
@@ -184,6 +198,8 @@ export default function App() {
         return <PrivacySettings onBack={() => setCurrentView('profile')} />;
       case 'profile-settings':
         return <ProfileSettings userRole={userRole} onBack={() => setCurrentView('profile')} />;
+      case 'pro-subscription':
+        return <ProSubscription onBack={() => setCurrentView('profile')} />;
       default:
         return <Feed onCreatePost={() => setCurrentView('post-creation')} />;
     }
@@ -219,6 +235,9 @@ export default function App() {
                   <button onClick={() => setCurrentView('athlete-search')} className="text-xs bg-[#1A1A6E] text-gray-200 p-1.5 rounded hover:bg-[#1A1A6E]/80">Athletes Search</button>
                   <button onClick={() => setUserTier(userTier === 'free' ? 'premium' : 'free')} className="text-xs bg-yellow-500 text-[#0E0E55] p-1.5 rounded hover:bg-yellow-400">
                     {userTier === 'free' ? '🆓 Free' : '⭐ Premium'}
+                  </button>
+                  <button onClick={() => setIsPro(!isPro)} className="text-xs bg-yellow-500 text-[#0E0E55] p-1.5 rounded hover:bg-yellow-400">
+                    {isPro ? '👑 PRO' : '🔒 FREE'}
                   </button>
                   <button onClick={() => setIsAuthenticated(false)} className="text-xs bg-red-600 text-white p-1.5 rounded hover:bg-red-700">
                     Log Out

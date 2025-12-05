@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Menu, X, Bell, Shield, LogOut, Settings, Users, DollarSign, Globe, User } from 'lucide-react';
+import { Menu, X, Bell, Shield, LogOut, Settings, Users, DollarSign, Globe, User, Crown } from 'lucide-react';
 import type { UserRole } from '../App';
 import { useLanguage } from '../contexts/LanguageContext';
 import type { Language } from '../translations';
@@ -10,6 +10,7 @@ interface HamburgerMenuProps {
   userName?: string;
   userAvatar?: string;
   userUsername?: string;
+  isPro?: boolean;
 }
 
 export function HamburgerMenu({ 
@@ -17,7 +18,8 @@ export function HamburgerMenu({
   onNavigate,
   userName = 'Jordan Smith',
   userAvatar = 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&h=200&fit=crop',
-  userUsername = '@jordansmith'
+  userUsername = '@jordansmith',
+  isPro = false
 }: HamburgerMenuProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { t, language, setLanguage, isRTL } = useLanguage();
@@ -72,6 +74,48 @@ export function HamburgerMenu({
           {/* Menu Items */}
           <div className="flex-1 overflow-y-auto p-4">
             <div className="space-y-2">
+              {/* Pro Status Display */}
+              {isPro ? (
+                // Show Pro Badge for Pro Users
+                <>
+                  <div className="w-full p-4 bg-gradient-to-r from-yellow-500 to-yellow-400 rounded-xl border-2 border-yellow-600 shadow-lg">
+                    <div className="flex items-center gap-3">
+                      <div className="bg-[#0E0E55] rounded-full p-2">
+                        <Crown className="w-6 h-6 text-yellow-500" />
+                      </div>
+                      <div className="flex-1">
+                        <div className="text-[#0E0E55] font-bold text-lg">{t('proMember')}</div>
+                        <div className="text-[#0E0E55]/70 text-xs">{t('allFeaturesUnlocked')}</div>
+                      </div>
+                      <div className="bg-[#0E0E55] text-yellow-500 px-3 py-1 rounded-full text-xs font-semibold">
+                        {t('activeStatus')}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="border-t border-gray-200 my-2"></div>
+                </>
+              ) : (
+                // Show Become Pro Button for Free Users
+                <>
+                  <button 
+                    onClick={() => {
+                      onNavigate('pro-subscription');
+                      setIsMenuOpen(false);
+                    }}
+                    className="w-full flex items-center gap-3 p-4 bg-gradient-to-r from-yellow-500 to-yellow-400 text-[#0E0E55] rounded-xl hover:from-yellow-400 hover:to-yellow-300 transition-all shadow-lg border-2 border-yellow-600"
+                  >
+                    <div className="bg-[#0E0E55] rounded-lg p-1.5">
+                      <Crown className="w-5 h-5 text-yellow-500" />
+                    </div>
+                    <div className="flex-1 text-left">
+                      <span className="font-semibold block">{t('becomePro')}</span>
+                      <span className="text-xs text-[#0E0E55]/70">Unlock all features</span>
+                    </div>
+                  </button>
+                  <div className="border-t border-gray-200 my-2"></div>
+                </>
+              )}
+
               {/* Coach-specific actions */}
               {userRole === 'coach' && (
                 <>
@@ -80,7 +124,7 @@ export function HamburgerMenu({
                       onNavigate('coach-dashboard');
                       setIsMenuOpen(false);
                     }}
-                    className="w-full flex items-center gap-3 p-3 bg-yellow-500 text-[#0E0E55] rounded-lg hover:bg-yellow-400 transition-colors"
+                    className="w-full flex items-center gap-3 p-3 bg-[#0E0E55] text-white rounded-lg hover:bg-[#1A1A6E] transition-colors"
                   >
                     <Users className="w-5 h-5" />
                     <span>{t('dashboard')}</span>
@@ -99,7 +143,7 @@ export function HamburgerMenu({
                 </>
               )}
 
-              {/* Athlete-specific action */}
+              {/* Athlete-specific action - SUBTLE STYLE */}
               {userRole !== 'coach' && (
                 <>
                   <button 
@@ -107,7 +151,7 @@ export function HamburgerMenu({
                       onNavigate('coach-application');
                       setIsMenuOpen(false);
                     }}
-                    className="w-full flex items-center gap-3 p-3 bg-yellow-500 text-[#0E0E55] rounded-lg hover:bg-yellow-400 transition-colors"
+                    className="w-full flex items-center gap-3 p-3 border-2 border-gray-300 text-[#0E0E55] rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-colors"
                   >
                     <Users className="w-5 h-5" />
                     <span>{t('becomeACoach')}</span>
