@@ -23,12 +23,13 @@ import { MessagingDemo } from './components/MessagingDemo';
 import { PrivacySettings } from './components/PrivacySettings';
 import { ProfileSettings } from './components/ProfileSettings';
 import { ProSubscription } from './components/ProSubscription';
+import { ClaimENT } from './components/ClaimENT';
 import { LanguageProvider } from './contexts/LanguageContext';
 
 export type SportType = 'fitness' | 'climbing';
 export type UserRole = 'athlete' | 'coach';
 export type UserTier = 'free' | 'premium';
-export type ViewType = 'sport-selection' | 'logging' | 'feed' | 'profile' | 'coach-dashboard' | 'post-creation' | 'exercise-builder' | 'plan-builder' | 'coach-application' | 'coach-marketplace' | 'tier-builder' | 'tier-comparison' | 'workouts-home' | 'workout-session' | 'athlete-search' | 'messages' | 'message-thread' | 'channel-view' | 'messaging-demo' | 'privacy-settings' | 'profile-settings' | 'pro-subscription';
+export type ViewType = 'sport-selection' | 'logging' | 'feed' | 'profile' | 'coach-dashboard' | 'post-creation' | 'exercise-builder' | 'plan-builder' | 'coach-application' | 'coach-marketplace' | 'tier-builder' | 'tier-comparison' | 'workouts-home' | 'workout-session' | 'athlete-search' | 'athletes-coaches' | 'messages' | 'message-thread' | 'channel-view' | 'messaging-demo' | 'privacy-settings' | 'profile-settings' | 'pro-subscription' | 'claim-ent';
 
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -200,6 +201,13 @@ export default function App() {
         return <ProfileSettings userRole={userRole} onBack={() => setCurrentView('profile')} />;
       case 'pro-subscription':
         return <ProSubscription onBack={() => setCurrentView('profile')} />;
+      case 'claim-ent':
+        return <ClaimENT 
+          onBack={() => setCurrentView('profile')} 
+          onNavigate={handleNavigate}
+          userRole={userRole}
+          isPro={isPro}
+        />;
       default:
         return <Feed onCreatePost={() => setCurrentView('post-creation')} />;
     }

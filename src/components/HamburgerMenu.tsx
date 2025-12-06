@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { Menu, X, Bell, Shield, LogOut, Settings, Users, DollarSign, Globe, User, Crown } from 'lucide-react';
+import { Menu, X, Bell, Shield, LogOut, Settings, Users, DollarSign, Globe, User, Crown, Coins } from 'lucide-react';
 import type { UserRole } from '../App';
 import { useLanguage } from '../contexts/LanguageContext';
 import type { Language } from '../translations';
+import { ENTBalanceWidget } from './ENTBalanceWidget';
 
 interface HamburgerMenuProps {
   userRole: UserRole;
@@ -116,6 +117,18 @@ export function HamburgerMenu({
                 </>
               )}
 
+              {/* ENT Balance Widget */}
+              <ENTBalanceWidget 
+                availableBalance={7.0}
+                pendingBalance={5.5}
+                onNavigate={(view) => {
+                  onNavigate(view);
+                  setIsMenuOpen(false);
+                }}
+                compact={true}
+              />
+              <div className="border-t border-gray-200 my-2"></div>
+
               {/* Coach-specific actions */}
               {userRole === 'coach' && (
                 <>
@@ -160,16 +173,16 @@ export function HamburgerMenu({
                 </>
               )}
 
-              {/* Common actions */}
+              {/* General actions for all users */}
               <button 
                 onClick={() => {
-                  onNavigate('athlete-search');
+                  onNavigate('athletes-coaches');
                   setIsMenuOpen(false);
                 }}
-                className="w-full flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg transition-colors"
+                className="w-full flex items-center gap-3 p-3 hover:bg-gray-100 rounded-lg transition-colors text-left"
               >
-                <Users className="w-5 h-5 text-gray-600" />
-                <span className="text-[#0E0E55]">{t('athletesAndCoaches')}</span>
+                <Users className="w-5 h-5 text-[#0E0E55]" />
+                <span className="text-gray-700">{t('athletesAndCoaches')}</span>
               </button>
 
               <button className="w-full flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg transition-colors">

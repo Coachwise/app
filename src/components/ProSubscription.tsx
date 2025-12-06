@@ -1,9 +1,11 @@
-import { ArrowLeft, Crown, Check, Zap } from 'lucide-react';
+import { ArrowLeft, Crown, Check, Zap, Coins } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 
 interface ProSubscriptionProps {
   onBack: () => void;
   onPurchase?: (plan: string) => void;
+  entBalance?: number;
+  onNavigate?: (route: string) => void;
 }
 
 interface SubscriptionPlan {
@@ -18,7 +20,7 @@ interface SubscriptionPlan {
   billingCycle: string;
 }
 
-export function ProSubscription({ onBack, onPurchase }: ProSubscriptionProps) {
+export function ProSubscription({ onBack, onPurchase, entBalance, onNavigate }: ProSubscriptionProps) {
   const { t } = useLanguage();
 
   const plans: SubscriptionPlan[] = [
@@ -124,6 +126,62 @@ export function ProSubscription({ onBack, onPurchase }: ProSubscriptionProps) {
               </div>
             ))}
           </div>
+        </div>
+
+        {/* ENT Token Payment Option */}
+        <div className="bg-gradient-to-r from-yellow-500 to-yellow-400 rounded-xl p-5 mb-6 shadow-lg border-2 border-yellow-600">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="bg-[#0E0E55] rounded-full p-2">
+              <Coins className="w-6 h-6 text-yellow-500" />
+            </div>
+            <div className="flex-1">
+              <h3 className="text-[#0E0E55] font-bold">{t('payWithTokens')}</h3>
+              <p className="text-[#0E0E55]/70 text-sm">{t('upgradeWithTokens')}</p>
+            </div>
+          </div>
+
+          <div className="bg-[#0E0E55] rounded-lg p-4 mb-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-white text-sm mb-1">Your SPARK Balance</div>
+                <div className="text-yellow-500 text-2xl font-bold">
+                  {entBalance !== undefined ? entBalance.toFixed(1) : '7.0'} SPARK
+                </div>
+              </div>
+              <div className="text-right">
+                <div className="text-white text-sm mb-1">Required</div>
+                <div className="text-yellow-400 text-2xl font-bold">10 SPARK</div>
+              </div>
+            </div>
+          </div>
+
+          {(entBalance !== undefined ? entBalance : 7.0) >= 10 ? (
+            <button
+              onClick={() => handleSelectPlan('ent-payment')}
+              className="w-full bg-[#0E0E55] text-yellow-500 py-3 rounded-lg hover:bg-[#1A1A6E] transition-colors font-semibold"
+            >
+              {t('upgradeWithTokens')} ✨
+            </button>
+          ) : (
+            <div>
+              <div className="bg-red-100 text-red-700 px-3 py-2 rounded-lg mb-2 text-sm text-center">
+                ⚠️ {t('needMoreSpark')} {(10 - (entBalance !== undefined ? entBalance : 7.0)).toFixed(1)} {t('moreSpark')}
+              </div>
+              <button
+                onClick={() => onNavigate('claim-ent')}
+                className="w-full bg-[#0E0E55] text-white py-3 rounded-lg hover:bg-[#1A1A6E] transition-colors"
+              >
+                {t('earnTokens')}
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* OR Divider */}
+        <div className="flex items-center gap-4 mb-6">
+          <div className="flex-1 border-t border-gray-300"></div>
+          <span className="text-gray-500 text-sm">{t('or')}</span>
+          <div className="flex-1 border-t border-gray-300"></div>
         </div>
 
         {/* Pricing Plans */}
