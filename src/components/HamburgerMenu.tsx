@@ -185,7 +185,7 @@ export function HamburgerMenu({
                 <span className="text-gray-700">{t('athletesAndCoaches')}</span>
               </button>
 
-              <button className="w-full flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg transition-colors">
+              <button className="w-full flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg transition-colors text-left">
                 <Bell className="w-5 h-5 text-gray-600" />
                 <span className="text-[#0E0E55]">{t('notifications')}</span>
               </button>
@@ -195,7 +195,7 @@ export function HamburgerMenu({
                   onNavigate('privacy-settings');
                   setIsMenuOpen(false);
                 }}
-                className="w-full flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg transition-colors"
+                className="w-full flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg transition-colors text-left"
               >
                 <Shield className="w-5 h-5 text-gray-600" />
                 <span className="text-[#0E0E55]">{t('privacySecurity')}</span>
@@ -204,7 +204,7 @@ export function HamburgerMenu({
               {/* Language Selector */}
               <button 
                 onClick={() => setShowLanguageSelector(!showLanguageSelector)}
-                className="w-full flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg transition-colors"
+                className="w-full flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg transition-colors text-left"
               >
                 <Globe className="w-5 h-5 text-gray-600" />
                 <span className="text-[#0E0E55] flex-1">{t('language')}</span>
@@ -240,7 +240,7 @@ export function HamburgerMenu({
 
               <div className="border-t border-gray-200 my-2"></div>
 
-              <button className="w-full flex items-center gap-3 p-3 hover:bg-red-50 rounded-lg transition-colors text-red-600">
+              <button className="w-full flex items-center gap-3 p-3 hover:bg-red-50 rounded-lg transition-colors text-red-600 text-left">
                 <LogOut className="w-5 h-5" />
                 <span>{t('logOut')}</span>
               </button>

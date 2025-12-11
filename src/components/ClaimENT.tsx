@@ -76,10 +76,8 @@ export function ClaimENT({ onBack, onNavigate, userRole, isPro }: ClaimENTProps)
   ]);
 
   const handleClaimAll = () => {
-    if (pendingBalance > 0) {
-      alert(`${t('congratsClaimed')} ${pendingBalance.toFixed(1)} ${t('entSymbol')}!`);
-      setPendingBalance(0);
-    }
+    // Claiming is currently disabled until on-chain distribution
+    alert(t('claimingComingSoon') || 'Claiming will be available soon after token distribution and listing. Keep earning!');
   };
 
   const formatDate = (date: Date): string => {
@@ -97,17 +95,17 @@ export function ClaimENT({ onBack, onNavigate, userRole, isPro }: ClaimENTProps)
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 pb-20">
+    <div className="min-h-screen bg-[#0A0A28] pb-20">
       {/* Header */}
-      <div className="bg-[#0E0E55] px-4 py-6 sticky top-0 z-10">
+      <div className="bg-[#0E0E55] px-4 py-6 sticky top-0 z-10 border-b border-[#1A1A6E]">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
             <button onClick={onBack} className="text-white hover:text-gray-300">
               <ArrowLeft className="w-6 h-6" />
             </button>
             <div className="flex items-center gap-2">
-              <Coins className="w-6 h-6 text-yellow-500" />
-              <h1 className="text-white text-xl">{t('claimTokens')}</h1>
+              <Zap className="w-6 h-6 text-yellow-500" />
+              <h1 className="text-white text-xl">Spark Rewards</h1>
             </div>
           </div>
           <HamburgerMenu 
@@ -123,55 +121,66 @@ export function ClaimENT({ onBack, onNavigate, userRole, isPro }: ClaimENTProps)
           <div className="bg-yellow-500 rounded-lg p-4">
             <div className="flex items-center gap-2 mb-2">
               <Coins className="w-5 h-5 text-[#0E0E55]" />
-              <span className="text-[#0E0E55] text-sm">{t('availableBalance')}</span>
+              <span className="text-[#0E0E55] text-sm">App Balance</span>
             </div>
             <div className="text-[#0E0E55] text-3xl font-bold">
               {availableBalance.toFixed(1)}
             </div>
-            <div className="text-[#0E0E55]/70 text-xs mt-1">{t('entSymbol')}</div>
+            <div className="text-[#0E0E55]/70 text-xs mt-1">SPARK</div>
           </div>
 
           {/* Pending Balance */}
-          <div className="bg-[#1A1A6E] rounded-lg p-4 border-2 border-yellow-500/50">
+          <div className="bg-[#1A1A40] rounded-lg p-4 border-2 border-yellow-500/50">
             <div className="flex items-center gap-2 mb-2">
               <TrendingUp className="w-5 h-5 text-yellow-500" />
-              <span className="text-white text-sm">{t('pendingTokens')}</span>
+              <span className="text-white text-sm">Pending</span>
             </div>
             <div className="text-white text-3xl font-bold">
               {pendingBalance.toFixed(1)}
             </div>
-            <div className="text-gray-400 text-xs mt-1">{t('entSymbol')}</div>
+            <div className="text-gray-400 text-xs mt-1">SPARK</div>
           </div>
         </div>
 
-        {/* Claim Button */}
-        {pendingBalance > 0 && (
+        {/* Claim Button (Disabled State) */}
+        <div className="mt-4 bg-[#1A1A40] rounded-lg p-4 border border-[#1A1A6E]">
+          <div className="flex items-start gap-3">
+            <div className="bg-yellow-500/20 p-2 rounded-lg">
+              <Crown className="w-5 h-5 text-yellow-500" />
+            </div>
+            <div>
+              <h3 className="text-white font-medium text-sm mb-1">Claiming Coming Soon</h3>
+              <p className="text-gray-300 text-xs leading-relaxed">
+                Tokens are not distributed on-chain yet. Just hold your tokens on the app. As soon as the token is distributed and listed, you will be allowed to claim it right after.
+              </p>
+            </div>
+          </div>
           <button
-            onClick={handleClaimAll}
-            className="w-full mt-4 bg-yellow-500 text-[#0E0E55] py-3 rounded-lg hover:bg-yellow-400 transition-colors flex items-center justify-center gap-2 font-semibold"
+            disabled
+            className="w-full mt-3 bg-[#0E0E55] text-gray-400 py-3 rounded-lg flex items-center justify-center gap-2 font-semibold cursor-not-allowed border border-[#1A1A6E]"
           >
             <Zap className="w-5 h-5" />
-            <span>{t('claimAll')} ({pendingBalance.toFixed(1)} {t('entSymbol')})</span>
+            <span>Withdrawals Paused</span>
           </button>
-        )}
+        </div>
       </div>
 
       <div className="p-4 space-y-4">
         {/* Total Earned Card */}
-        <div className="bg-white rounded-lg shadow-md p-5 border border-gray-200">
+        <div className="bg-[#1A1A40] rounded-lg shadow-md p-5 border border-[#1A1A6E]">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-[#0E0E55]">{t('totalEarned')}</h3>
+            <h3 className="text-white">{t('totalEarned')}</h3>
             <div className="flex items-center gap-2">
-              <Coins className="w-5 h-5 text-yellow-600" />
-              <span className="text-2xl font-bold text-[#0E0E55]">{totalEarned.toFixed(1)}</span>
-              <span className="text-gray-600">{t('entSymbol')}</span>
+              <Coins className="w-5 h-5 text-yellow-500" />
+              <span className="text-2xl font-bold text-yellow-500">{totalEarned.toFixed(1)}</span>
+              <span className="text-gray-400">SPARK</span>
             </div>
           </div>
-          <div className="text-sm text-gray-600">
-            {t('claimedTokens')}: {claimedBalance.toFixed(1)} {t('entSymbol')}
+          <div className="text-sm text-gray-300">
+            {t('claimedTokens')}: {claimedBalance.toFixed(1)} SPARK
           </div>
-          <div className="text-sm text-gray-600">
-            {t('pendingTokens')}: {pendingBalance.toFixed(1)} {t('entSymbol')}
+          <div className="text-sm text-gray-300">
+            {t('pendingTokens')}: {pendingBalance.toFixed(1)} SPARK
           </div>
         </div>
 
@@ -214,7 +223,7 @@ export function ClaimENT({ onBack, onNavigate, userRole, isPro }: ClaimENTProps)
                 onClick={() => onNavigate('pro-subscription')}
                 className="w-full bg-yellow-500 text-[#0E0E55] py-2 rounded-lg hover:bg-yellow-400 transition-colors font-semibold"
               >
-                {t('becomePro')} (10 {t('entSymbol')})
+                {t('becomePro')} (10 SPARK)
               </button>
               {availableBalance < 10 && (
                 <div className="text-yellow-400 text-xs mt-2 text-center">
@@ -226,51 +235,51 @@ export function ClaimENT({ onBack, onNavigate, userRole, isPro }: ClaimENTProps)
         </div>
 
         {/* Transaction History */}
-        <div className="bg-white rounded-lg shadow-md border border-gray-200">
-          <div className="p-5 border-b border-gray-200">
-            <h3 className="text-[#0E0E55]">{t('tokenHistory')}</h3>
+        <div className="bg-[#1A1A40] rounded-lg shadow-md border border-[#1A1A6E]">
+          <div className="p-5 border-b border-[#1A1A6E]">
+            <h3 className="text-white">{t('tokenHistory')}</h3>
           </div>
 
-          <div className="divide-y divide-gray-200">
+          <div className="divide-y divide-[#1A1A6E]">
             {transactions.map((tx) => (
-              <div key={tx.id} className="p-4 flex items-center gap-4 hover:bg-gray-50 transition-colors">
+              <div key={tx.id} className="p-4 flex items-center gap-4 hover:bg-[#0E0E55] transition-colors">
                 <div className={`rounded-full p-2 ${
                   tx.type === 'earned' 
-                    ? 'bg-green-100' 
+                    ? 'bg-green-900/30' 
                     : tx.type === 'claimed'
-                    ? 'bg-blue-100'
-                    : 'bg-red-100'
+                    ? 'bg-blue-900/30'
+                    : 'bg-red-900/30'
                 }`}>
                   {tx.type === 'earned' ? (
                     <TrendingUp className={`w-5 h-5 ${
-                      tx.amount === 1.0 ? 'text-green-600' : 'text-green-500'
+                      tx.amount === 1.0 ? 'text-green-500' : 'text-green-400'
                     }`} />
                   ) : tx.type === 'claimed' ? (
-                    <Check className="w-5 h-5 text-blue-600" />
+                    <Check className="w-5 h-5 text-blue-500" />
                   ) : (
-                    <Crown className="w-5 h-5 text-red-600" />
+                    <Crown className="w-5 h-5 text-red-500" />
                   )}
                 </div>
 
                 <div className="flex-1">
-                  <div className="text-[#0E0E55] font-medium">
+                  <div className="text-gray-200 font-medium">
                     {tx.type === 'earned' ? t('earned') : tx.type === 'claimed' ? t('claimed') : t('spent')}
                   </div>
-                  <div className="text-gray-600 text-sm">
+                  <div className="text-gray-400 text-sm">
                     {tx.reason === 'Exercise Completed' && t('exerciseCompleted')}
                     {tx.reason === 'Client Added' && t('clientAdded')}
                     {tx.reason === 'Claimed' && t('claimed')}
                     {tx.reason === 'Pro Upgrade' && t('proUpgrade')}
                   </div>
-                  <div className="text-gray-400 text-xs mt-1">{formatDate(tx.date)}</div>
+                  <div className="text-gray-500 text-xs mt-1">{formatDate(tx.date)}</div>
                 </div>
 
                 <div className={`text-lg font-bold ${
                   tx.type === 'earned'
-                    ? 'text-green-600'
+                    ? 'text-green-500'
                     : tx.type === 'claimed'
-                    ? 'text-blue-600'
-                    : 'text-red-600'
+                    ? 'text-blue-500'
+                    : 'text-red-500'
                 }`}>
                   {tx.type === 'earned' && '+'}
                   {tx.type === 'spent' && '-'}
@@ -282,13 +291,13 @@ export function ClaimENT({ onBack, onNavigate, userRole, isPro }: ClaimENTProps)
         </div>
 
         {/* Info Box */}
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <div className="bg-yellow-900/20 border border-yellow-500/30 rounded-lg p-4">
           <div className="flex gap-3">
-            <Zap className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-            <div className="text-sm text-blue-900">
-              <div className="font-semibold mb-1">{t('energyToken')}</div>
-              <div className="text-blue-700">
-                {t('sparkDescription')}
+            <Zap className="w-5 h-5 text-yellow-500 flex-shrink-0 mt-0.5" />
+            <div className="text-sm text-gray-200">
+              <div className="font-semibold mb-1 text-yellow-500">What is Spark?</div>
+              <div className="text-gray-300">
+                Spark is the energy currency of Coachwise. Earn it by staying active, coaching others, and contributing to the community. Hold your Spark tokens here until they are ready to be claimed on-chain!
               </div>
             </div>
           </div>
