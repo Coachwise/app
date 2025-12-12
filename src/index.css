@@ -24,6 +24,7 @@
       --tw-gradient-to-position: 100%;
       --tw-leading: initial;
       --tw-font-weight: initial;
+      --tw-tracking: initial;
       --tw-shadow: 0 0 #0000;
       --tw-shadow-color: initial;
       --tw-shadow-alpha: 100%;
@@ -1837,6 +1838,11 @@
     font-weight: var(--font-weight-semibold);
   }
 
+  .tracking-\[0\.5em\] {
+    --tw-tracking: .5em;
+    letter-spacing: .5em;
+  }
+
   .break-words {
     overflow-wrap: break-word;
   }
@@ -2669,6 +2675,11 @@ html {
 }
 
 @property --tw-font-weight {
+  syntax: "*";
+  inherits: false
+}
+
+@property --tw-tracking {
   syntax: "*";
   inherits: false
 }

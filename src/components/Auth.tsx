@@ -23,14 +23,46 @@ export function Auth({ onLogin }: AuthProps) {
     rememberMe: false,
   });
 
+  const [showOTP, setShowOTP] = useState(false);
+  const [otp, setOtp] = useState('');
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (mode === 'register' && !showOTP) {
+      if (formData.password !== formData.confirmPassword) {
+        alert('Passwords do not match');
+        return;
+      }
+      setShowOTP(true);
+      alert('Verification code sent to ' + formData.email);
+      return;
+    }
+
+    if (mode === 'register' && showOTP) {
+      // Mock OTP verification - accept any 6 digit code for now or specific mock
+      if (otp.length === 6) {
+        onLogin();
+      } else {
+        alert('Please enter a valid 6-digit code');
+      }
+      return;
+    }
+
     // Mock login - in real app, this would call an API
     onLogin();
   };
 
+  const handleResendOTP = () => {
+    alert('Verification code resent to ' + formData.email);
+  };
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
+    if (name === 'otp') {
+      setOtp(value);
+      return;
+    }
     setFormData(prev => ({
       ...prev,
       [name]: type === 'checkbox' ? checked : value,
@@ -85,187 +117,248 @@ export function Auth({ onLogin }: AuthProps) {
             </div>
             <h1 className="text-white text-3xl mb-2">Coachwise</h1>
             <p className="text-white/80">
-              {mode === 'login' ? t('loginToAccount') : t('createYourAccount')}
+              {showOTP ? 'Verify your email' : (mode === 'login' ? t('loginToAccount') : t('createYourAccount'))}
             </p>
           </div>
 
           {/* Auth Card */}
           <div className="bg-white rounded-2xl shadow-2xl p-6">
-            {/* Mode Toggle */}
-            <div className="flex bg-gray-100 rounded-lg p-1 mb-6">
-              <button
-                onClick={() => setMode('login')}
-                className={`flex-1 py-2 rounded-lg transition-all ${
-                  mode === 'login'
-                    ? 'bg-[#0E0E55] text-white'
-                    : 'text-gray-600 hover:text-[#0E0E55]'
-                }`}
-              >
-                {t('login')}
-              </button>
-              <button
-                onClick={() => setMode('register')}
-                className={`flex-1 py-2 rounded-lg transition-all ${
-                  mode === 'register'
-                    ? 'bg-[#0E0E55] text-white'
-                    : 'text-gray-600 hover:text-[#0E0E55]'
-                }`}
-              >
-                {t('register')}
-              </button>
-            </div>
+            {!showOTP && (
+              /* Mode Toggle */
+              <div className="flex bg-gray-100 rounded-lg p-1 mb-6">
+                <button
+                  onClick={() => setMode('login')}
+                  className={`flex-1 py-2 rounded-lg transition-all ${
+                    mode === 'login'
+                      ? 'bg-[#0E0E55] text-white'
+                      : 'text-gray-600 hover:text-[#0E0E55]'
+                  }`}
+                >
+                  {t('login')}
+                </button>
+                <button
+                  onClick={() => setMode('register')}
+                  className={`flex-1 py-2 rounded-lg transition-all ${
+                    mode === 'register'
+                      ? 'bg-[#0E0E55] text-white'
+                      : 'text-gray-600 hover:text-[#0E0E55]'
+                  }`}
+                >
+                  {t('register')}
+                </button>
+              </div>
+            )}
 
             {/* Form */}
             <form onSubmit={handleSubmit} className="space-y-4">
-              {/* Full Name - Register Only */}
-              {mode === 'register' && (
-                <div>
-                  <label className="block text-[#0E0E55] text-sm mb-2">
-                    {t('fullName')}
-                  </label>
-                  <div className="relative">
-                    <User className={`absolute top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 ${isRTL ? 'right-3' : 'left-3'}`} />
+              {showOTP ? (
+                /* OTP Verification View */
+                <div className="space-y-6">
+                  <div className="text-center text-gray-600 text-sm">
+                    We sent a verification code to <span className="font-semibold text-[#0E0E55]">{formData.email}</span>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-[#0E0E55] text-sm mb-2 text-center">
+                      Enter Verification Code
+                    </label>
                     <input
                       type="text"
-                      name="fullName"
-                      value={formData.fullName}
+                      name="otp"
+                      value={otp}
                       onChange={handleChange}
-                      placeholder={t('fullNamePlaceholder')}
-                      className={`w-full bg-gray-50 border border-gray-200 rounded-lg py-3 ${isRTL ? 'pr-10 pl-4' : 'pl-10 pr-4'} text-[#0E0E55] focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent`}
+                      placeholder="000000"
+                      maxLength={6}
+                      className="w-full bg-gray-50 border border-gray-200 rounded-lg py-3 px-4 text-[#0E0E55] text-center text-2xl tracking-[0.5em] font-mono focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
                       required
                     />
                   </div>
-                </div>
-              )}
 
-              {/* Email */}
-              <div>
-                <label className="block text-[#0E0E55] text-sm mb-2">
-                  {t('email')}
-                </label>
-                <div className="relative">
-                  <Mail className={`absolute top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 ${isRTL ? 'right-3' : 'left-3'}`} />
-                  <input
-                    type="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    placeholder={t('emailPlaceholder')}
-                    className={`w-full bg-gray-50 border border-gray-200 rounded-lg py-3 ${isRTL ? 'pr-10 pl-4' : 'pl-10 pr-4'} text-[#0E0E55] focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent`}
-                    required
-                  />
-                </div>
-              </div>
-
-              {/* Password */}
-              <div>
-                <label className="block text-[#0E0E55] text-sm mb-2">
-                  {t('password')}
-                </label>
-                <div className="relative">
-                  <Lock className={`absolute top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 ${isRTL ? 'right-3' : 'left-3'}`} />
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    name="password"
-                    value={formData.password}
-                    onChange={handleChange}
-                    placeholder={t('passwordPlaceholder')}
-                    className={`w-full bg-gray-50 border border-gray-200 rounded-lg py-3 ${isRTL ? 'pr-10 pl-10' : 'pl-10 pr-10'} text-[#0E0E55] focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent`}
-                    required
-                  />
                   <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className={`absolute top-1/2 -translate-y-1/2 ${isRTL ? 'left-3' : 'right-3'} text-gray-400 hover:text-[#0E0E55]`}
+                    type="submit"
+                    className="w-full bg-yellow-500 text-[#0E0E55] py-3 rounded-lg hover:bg-yellow-400 transition-colors shadow-md font-semibold"
                   >
-                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                    Verify & Create Account
                   </button>
-                </div>
-              </div>
 
-              {/* Confirm Password - Register Only */}
-              {mode === 'register' && (
-                <div>
-                  <label className="block text-[#0E0E55] text-sm mb-2">
-                    {t('confirmPassword')}
-                  </label>
-                  <div className="relative">
-                    <Lock className={`absolute top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 ${isRTL ? 'right-3' : 'left-3'}`} />
-                    <input
-                      type={showConfirmPassword ? 'text' : 'password'}
-                      name="confirmPassword"
-                      value={formData.confirmPassword}
-                      onChange={handleChange}
-                      placeholder={t('passwordPlaceholder')}
-                      className={`w-full bg-gray-50 border border-gray-200 rounded-lg py-3 ${isRTL ? 'pr-10 pl-10' : 'pl-10 pr-10'} text-[#0E0E55] focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent`}
-                      required
-                    />
+                  <div className="flex items-center justify-between text-sm">
                     <button
                       type="button"
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      className={`absolute top-1/2 -translate-y-1/2 ${isRTL ? 'left-3' : 'right-3'} text-gray-400 hover:text-[#0E0E55]`}
+                      onClick={() => setShowOTP(false)}
+                      className="text-gray-500 hover:text-[#0E0E55]"
                     >
-                      {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                      Back
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleResendOTP}
+                      className="text-yellow-600 hover:text-yellow-700 font-medium"
+                    >
+                      Resend Code
                     </button>
                   </div>
                 </div>
-              )}
+              ) : (
+                /* Login/Register Form */
+                <>
+                  {/* Full Name - Register Only */}
+                  {mode === 'register' && (
+                    <div>
+                      <label className="block text-[#0E0E55] text-sm mb-2">
+                        {t('fullName')}
+                      </label>
+                      <div className="relative">
+                        <User className={`absolute top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 ${isRTL ? 'right-3' : 'left-3'}`} />
+                        <input
+                          type="text"
+                          name="fullName"
+                          value={formData.fullName}
+                          onChange={handleChange}
+                          placeholder={t('fullNamePlaceholder')}
+                          className={`w-full bg-gray-50 border border-gray-200 rounded-lg py-3 ${isRTL ? 'pr-10 pl-4' : 'pl-10 pr-4'} text-[#0E0E55] focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent`}
+                          required
+                        />
+                      </div>
+                    </div>
+                  )}
 
-              {/* Remember Me & Forgot Password - Login Only */}
-              {mode === 'login' && (
-                <div className="flex items-center justify-between">
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      name="rememberMe"
-                      checked={formData.rememberMe}
-                      onChange={handleChange}
-                      className="w-4 h-4 text-yellow-500 border-gray-300 rounded focus:ring-yellow-500"
-                    />
-                    <span className="text-sm text-gray-600">{t('rememberMe')}</span>
-                  </label>
+                  {/* Email */}
+                  <div>
+                    <label className="block text-[#0E0E55] text-sm mb-2">
+                      {t('email')}
+                    </label>
+                    <div className="relative">
+                      <Mail className={`absolute top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 ${isRTL ? 'right-3' : 'left-3'}`} />
+                      <input
+                        type="email"
+                        name="email"
+                        value={formData.email}
+                        onChange={handleChange}
+                        placeholder={t('emailPlaceholder')}
+                        className={`w-full bg-gray-50 border border-gray-200 rounded-lg py-3 ${isRTL ? 'pr-10 pl-4' : 'pl-10 pr-4'} text-[#0E0E55] focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent`}
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  {/* Password */}
+                  <div>
+                    <label className="block text-[#0E0E55] text-sm mb-2">
+                      {t('password')}
+                    </label>
+                    <div className="relative">
+                      <Lock className={`absolute top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 ${isRTL ? 'right-3' : 'left-3'}`} />
+                      <input
+                        type={showPassword ? 'text' : 'password'}
+                        name="password"
+                        value={formData.password}
+                        onChange={handleChange}
+                        placeholder={t('passwordPlaceholder')}
+                        className={`w-full bg-gray-50 border border-gray-200 rounded-lg py-3 ${isRTL ? 'pr-10 pl-10' : 'pl-10 pr-10'} text-[#0E0E55] focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent`}
+                        required
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className={`absolute top-1/2 -translate-y-1/2 ${isRTL ? 'left-3' : 'right-3'} text-gray-400 hover:text-[#0E0E55]`}
+                      >
+                        {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Confirm Password - Register Only */}
+                  {mode === 'register' && (
+                    <div>
+                      <label className="block text-[#0E0E55] text-sm mb-2">
+                        {t('confirmPassword')}
+                      </label>
+                      <div className="relative">
+                        <Lock className={`absolute top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 ${isRTL ? 'right-3' : 'left-3'}`} />
+                        <input
+                          type={showConfirmPassword ? 'text' : 'password'}
+                          name="confirmPassword"
+                          value={formData.confirmPassword}
+                          onChange={handleChange}
+                          placeholder={t('passwordPlaceholder')}
+                          className={`w-full bg-gray-50 border border-gray-200 rounded-lg py-3 ${isRTL ? 'pr-10 pl-10' : 'pl-10 pr-10'} text-[#0E0E55] focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent`}
+                          required
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                          className={`absolute top-1/2 -translate-y-1/2 ${isRTL ? 'left-3' : 'right-3'} text-gray-400 hover:text-[#0E0E55]`}
+                        >
+                          {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Remember Me & Forgot Password - Login Only */}
+                  {mode === 'login' && (
+                    <div className="flex items-center justify-between">
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          name="rememberMe"
+                          checked={formData.rememberMe}
+                          onChange={handleChange}
+                          className="w-4 h-4 text-yellow-500 border-gray-300 rounded focus:ring-yellow-500"
+                        />
+                        <span className="text-sm text-gray-600">{t('rememberMe')}</span>
+                      </label>
+                      <button
+                        type="button"
+                        className="text-sm text-yellow-600 hover:text-yellow-700"
+                      >
+                        {t('forgotPassword')}
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Terms - Register Only */}
+                  {mode === 'register' && (
+                    <div className="text-xs text-gray-600 text-center">
+                      {t('byCreatingAccount')}{' '}
+                      <button type="button" className="text-yellow-600 hover:text-yellow-700">
+                        {t('termsOfService')}
+                      </button>{' '}
+                      {t('and')}{' '}
+                      <button type="button" className="text-yellow-600 hover:text-yellow-700">
+                        {t('privacyPolicy')}
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Submit Button */}
                   <button
-                    type="button"
-                    className="text-sm text-yellow-600 hover:text-yellow-700"
+                    type="submit"
+                    className="w-full bg-yellow-500 text-[#0E0E55] py-3 rounded-lg hover:bg-yellow-400 transition-colors shadow-md"
                   >
-                    {t('forgotPassword')}
+                    {mode === 'login' ? t('login') : t('createAccount')}
                   </button>
-                </div>
+                </>
               )}
-
-              {/* Terms - Register Only */}
-              {mode === 'register' && (
-                <div className="text-xs text-gray-600 text-center">
-                  {t('byCreatingAccount')}{' '}
-                  <button type="button" className="text-yellow-600 hover:text-yellow-700">
-                    {t('termsOfService')}
-                  </button>{' '}
-                  {t('and')}{' '}
-                  <button type="button" className="text-yellow-600 hover:text-yellow-700">
-                    {t('privacyPolicy')}
-                  </button>
-                </div>
-              )}
-
-              {/* Submit Button */}
-              <button
-                type="submit"
-                className="w-full bg-yellow-500 text-[#0E0E55] py-3 rounded-lg hover:bg-yellow-400 transition-colors shadow-md"
-              >
-                {mode === 'login' ? t('login') : t('createAccount')}
-              </button>
             </form>
           </div>
 
           {/* Footer Text */}
           <p className="text-center text-white/80 text-sm mt-6">
-            {mode === 'login' ? t('dontHaveAccount') : t('alreadyHaveAccount')}{' '}
-            <button
-              onClick={() => setMode(mode === 'login' ? 'register' : 'login')}
-              className="text-yellow-500 hover:text-yellow-400"
-            >
-              {mode === 'login' ? t('signUp') : t('signIn')}
-            </button>
+            {!showOTP && (
+              <>
+                {mode === 'login' ? t('dontHaveAccount') : t('alreadyHaveAccount')}{' '}
+                <button
+                  onClick={() => setMode(mode === 'login' ? 'register' : 'login')}
+                  className="text-yellow-500 hover:text-yellow-400"
+                >
+                  {mode === 'login' ? t('signUp') : t('signIn')}
+                </button>
+              </>
+            )}
+            {showOTP && (
+              <span className="text-white/60">Step 2 of 2</span>
+            )}
           </p>
         </div>
       </div>
