@@ -1,11 +1,11 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Auth } from './components/Auth';
 import { SportSelection } from './components/SportSelection';
 import { WorkoutLogging } from './components/WorkoutLogging';
 import { Feed } from './components/Feed';
 import { Profile } from './components/Profile';
 import { PostCreation } from './components/PostCreation';
-import { ExerciseBuilder } from './components/ExerciseBuilder';
+import { Exercises } from './components/Exercises';
 import { PlanBuilder } from './components/PlanBuilder';
 import { CoachApplication } from './components/CoachApplication';
 import { CoachMarketplace } from './components/CoachMarketplace';
@@ -25,14 +25,15 @@ import { ProfileSettings } from './components/ProfileSettings';
 import { ProSubscription } from './components/ProSubscription';
 import { ClaimENT } from './components/ClaimENT';
 import { LanguageProvider } from './contexts/LanguageContext';
+import { useAuth } from './contexts/AuthContext';
 
 export type SportType = 'fitness' | 'climbing';
 export type UserRole = 'athlete' | 'coach';
-export type UserTier = 'free' | 'premium';
+export type UserTier = 'free' | 'pro';
 export type ViewType = 'sport-selection' | 'logging' | 'feed' | 'profile' | 'coach-dashboard' | 'post-creation' | 'exercise-builder' | 'plan-builder' | 'coach-application' | 'coach-marketplace' | 'tier-builder' | 'tier-comparison' | 'workouts-home' | 'workout-session' | 'athlete-search' | 'athletes-coaches' | 'messages' | 'message-thread' | 'channel-view' | 'messaging-demo' | 'privacy-settings' | 'profile-settings' | 'pro-subscription' | 'claim-ent';
 
 export default function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const { isAuthenticated, logout, user } = useAuth();
   const [currentView, setCurrentView] = useState<ViewType>('feed');
   const [selectedSport, setSelectedSport] = useState<SportType>('fitness');
   const [userRole, setUserRole] = useState<UserRole>('athlete');
@@ -43,10 +44,14 @@ export default function App() {
   const [currentChannelId, setCurrentChannelId] = useState<string | null>(null); // Track current channel
   const [messagesActiveTab, setMessagesActiveTab] = useState<'dms' | 'channels'>('dms'); // Track active tab in Messages
 
+  useEffect(() => {
+    if (user) {
+      setIsPro(Boolean(user.pro));
+    }
+  }, [user]);
+
   const handleLogin = () => {
-    setIsAuthenticated(true);
-    // For demo purposes: coaches are always pro, athletes start as free
-    if (userRole === 'coach') {
+    if (user?.pro) {
       setIsPro(true);
     }
   };
@@ -76,10 +81,6 @@ export default function App() {
 
   const handlePostCreated = () => {
     setCurrentView('feed');
-  };
-
-  const handleExerciseSaved = () => {
-    setCurrentView('plan-builder');
   };
 
   const handlePlanSaved = () => {
@@ -134,10 +135,7 @@ export default function App() {
       case 'post-creation':
         return <PostCreation onCancel={() => setCurrentView('feed')} onPost={handlePostCreated} />;
       case 'exercise-builder':
-        return <ExerciseBuilder 
-          onCancel={() => setCurrentView('plan-builder')} 
-          onSave={handleExerciseSaved} 
-        />; 
+        return <Exercises onBack={() => setCurrentView('plan-builder')} />;
       case 'plan-builder':
         return <PlanBuilder 
           onCancel={() => setCurrentView('workouts-home')} 
@@ -241,13 +239,13 @@ export default function App() {
                   <button onClick={() => { setUserRole('coach'); setCurrentView('profile'); }} className="text-xs bg-[#1A1A6E] text-gray-200 p-1.5 rounded hover:bg-[#1A1A6E]/80">Coach Profile</button>
                   <button onClick={() => { setUserRole('coach'); setCurrentView('coach-dashboard'); }} className="text-xs bg-[#1A1A6E] text-gray-200 p-1.5 rounded hover:bg-[#1A1A6E]/80">Coach Dashboard</button>
                   <button onClick={() => setCurrentView('athlete-search')} className="text-xs bg-[#1A1A6E] text-gray-200 p-1.5 rounded hover:bg-[#1A1A6E]/80">Athletes Search</button>
-                  <button onClick={() => setUserTier(userTier === 'free' ? 'premium' : 'free')} className="text-xs bg-yellow-500 text-[#0E0E55] p-1.5 rounded hover:bg-yellow-400">
-                    {userTier === 'free' ? '🆓 Free' : '⭐ Premium'}
+                  <button onClick={() => setUserTier(userTier === 'free' ? 'pro' : 'free')} className="text-xs bg-yellow-500 text-[#0E0E55] p-1.5 rounded hover:bg-yellow-400">
+                    {userTier === 'free' ? '🆓 Free' : '⭐ Pro'}
                   </button>
                   <button onClick={() => setIsPro(!isPro)} className="text-xs bg-yellow-500 text-[#0E0E55] p-1.5 rounded hover:bg-yellow-400">
                     {isPro ? '👑 PRO' : '🔒 FREE'}
                   </button>
-                  <button onClick={() => setIsAuthenticated(false)} className="text-xs bg-red-600 text-white p-1.5 rounded hover:bg-red-700">
+                  <button onClick={logout} className="text-xs bg-red-600 text-white p-1.5 rounded hover:bg-red-700">
                     Log Out
                   </button>
                 </div>

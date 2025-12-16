@@ -1,8 +1,11 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Plus, Dumbbell, Calendar, Clock, Play, ChevronRight, CheckCircle, Circle, Edit3, X, ChevronLeft } from 'lucide-react';
 import { HamburgerMenu } from './HamburgerMenu';
 import type { UserRole } from '../App';
 import { useLanguage } from '../contexts/LanguageContext';
+import { useAuth } from '../contexts/AuthContext';
+import * as PlansAPI from '../api/plans';
+import type { Plan } from '../api/types';
 
 interface WorkoutsHomeProps {
   onStartSession: () => void;
@@ -41,17 +44,65 @@ interface WorkoutPlan {
   id: string;
   name: string;
   exerciseCount: number;
-  duration: string;
-  type: 'strength' | 'climbing' | 'mixed';
+  public: boolean;
 }
 
 export function WorkoutsHome({ onStartSession, onCreatePlan, userRole, onNavigate, isPro = true }: WorkoutsHomeProps) {
   const { t, language } = useLanguage();
+  const { tokens } = useAuth();
   const [activeTab, setActiveTab] = useState<'assigned' | 'my-plans'>('assigned');
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [currentWeekOffset, setCurrentWeekOffset] = useState(0); // 0 = this week, 1 = next week, etc.
   const [showProModal, setShowProModal] = useState(false);
   const [proModalFeature, setProModalFeature] = useState<'schedule' | 'log' | 'post' | 'general'>('schedule');
+  const [myWorkoutPlans, setMyWorkoutPlans] = useState<WorkoutPlan[]>([]);
+  const [loadingPlans, setLoadingPlans] = useState(false);
+  const [planError, setPlanError] = useState<string | null>(null);
+
+  const loadPlans = async () => {
+    if (!tokens?.access_token) {
+      setPlanError('Please log in to view your plans.');
+      setMyWorkoutPlans([]);
+      return;
+    }
+    setLoadingPlans(true);
+    setPlanError(null);
+    try {
+      const plans = await PlansAPI.listPlans(tokens.access_token);
+      const plansWithCounts = await Promise.all(
+        plans.map(async (plan: Plan) => {
+          try {
+            const exercises = await PlansAPI.listPlanExercises(tokens.access_token!, plan.id);
+            return {
+              id: plan.id,
+              name: plan.name,
+              exerciseCount: exercises.length,
+              public: plan.public,
+            } as WorkoutPlan;
+          } catch {
+            return {
+              id: plan.id,
+              name: plan.name,
+              exerciseCount: 0,
+              public: plan.public,
+            } as WorkoutPlan;
+          }
+        })
+      );
+      setMyWorkoutPlans(plansWithCounts);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : 'Unable to load plans';
+      setPlanError(msg);
+      setMyWorkoutPlans([]);
+    } finally {
+      setLoadingPlans(false);
+    }
+  };
+
+  useEffect(() => {
+    loadPlans();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tokens?.access_token]);
   
   // Initialize schedule with some example data
   const [schedule, setSchedule] = useState<DaySchedule[]>(() => {
@@ -87,62 +138,8 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, userRole, onNavigat
     return initialSchedule;
   });
 
-  // Assigned plans from coach
-  const assignedPlans: AssignedPlan[] = [
-    {
-      id: '1',
-      name: 'Upper Body Push',
-      coachName: 'Sarah Martinez',
-      coachAvatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop',
-      totalDays: 5,
-      completedDays: 3,
-      currentDay: 4,
-      todayWorkout: {
-        exercises: 5,
-        duration: '45 min',
-      },
-    },
-    {
-      id: '2',
-      name: 'Climbing Endurance',
-      coachName: 'Mike Chen',
-      coachAvatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop',
-      totalDays: 7,
-      completedDays: 5,
-      currentDay: 6,
-      todayWorkout: {
-        exercises: 6,
-        duration: '60 min',
-      },
-    },
-    {
-      id: '3',
-      name: 'Core & Stability',
-      coachName: 'Sarah Martinez',
-      coachAvatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop',
-      totalDays: 4,
-      completedDays: 1,
-      currentDay: 2,
-    },
-  ];
-
-  // User's own workout plans
-  const myWorkoutPlans: WorkoutPlan[] = [
-    {
-      id: '1',
-      name: 'Quick Morning Routine',
-      exerciseCount: 4,
-      duration: '20 min',
-      type: 'strength',
-    },
-    {
-      id: '2',
-      name: 'Boulder Session',
-      exerciseCount: 6,
-      duration: '60 min',
-      type: 'climbing',
-    },
-  ];
+  // Assigned plans placeholder (API endpoint pending in UI)
+  const assignedPlans: AssignedPlan[] = [];
 
   const daysOfWeek = [
     t('sunday'), t('monday'), t('tuesday'), t('wednesday'),
@@ -632,39 +629,58 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, userRole, onNavigat
             </button>
 
             {/* My Plans List */}
-            {myWorkoutPlans.length > 0 && (
+            {loadingPlans && (
+              <div className="bg-white rounded-lg shadow-md border border-gray-200 p-4 text-sm text-gray-600">
+                Loading your plans...
+              </div>
+            )}
+            {planError && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-sm text-red-800">
+                {planError}
+              </div>
+            )}
+            {!loadingPlans && !planError && myWorkoutPlans.length > 0 && (
               <div className="bg-white rounded-lg shadow-md border border-gray-200">
-                <div className="p-5 border-b border-gray-200">
-                  <h3 className="text-[#0E0E55]">{t('myWorkoutPlans')}</h3>
-                  <p className="text-gray-600 text-sm mt-1">{t('plansYouCreated')}</p>
+                <div className="p-5 border-b border-gray-200 flex items-center justify-between">
+                  <div>
+                    <h3 className="text-[#0E0E55]">{t('myWorkoutPlans')}</h3>
+                    <p className="text-gray-600 text-sm mt-1">{t('plansYouCreated')}</p>
+                  </div>
+                  <button
+                    onClick={loadPlans}
+                    className="text-xs text-blue-600 hover:text-blue-700 flex items-center gap-1"
+                  >
+                    <Clock className="w-4 h-4" />
+                    Refresh
+                  </button>
                 </div>
 
                 <div className="divide-y divide-gray-200">
                   {myWorkoutPlans.map((plan) => (
-                    <button
-                      key={plan.id}
-                      onClick={onStartSession}
-                      className="w-full p-5 hover:bg-gray-50 transition-colors text-left"
-                    >
+                    <div key={plan.id} className="w-full p-5">
                       <div className="flex items-center justify-between">
                         <div className="flex-1">
                           <h4 className="text-[#0E0E55] mb-2">{plan.name}</h4>
                           <div className="flex items-center gap-4 text-sm text-gray-600">
                             <span className="flex items-center gap-1">
                               <Dumbbell className="w-4 h-4 text-yellow-600" />
-                              {plan.exerciseCount} exercises
+                              {plan.exerciseCount} {t('exercises')}
                             </span>
-                            <span className="flex items-center gap-1">
-                              <Clock className="w-4 h-4 text-yellow-600" />
-                              {plan.duration}
+                            <span className="px-2 py-1 text-xs rounded-full border border-gray-200 bg-gray-50">
+                              {plan.public ? 'Public' : 'Private'}
                             </span>
                           </div>
                         </div>
                         <ChevronRight className="w-5 h-5 text-gray-400" />
                       </div>
-                    </button>
+                    </div>
                   ))}
                 </div>
+              </div>
+            )}
+            {!loadingPlans && !planError && myWorkoutPlans.length === 0 && (
+              <div className="bg-white rounded-lg border-2 border-dashed border-gray-300 p-6 text-center text-gray-600">
+                {t('noAssignedPlansDesc')}
               </div>
             )}
           </>

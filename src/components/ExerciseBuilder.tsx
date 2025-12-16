@@ -1,175 +1,264 @@
-import { useState } from 'react';
-import { ArrowLeft, Clock, Hash, Copy } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { ArrowLeft, Plus, Trash2, Loader2, Eye } from 'lucide-react';
+import * as ExercisesAPI from '../api/exercises';
+import type { Exercise } from '../api/types';
+import { useAuth } from '../contexts/AuthContext';
 
-interface ExerciseBuilderProps {
-  onCancel: () => void;
-  onSave: () => void;
-  existingExercise?: Exercise;
-}
-
-export interface Exercise {
+type EditableSet = {
   id: string;
   name: string;
   type: 'reps' | 'time';
-  sets: number;
-  repsOrDuration: number;
-  restInterval: number;
-  notes?: string;
+  value: number;
+  restSeconds: number;
+};
+
+interface ExerciseBuilderProps {
+  onCancel: () => void;
+  onSaved: (exercise: Exercise) => void;
+  exercise?: Exercise;
 }
 
-export function ExerciseBuilder({ onCancel, onSave, existingExercise }: ExerciseBuilderProps) {
-  const [exerciseName, setExerciseName] = useState(existingExercise?.name || '');
-  const [exerciseType, setExerciseType] = useState<'reps' | 'time'>(existingExercise?.type || 'reps');
-  const [sets, setSets] = useState(existingExercise?.sets.toString() || '3');
-  const [repsOrDuration, setRepsOrDuration] = useState(existingExercise?.repsOrDuration.toString() || '10');
-  const [restInterval, setRestInterval] = useState(existingExercise?.restInterval.toString() || '60');
-  const [notes, setNotes] = useState(existingExercise?.notes || '');
+const nsToSeconds = (value?: number | null) => Math.max(0, Math.round((value ?? 0) / 1e9));
+const secondsToNs = (value: number) => Math.max(0, Math.round(value) * 1e9);
+const uuid = () => (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2));
 
-  const handleSave = () => {
-    if (exerciseName.trim() && sets && repsOrDuration) {
-      // Mock save - would send to backend
-      onSave();
+export function ExerciseBuilder({ onCancel, onSaved, exercise }: ExerciseBuilderProps) {
+  const { tokens } = useAuth();
+  const [name, setName] = useState(exercise?.name || '');
+  const [description, setDescription] = useState(exercise?.description || '');
+  const [isPublic, setIsPublic] = useState<boolean>(!!exercise?.public);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [sets, setSets] = useState<EditableSet[]>(() => {
+    if (!exercise?.sets?.length) {
+      return [
+        { id: uuid(), name: 'Warm-up', type: 'reps', value: 10, restSeconds: 60 },
+        { id: uuid(), name: 'Working', type: 'reps', value: 10, restSeconds: 90 },
+      ];
+    }
+    return exercise.sets.map((set, idx) => ({
+      id: set.id || uuid(),
+      name: set.name || `Set ${idx + 1}`,
+      type: set.duration ? 'time' : 'reps',
+      value: set.duration ? nsToSeconds(set.duration) : set.rep_count ?? 0,
+      restSeconds: nsToSeconds(set.rest_time),
+    }));
+  });
+
+  const canSave = useMemo(() => name.trim() !== '' && description.trim() !== '' && sets.length > 0, [name, description, sets.length]);
+
+  const updateSet = (id: string, updates: Partial<EditableSet>) => {
+    setSets((prev) => prev.map((set) => (set.id === id ? { ...set, ...updates } : set)));
+  };
+
+  const addSet = () => {
+    setSets((prev) => [
+      ...prev,
+      {
+        id: uuid(),
+        name: `Set ${prev.length + 1}`,
+        type: 'reps',
+        value: 10,
+        restSeconds: 60,
+      },
+    ]);
+  };
+
+  const removeSet = (id: string) => {
+    setSets((prev) => prev.filter((set) => set.id !== id));
+  };
+
+  useEffect(() => {
+    // Keep set names numbered when none provided
+    setSets((prev) =>
+      prev.map((set, idx) => ({
+        ...set,
+        name: set.name || `Set ${idx + 1}`,
+      }))
+    );
+  }, []);
+
+  const handleSave = async () => {
+    if (!tokens?.access_token || !canSave || saving) return;
+    setSaving(true);
+    setError(null);
+    try {
+      const payload = {
+        name: name.trim(),
+        description: description.trim(),
+        public: isPublic,
+        sets: sets.map((set, idx) => ({
+          name: set.name || `Set ${idx + 1}`,
+          rest_time: secondsToNs(set.restSeconds),
+          rep_count: set.type === 'reps' ? Math.max(0, Math.round(set.value)) : undefined,
+          duration: set.type === 'time' ? secondsToNs(set.value) : undefined,
+        })),
+      };
+
+      const saved = exercise
+        ? await ExercisesAPI.updateExercise(tokens.access_token, exercise.id, payload)
+        : await ExercisesAPI.createExercise(tokens.access_token, payload);
+      onSaved(saved);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : 'Unable to save exercise';
+      setError(msg);
+    } finally {
+      setSaving(false);
     }
   };
 
   return (
     <div className="min-h-screen bg-gray-100">
-      {/* Header */}
       <div className="bg-[#0E0E55] px-4 py-4 sticky top-0 z-10">
         <div className="flex items-center justify-between">
           <button onClick={onCancel} className="p-2 -ml-2 hover:bg-[#1A1A6E] rounded-lg transition-colors">
             <ArrowLeft className="w-6 h-6 text-white" />
           </button>
-          <h2 className="text-white">
-            {existingExercise ? 'Edit Exercise' : 'New Exercise'}
-          </h2>
+          <h2 className="text-white">{exercise ? 'Edit Exercise' : 'New Exercise'}</h2>
           <button
             onClick={handleSave}
-            disabled={!exerciseName.trim()}
-            className="px-4 py-2 bg-yellow-500 text-[#0E0E55] rounded-lg hover:bg-yellow-400 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+            disabled={!canSave || saving}
+            className="px-4 py-2 bg-yellow-500 text-[#0E0E55] rounded-lg hover:bg-yellow-400 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
           >
-            Save
+            {saving && <Loader2 className="w-4 h-4 animate-spin" />}
+            <span>Save</span>
           </button>
         </div>
       </div>
 
       <div className="p-4 space-y-4">
-        {/* Exercise Name */}
-        <div className="bg-white rounded-lg shadow-md p-4 border border-gray-200">
-          <label className="text-[#3D3D3D] mb-2 block">Exercise Name</label>
-          <input
-            type="text"
-            value={exerciseName}
-            onChange={(e) => setExerciseName(e.target.value)}
-            placeholder="e.g., Bench Press"
-            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent text-[#3D3D3D]"
-          />
-        </div>
+        {error && <div className="p-3 bg-red-100 text-red-800 rounded">{error}</div>}
 
-        {/* Exercise Type */}
-        <div className="bg-white rounded-lg shadow-md p-4 border border-gray-200">
-          <label className="text-[#3D3D3D] mb-3 block">Type</label>
-          <div className="grid grid-cols-2 gap-3">
-            {['Reps', 'Time'].map((type) => (
-              <button
-                key={type}
-                onClick={() => setExerciseType(type.toLowerCase() as 'reps' | 'time')}
-                className={`py-3 px-4 rounded-lg transition-all ${
-                  exerciseType === type.toLowerCase()
-                    ? 'bg-yellow-500 text-[#3D3D3D]'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                }`}
-              >
-                {type}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Sets and Reps/Duration */}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="bg-white rounded-lg shadow-md p-4 border border-gray-200 space-y-3">
           <div>
-            <label className="block mb-2 text-gray-900">Sets</label>
+            <label className="text-[#3D3D3D] mb-2 block">Exercise Name</label>
             <input
-              type="number"
-              value={sets}
-              onChange={(e) => setSets(e.target.value)}
-              min="1"
-              className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="e.g., Bench Press"
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent text-[#3D3D3D]"
             />
           </div>
 
           <div>
-            <label className="block mb-2 text-gray-900">
-              {exerciseType === 'reps' ? 'Reps per Set' : 'Duration (seconds)'}
-            </label>
-            <input
-              type="number"
-              value={repsOrDuration}
-              onChange={(e) => setRepsOrDuration(e.target.value)}
-              min="1"
-              className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            <label className="text-[#3D3D3D] mb-2 block">Description</label>
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Movement notes, tempo, intent..."
+              rows={3}
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent resize-none text-[#3D3D3D]"
             />
           </div>
-        </div>
 
-        {/* Rest Interval */}
-        <div>
-          <label className="block mb-2 text-gray-900">Rest Between Sets (seconds)</label>
-          <div className="relative">
+          <label className="flex items-center gap-3 cursor-pointer select-none">
             <input
-              type="number"
-              value={restInterval}
-              onChange={(e) => setRestInterval(e.target.value)}
-              min="0"
-              className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              type="checkbox"
+              checked={isPublic}
+              onChange={(e) => setIsPublic(e.target.checked)}
+              className="w-5 h-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
             />
-            <div className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 text-sm">
-              {Math.floor(Number(restInterval) / 60)}:{(Number(restInterval) % 60).toString().padStart(2, '0')}
+            <div>
+              <span className="text-gray-900">Make this exercise public</span>
+              <p className="text-gray-600 text-sm">Share with the community and reuse in plans</p>
             </div>
+          </label>
+        </div>
+
+        <div className="bg-white rounded-lg shadow-md p-4 border border-gray-200">
+          <div className="flex items-center justify-between mb-3">
+            <div>
+              <h3 className="text-[#3D3D3D]">Sets</h3>
+              <p className="text-sm text-gray-600">Reps or timed holds with rest between sets</p>
+            </div>
+            <button
+              onClick={addSet}
+              className="flex items-center gap-2 px-3 py-2 bg-yellow-500 text-[#0E0E55] rounded-lg hover:bg-yellow-400 transition-colors text-sm"
+            >
+              <Plus className="w-4 h-4" />
+              Add set
+            </button>
           </div>
-          <div className="mt-2 flex gap-2">
-            {[30, 60, 90, 120, 180].map(seconds => (
-              <button
-                key={seconds}
-                onClick={() => setRestInterval(seconds.toString())}
-                className="px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded-lg hover:bg-gray-200 transition-colors"
-              >
-                {seconds}s
-              </button>
+
+          <div className="space-y-3">
+            {sets.map((set, index) => (
+              <div key={set.id} className="border border-gray-200 rounded-lg p-3 space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                    <Eye className="w-4 h-4" />
+                    <span>Set {index + 1}</span>
+                  </div>
+                  <button
+                    onClick={() => removeSet(set.id)}
+                    className="text-red-500 hover:text-red-600"
+                    aria-label="Remove set"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-sm text-gray-700 mb-1">Name</label>
+                    <input
+                      type="text"
+                      value={set.name}
+                      onChange={(e) => updateSet(set.id, { name: e.target.value })}
+                      className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="e.g., Working set"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm text-gray-700 mb-1">Rest (seconds)</label>
+                    <input
+                      type="number"
+                      min={0}
+                      value={set.restSeconds}
+                      onChange={(e) => updateSet(set.id, { restSeconds: Number(e.target.value) })}
+                      className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-sm text-gray-700 mb-1">Target</label>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => updateSet(set.id, { type: 'reps' })}
+                        className={`px-3 py-2 rounded-lg text-sm transition-colors ${
+                          set.type === 'reps' ? 'bg-yellow-500 text-[#0E0E55]' : 'bg-gray-100 text-gray-700'
+                        }`}
+                      >
+                        Reps
+                      </button>
+                      <button
+                        onClick={() => updateSet(set.id, { type: 'time' })}
+                        className={`px-3 py-2 rounded-lg text-sm transition-colors ${
+                          set.type === 'time' ? 'bg-yellow-500 text-[#0E0E55]' : 'bg-gray-100 text-gray-700'
+                        }`}
+                      >
+                        Time
+                      </button>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm text-gray-700 mb-1">
+                      {set.type === 'reps' ? 'Reps' : 'Duration (sec)'}
+                    </label>
+                    <input
+                      type="number"
+                      min={0}
+                      value={set.value}
+                      onChange={(e) => updateSet(set.id, { value: Number(e.target.value) })}
+                      className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                </div>
+              </div>
             ))}
           </div>
         </div>
-
-        {/* Preview */}
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <div className="text-blue-900 mb-2">Preview</div>
-          <div className="text-blue-800">
-            {sets || '0'} sets × {repsOrDuration || '0'} {exerciseType === 'reps' ? 'reps' : 'seconds'}
-            {' • '}
-            {restInterval || '0'}s rest
-          </div>
-        </div>
-
-        {/* Notes */}
-        <div>
-          <label className="block mb-2 text-gray-900">Notes (Optional)</label>
-          <textarea
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            placeholder="e.g., Focus on form, use tempo 3-1-1"
-            rows={3}
-            className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-          />
-        </div>
-
-        {/* Clone Button (if editing) */}
-        {existingExercise && (
-          <button className="w-full flex items-center justify-center gap-2 py-3 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
-            <Copy className="w-5 h-5" />
-            Clone Exercise
-          </button>
-        )}
       </div>
     </div>
   );

@@ -1,7 +1,10 @@
 import { ArrowLeft, User, Mail, Phone, MapPin, Calendar, Briefcase, Instagram, Globe, Camera, Save } from 'lucide-react';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useLanguage } from '../contexts/LanguageContext';
 import type { UserRole } from '../App';
+import { useAuth } from '../contexts/AuthContext';
+import * as UsersAPI from '../api/users';
+import * as MediaAPI from '../api/media';
 
 interface ProfileSettingsProps {
   userRole: UserRole;
@@ -11,19 +14,22 @@ interface ProfileSettingsProps {
 export function ProfileSettings({ userRole, onBack }: ProfileSettingsProps) {
   const { t } = useLanguage();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { user, tokens, refreshUser } = useAuth();
   
   // Profile data
-  const [profileImage, setProfileImage] = useState('https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&h=200&fit=crop');
-  const [coverImage, setCoverImage] = useState('https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&h=300&fit=crop');
-  const [name, setName] = useState('Sarah Martinez');
-  const [username, setUsername] = useState('@sarahmartinez');
-  const [email, setEmail] = useState('sarah.martinez@email.com');
-  const [phone, setPhone] = useState('+1 (555) 123-4567');
-  const [bio, setBio] = useState('Certified strength & conditioning coach helping athletes reach their peak performance. 💪🏋️');
-  const [location, setLocation] = useState('San Francisco, CA');
-  const [birthday, setBirthday] = useState('1990-05-15');
-  const [website, setWebsite] = useState('www.sarahcoaching.com');
-  const [instagram, setInstagram] = useState('@sarahcoach');
+  const [profileImage, setProfileImage] = useState<string | null>(null);
+  const [avatarId, setAvatarId] = useState<string | null>(null);
+  const [coverImage, setCoverImage] = useState<string | null>(null);
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [bio, setBio] = useState('');
+  const [location, setLocation] = useState('');
+  const [birthday, setBirthday] = useState('');
+  const [website, setWebsite] = useState('');
+  const [instagram, setInstagram] = useState('');
   
   // Coach-specific fields
   const [specialization, setSpecialization] = useState('Strength Training, Olympic Lifting');
@@ -32,26 +38,75 @@ export function ProfileSettings({ userRole, onBack }: ProfileSettingsProps) {
   const [rate, setRate] = useState('$75/session');
   
   const [uploadingImage, setUploadingImage] = useState<'profile' | 'cover' | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>, type: 'profile' | 'cover') => {
+  useEffect(() => {
+    if (!user) return;
+    setProfileImage(user.avatar?.url || null);
+    setAvatarId(user.avatar_id || null);
+    setFirstName(user.first_name || '');
+    setLastName(user.last_name || '');
+    setUsername(user.username || '');
+    setEmail(user.email || '');
+    setPhone(user.phone || '');
+    setBio(user.bio || '');
+  }, [user]);
+
+  const handleImageSelect = async (event: React.ChangeEvent<HTMLInputElement>, type: 'profile' | 'cover') => {
     const file = event.target.files?.[0];
     if (!file) return;
+    if (!tokens?.access_token) {
+      setError('Not authenticated');
+      return;
+    }
 
-    const reader = new FileReader();
-    reader.onloadend = () => {
+    setUploadingImage(type);
+    setError(null);
+    try {
       if (type === 'profile') {
-        setProfileImage(reader.result as string);
+        const media = await MediaAPI.uploadMedia(tokens.access_token, file);
+        setProfileImage(media.url);
+        setAvatarId(media.id);
       } else {
-        setCoverImage(reader.result as string);
+        const reader = new FileReader();
+        reader.onloadend = () => setCoverImage(reader.result as string);
+        reader.readAsDataURL(file);
       }
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : 'Unable to upload image';
+      setError(msg);
+    } finally {
       setUploadingImage(null);
-    };
-    reader.readAsDataURL(file);
+      event.target.value = '';
+    }
   };
 
-  const handleSave = () => {
-    // In a real app, save to backend
-    onBack();
+  const handleSave = async () => {
+    if (!tokens?.access_token) {
+      setError('Not authenticated');
+      return;
+    }
+    setSaving(true);
+    setError(null);
+    try {
+      await UsersAPI.updateMe(tokens.access_token, {
+        first_name: firstName?.trim() || undefined,
+        last_name: lastName?.trim() || undefined,
+        username: username?.replace(/^@/, ''),
+        bio: bio || undefined,
+        phone: phone || undefined,
+        job_title: specialization || undefined,
+        avatar_id: avatarId || undefined,
+      });
+      await refreshUser();
+      onBack();
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : 'Unable to save profile';
+      setError(msg);
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -73,10 +128,11 @@ export function ProfileSettings({ userRole, onBack }: ProfileSettingsProps) {
           </div>
           <button
             onClick={handleSave}
-            className="flex items-center gap-2 px-4 py-2 bg-yellow-500 text-[#0E0E55] rounded-lg hover:bg-yellow-400 transition-colors"
+            disabled={saving}
+            className="flex items-center gap-2 px-4 py-2 bg-yellow-500 text-[#0E0E55] rounded-lg hover:bg-yellow-400 transition-colors disabled:opacity-60"
           >
             <Save className="w-4 h-4" />
-            <span className="text-sm">Save</span>
+            <span className="text-sm">{saving ? 'Saving...' : 'Save'}</span>
           </button>
         </div>
       </div>
@@ -84,11 +140,15 @@ export function ProfileSettings({ userRole, onBack }: ProfileSettingsProps) {
       <div className="max-w-2xl mx-auto">
         {/* Cover Image */}
         <div className="relative h-48 bg-gray-300">
-          <img 
-            src={coverImage} 
-            alt="Cover"
-            className="w-full h-full object-cover"
-          />
+          {coverImage ? (
+            <img 
+              src={coverImage} 
+              alt="Cover"
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <div className="w-full h-full bg-gradient-to-r from-[#0E0E55] to-[#1A1A6E]" />
+          )}
           <button
             onClick={() => {
               setUploadingImage('cover');
@@ -103,11 +163,17 @@ export function ProfileSettings({ userRole, onBack }: ProfileSettingsProps) {
         {/* Profile Image */}
         <div className="px-4 -mt-16 mb-6">
           <div className="relative inline-block">
-            <img 
-              src={profileImage} 
-              alt={name}
-              className="w-32 h-32 rounded-full border-4 border-white object-cover"
-            />
+            {profileImage ? (
+              <img 
+                src={profileImage} 
+                alt={(firstName || lastName) || 'Profile'} 
+                className="w-32 h-32 rounded-full border-4 border-white object-cover"
+              />
+            ) : (
+              <div className="w-32 h-32 rounded-full border-4 border-white bg-[#0E0E55]/10 flex items-center justify-center text-[#0E0E55] font-bold text-xl">
+                {(firstName || lastName || 'User').split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase() || 'U'}
+              </div>
+            )}
             <button
               onClick={() => {
                 setUploadingImage('profile');
@@ -129,6 +195,7 @@ export function ProfileSettings({ userRole, onBack }: ProfileSettingsProps) {
         />
 
         <div className="p-4 space-y-6">
+          {error && <div className="p-3 bg-red-100 text-red-800 rounded">{error}</div>}
           {/* Basic Information Section */}
           <div className="bg-white rounded-lg shadow-sm">
             <div className="p-4 border-b border-gray-200">
@@ -136,15 +203,28 @@ export function ProfileSettings({ userRole, onBack }: ProfileSettingsProps) {
             </div>
             
             <div className="p-4 space-y-4">
-              {/* Full Name */}
+              {/* First Name */}
               <div>
                 <label className="block text-gray-900 mb-2">
-                  Full Name
+                  First Name
                 </label>
                 <input
                   type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                />
+              </div>
+
+              {/* Last Name */}
+              <div>
+                <label className="block text-gray-900 mb-2">
+                  Last Name
+                </label>
+                <input
+                  type="text"
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
                 />
               </div>

@@ -3,6 +3,7 @@ import { Plus, Heart, MessageCircle, Share2, TrendingUp, Users, Trophy, Award, V
 import { useLanguage } from '../contexts/LanguageContext';
 import { ProBadge } from './ProBadge';
 import { HamburgerMenu } from './HamburgerMenu';
+import { useAuth } from '../contexts/AuthContext';
 
 interface FeedProps {
   onCreatePost: () => void;
@@ -42,6 +43,7 @@ interface Post {
 
 export function Feed({ onCreatePost, userRole, onNavigate, onViewProfile, isPro }: FeedProps) {
   const { t, isRTL } = useLanguage();
+  const { user } = useAuth();
   const [posts, setPosts] = useState<Post[]>([
     {
       id: '1',
@@ -125,7 +127,10 @@ export function Feed({ onCreatePost, userRole, onNavigate, onViewProfile, isPro 
           <HamburgerMenu 
             userRole={userRole}
             onNavigate={onNavigate}
-            isPro={isPro}
+            userName={user?.first_name || user?.username}
+            userUsername={user ? `@${user.username}` : undefined}
+            userAvatar={user?.avatar?.url || undefined}
+            isPro={isPro ?? user?.pro}
           />
         </div>
       </div>

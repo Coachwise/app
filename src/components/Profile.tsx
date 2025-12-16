@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Camera, MapPin, Calendar, Trophy, Star, CheckCircle2, UserPlus, UserCheck, Edit2, DollarSign, Users, Check } from 'lucide-react';
 import type { UserRole } from '../App';
 import { useLanguage } from '../contexts/LanguageContext';
 import { FollowersModal } from './FollowersModal';
 import { HamburgerMenu } from './HamburgerMenu';
 import { ProBadge } from './ProBadge';
+import { useAuth } from '../contexts/AuthContext';
 
 interface ProfileProps {
   userRole: UserRole;
@@ -18,6 +19,7 @@ type TabType = 'posts' | 'records' | 'testimonials' | 'subscription';
 type FollowModalMode = 'followers' | 'following' | null;
 
 export function Profile({ userRole, onNavigate, viewingUserId = null, onViewProfile, isPro = false }: ProfileProps) {
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<TabType>('posts');
   const { t, language, setLanguage, isRTL } = useLanguage();
   const [isFollowing, setIsFollowing] = useState(false);
@@ -30,7 +32,7 @@ export function Profile({ userRole, onNavigate, viewingUserId = null, onViewProf
   const mockUser = {
     name: 'Jordan Smith',
     username: '@jordansmith',
-    avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&h=200&fit=crop',
+    avatar: null as string | null,
     cover: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&h=300&fit=crop',
     bio: userRole === 'coach' 
       ? 'Certified Strength & Climbing Coach | 10+ years experience | Helping athletes reach their peak performance 🎯'
@@ -116,6 +118,28 @@ export function Profile({ userRole, onNavigate, viewingUserId = null, onViewProf
     },
   ];
 
+  const displayName = useMemo(() => {
+    if (isOwnProfile && user) {
+      return user.first_name || user.username || 'User';
+    }
+    return mockUser.name;
+  }, [isOwnProfile, user]);
+
+  const displayHandle = useMemo(() => {
+    if (isOwnProfile && user) {
+      return `@${user.username}`;
+    }
+    return mockUser.username;
+  }, [isOwnProfile, user]);
+
+  const avatarUrl = isOwnProfile && user?.avatar?.url ? user.avatar.url : null;
+  const avatarInitials = useMemo(() => {
+    const parts = displayName.trim().split(' ');
+    const first = parts[0]?.[0] ?? '';
+    const last = parts.length > 1 ? parts[parts.length - 1][0] ?? '' : '';
+    return (first + last || 'U').toUpperCase();
+  }, [displayName]);
+
   return (
     <div className="min-h-screen bg-gray-100">
       {/* Cover Photo */}
@@ -129,10 +153,10 @@ export function Profile({ userRole, onNavigate, viewingUserId = null, onViewProf
           <HamburgerMenu 
             userRole={userRole}
             onNavigate={onNavigate}
-            userName={mockUser.name}
-            userAvatar={mockUser.avatar}
-            userUsername={mockUser.username}
-            isPro={isPro}
+            userName={displayName}
+            userAvatar={avatarUrl}
+            userUsername={displayHandle}
+            isPro={isPro || user?.pro}
           />
         </div>
       </div>
@@ -142,11 +166,17 @@ export function Profile({ userRole, onNavigate, viewingUserId = null, onViewProf
         <div className="px-4 pt-0 pb-4">
           {/* Avatar */}
           <div className="relative -mt-12 mb-3">
-            <img 
-              src={mockUser.avatar} 
-              alt={mockUser.name}
-              className="w-24 h-24 rounded-full object-cover border-4 border-white"
-            />
+            {avatarUrl ? (
+              <img 
+                src={avatarUrl} 
+                alt={displayName}
+                className="w-24 h-24 rounded-full object-cover border-4 border-white"
+              />
+            ) : (
+              <div className="w-24 h-24 rounded-full bg-[#0E0E55]/10 border-4 border-white flex items-center justify-center text-[#0E0E55] font-bold text-xl">
+                {avatarInitials}
+              </div>
+            )}
             {isPro && (
               <ProBadge size="md" className="absolute top-0 right-0" />
             )}
@@ -159,8 +189,8 @@ export function Profile({ userRole, onNavigate, viewingUserId = null, onViewProf
 
           {/* Name & Bio */}
           <div className="mb-4">
-            <h2 className="text-[#0E0E55] mb-1">{mockUser.name}</h2>
-            <p className="text-gray-600 mb-2">{mockUser.username}</p>
+            <h2 className="text-[#0E0E55] mb-1">{displayName}</h2>
+            <p className="text-gray-600 mb-2">{displayHandle}</p>
             
             {/* Coach Rating */}
             {userRole === 'coach' && mockUser.rating && (

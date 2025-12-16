@@ -1,15 +1,16 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Menu, X, Bell, Shield, LogOut, Settings, Users, DollarSign, Globe, User, Crown, Coins } from 'lucide-react';
 import type { UserRole } from '../App';
 import { useLanguage } from '../contexts/LanguageContext';
 import type { Language } from '../translations';
 import { ENTBalanceWidget } from './ENTBalanceWidget';
+import { useAuth } from '../contexts/AuthContext';
 
 interface HamburgerMenuProps {
   userRole: UserRole;
   onNavigate: (view: string) => void;
   userName?: string;
-  userAvatar?: string;
+  userAvatar?: string | null;
   userUsername?: string;
   isPro?: boolean;
 }
@@ -17,14 +18,42 @@ interface HamburgerMenuProps {
 export function HamburgerMenu({ 
   userRole, 
   onNavigate,
-  userName = 'Jordan Smith',
-  userAvatar = 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&h=200&fit=crop',
-  userUsername = '@jordansmith',
-  isPro = false
+  userName,
+  userAvatar = null,
+  userUsername,
+  isPro
 }: HamburgerMenuProps) {
+  const { user } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { t, language, setLanguage, isRTL } = useLanguage();
   const [showLanguageSelector, setShowLanguageSelector] = useState(false);
+
+  const displayName = useMemo(() => {
+    if (userName && userName.trim()) return userName.trim();
+    if (user?.first_name) return user.first_name;
+    if (user?.username) return user.username;
+    return 'User';
+  }, [userName, user]);
+
+  const displayHandle = useMemo(() => {
+    if (userUsername) return userUsername;
+    if (user?.username) return `@${user.username}`;
+    return '';
+  }, [userUsername, user]);
+
+  const avatarUrl = userAvatar || user?.avatar?.url || null;
+  const proStatus = isPro ?? Boolean(user?.pro);
+
+  const initials = useMemo(() => {
+    if (displayName && displayName.trim()) {
+      const parts = displayName.trim().split(' ');
+      const first = parts[0]?.[0] ?? '';
+      const last = parts.length > 1 ? parts[parts.length - 1][0] ?? '' : '';
+      const combined = `${first}${last}`.trim();
+      return (combined || 'U').toUpperCase();
+    }
+    return 'U';
+  }, [userName]);
 
   return (
     <>
@@ -60,14 +89,20 @@ export function HamburgerMenu({
               }}
               className="flex items-center gap-3 w-full hover:bg-[#1A1A6E] p-2 rounded-lg transition-colors"
             >
-              <img 
-                src={userAvatar} 
-                alt={userName}
-                className="w-12 h-12 rounded-full object-cover border-2 border-white"
-              />
+              {avatarUrl ? (
+                <img 
+                  src={avatarUrl} 
+                  alt={displayName}
+                  className="w-12 h-12 rounded-full object-cover border-2 border-white"
+                />
+              ) : (
+                <div className="w-12 h-12 rounded-full bg-white/20 border-2 border-white flex items-center justify-center text-white font-bold">
+                  {initials}
+                </div>
+              )}
               <div className="text-left">
-                <p className="text-white font-medium">{userName}</p>
-                <p className="text-gray-300 text-sm">{userUsername}</p>
+                <p className="text-white font-medium">{displayName}</p>
+                <p className="text-gray-300 text-sm">{displayHandle}</p>
               </div>
             </button>
           </div>
@@ -76,7 +111,7 @@ export function HamburgerMenu({
           <div className="flex-1 overflow-y-auto p-4">
             <div className="space-y-2">
               {/* Pro Status Display */}
-              {isPro ? (
+              {proStatus ? (
                 // Show Pro Badge for Pro Users
                 <>
                   <div className="w-full p-4 bg-gradient-to-r from-yellow-500 to-yellow-400 rounded-xl border-2 border-yellow-600 shadow-lg">
