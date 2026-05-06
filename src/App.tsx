@@ -22,18 +22,19 @@ import { ChannelView } from './components/ChannelView';
 import { MessagingDemo } from './components/MessagingDemo';
 import { PrivacySettings } from './components/PrivacySettings';
 import { ProfileSettings } from './components/ProfileSettings';
-import { ProSubscription } from './components/ProSubscription';
-import { ClaimENT } from './components/ClaimENT';
 import { LanguageProvider } from './contexts/LanguageContext';
 import { useAuth } from './contexts/AuthContext';
+import * as SessionsAPI from './api/sessions';
+
+const SESSION_KEY = 'coachwise-active-session';
 
 export type SportType = 'fitness' | 'climbing';
 export type UserRole = 'athlete' | 'coach';
 export type UserTier = 'free' | 'pro';
-export type ViewType = 'sport-selection' | 'logging' | 'feed' | 'profile' | 'coach-dashboard' | 'post-creation' | 'exercise-builder' | 'plan-builder' | 'coach-application' | 'coach-marketplace' | 'tier-builder' | 'tier-comparison' | 'workouts-home' | 'workout-session' | 'athlete-search' | 'athletes-coaches' | 'messages' | 'message-thread' | 'channel-view' | 'messaging-demo' | 'privacy-settings' | 'profile-settings' | 'pro-subscription' | 'claim-ent';
+export type ViewType = 'sport-selection' | 'logging' | 'feed' | 'profile' | 'coach-dashboard' | 'post-creation' | 'exercise-builder' | 'plan-builder' | 'coach-application' | 'coach-marketplace' | 'tier-builder' | 'tier-comparison' | 'workouts-home' | 'workout-session' | 'athlete-search' | 'athletes-coaches' | 'messages' | 'message-thread' | 'channel-view' | 'messaging-demo' | 'privacy-settings' | 'profile-settings';
 
 export default function App() {
-  const { isAuthenticated, logout, user } = useAuth();
+  const { isAuthenticated, logout, user, tokens } = useAuth();
   const [currentView, setCurrentView] = useState<ViewType>('feed');
   const [selectedSport, setSelectedSport] = useState<SportType>('fitness');
   const [userRole, setUserRole] = useState<UserRole>('athlete');
@@ -43,6 +44,25 @@ export default function App() {
   const [currentConversationId, setCurrentConversationId] = useState<string | null>(null); // Track current message thread
   const [currentChannelId, setCurrentChannelId] = useState<string | null>(null); // Track current channel
   const [messagesActiveTab, setMessagesActiveTab] = useState<'dms' | 'channels'>('dms'); // Track active tab in Messages
+  const [activeSessionId, setActiveSessionId] = useState<string | null>(null); // Track active workout session
+  const [activePlanId, setActivePlanId] = useState<string | null>(null); // Track active plan
+  const [activeScheduleId, setActiveScheduleId] = useState<string | null>(null); // Track active schedule
+  const [workoutsRefreshTrigger, setWorkoutsRefreshTrigger] = useState(0); // Trigger refresh after workout
+
+  // Restore active session on mount (survives page refresh)
+  useEffect(() => {
+    const storedRaw = localStorage.getItem(SESSION_KEY);
+    if (storedRaw) {
+      try {
+        const { planId, scheduleId: storedScheduleId } = JSON.parse(storedRaw);
+        setActivePlanId(planId || null);
+        setActiveScheduleId(storedScheduleId || null);
+        setCurrentView('workout-session');
+      } catch {
+        localStorage.removeItem(SESSION_KEY);
+      }
+    }
+  }, []);
 
   useEffect(() => {
     if (user) {
@@ -67,15 +87,32 @@ export default function App() {
   };
 
   const handleNavigate = (view: string) => {
-    // Reset viewingUserId when navigating to profile from menu
     if (view === 'profile') {
       setViewingUserId(null);
+    }
+    // If navigating to workouts while a session is active, resume it
+    if (view === 'workouts-home' && localStorage.getItem(SESSION_KEY)) {
+      setCurrentView('workout-session');
+      return;
     }
     setCurrentView(view as ViewType);
   };
 
-  const handleSportSelect = (sport: SportType) => {
+  const handleSportSelect = async (sport: SportType) => {
     setSelectedSport(sport);
+
+    // Create a session for this workout
+    if (tokens?.access_token) {
+      try {
+        const session = await SessionsAPI.createSession(tokens.access_token, {
+          session_type: sport === 'fitness' ? 'STRENGTH' : 'CLIMBING',
+        });
+        setActiveSessionId(session.id);
+      } catch (err) {
+        console.error('Failed to create session:', err);
+      }
+    }
+
     setCurrentView('logging');
   };
 
@@ -100,8 +137,10 @@ export default function App() {
   };
 
   const handleSessionEnd = () => {
+    localStorage.removeItem(SESSION_KEY);
+    setActivePlanId(null);
+    setActiveScheduleId(null);
     setCurrentView('workouts-home');
-    alert('Session saved! Great work! 💪');
   };
 
   const renderView = () => {
@@ -109,7 +148,20 @@ export default function App() {
       case 'sport-selection':
         return <SportSelection onSelectSport={handleSportSelect} />;
       case 'logging':
-        return <WorkoutLogging sport={selectedSport} onBack={() => setCurrentView('feed')} />;
+        return activeSessionId ? (
+          <WorkoutLogging
+            sport={selectedSport}
+            sessionId={activeSessionId}
+            onBack={() => {
+              setActiveSessionId(null);
+              setCurrentView('feed');
+            }}
+          />
+        ) : (
+          <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+            <p className="text-gray-600">Starting workout session...</p>
+          </div>
+        );
       case 'feed':
         return <Feed 
           onCreatePost={() => setCurrentView('post-creation')} 
@@ -155,17 +207,33 @@ export default function App() {
       case 'tier-comparison':
         return <TierComparison onCancel={() => setCurrentView('coach-marketplace')} coachName="Sarah Martinez" />;
       case 'workouts-home':
-        return <WorkoutsHome 
-          onStartSession={() => setCurrentView('workout-session')} 
+        return <WorkoutsHome
+          onStartSession={(planId?: string, scheduleId?: string) => {
+            setActivePlanId(planId || null);
+            setActiveScheduleId(scheduleId || null);
+            // Persist so the session survives refresh
+            localStorage.setItem(SESSION_KEY, JSON.stringify({ planId: planId || null, scheduleId: scheduleId || null }));
+            setCurrentView('workout-session');
+          }}
           onCreatePlan={() => setCurrentView('plan-builder')}
           userRole={userRole}
           onNavigate={handleNavigate}
           isPro={isPro}
-        />; 
+          refreshTrigger={workoutsRefreshTrigger}
+        />;
       case 'workout-session':
-        return <WorkoutSession 
-          onBack={() => setCurrentView('workouts-home')} 
-          onEndSession={handleSessionEnd}
+        return <WorkoutSession
+          planId={activePlanId || undefined}
+          scheduleId={activeScheduleId || undefined}
+          onBack={() => {
+            // Keep activePlanId/activeScheduleId — session is still in progress
+            setWorkoutsRefreshTrigger(Date.now());
+            setCurrentView('workouts-home');
+          }}
+          onEndSession={() => {
+            handleSessionEnd();
+            setWorkoutsRefreshTrigger(Date.now()); // Trigger refresh
+          }}
           isPro={isPro}
           onNavigate={handleNavigate}
         />; 
@@ -255,9 +323,9 @@ export default function App() {
             <div className="flex-1 overflow-auto pb-16">
               {renderView()}
             </div>
-            <Navigation 
-              currentView={currentView} 
-              setCurrentView={setCurrentView}
+            <Navigation
+              currentView={currentView}
+              onNavigate={handleNavigate}
               userRole={userRole}
             />
           </div>

@@ -12,8 +12,16 @@ export function createSession(token: string, body: CreateSessionPayload) {
   return request<Session>("/workouts/sessions", { method: "POST", token, body });
 }
 
-export function listSessions(token: string) {
-  return request<Session[]>("/workouts/sessions", { token });
+export function listSessions(token: string, params?: { status?: string; page?: number; limit?: number }) {
+  const search = new URLSearchParams();
+  if (params?.status) search.set("status", params.status);
+  if (params?.page) search.set("page", String(params.page));
+  if (params?.limit) search.set("limit", String(params.limit));
+  const query = search.toString() ? `?${search.toString()}` : "";
+  return request<{
+    items: Session[];
+    total: number;
+  }>(`/workouts/sessions${query}`, { token });
 }
 
 export function listActiveSessions(token: string) {
@@ -43,4 +51,23 @@ export function updateWorkoutLog(token: string, id: string, body: UpdateWorkoutL
 // Note: backend delete is placeholder; keep for API parity
 export function deleteWorkoutLog(token: string, id: string) {
   return request<unknown>(`/workouts/logs/${id}`, { method: "DELETE", token });
+}
+
+export interface DailyAnalytics {
+  date: string;
+  sessions_count: number;
+  total_duration?: number | null; // minutes
+  plans_completed: string[];
+  exercises_completed: number;
+  total_sets: number;
+  total_reps?: number | null;
+  total_volume?: number | null;
+}
+
+export function listDailyAnalytics(token: string, params?: { limit?: number; offset?: number }) {
+  const search = new URLSearchParams();
+  if (params?.limit) search.set("limit", String(params.limit));
+  if (params?.offset) search.set("offset", String(params.offset));
+  const query = search.toString() ? `?${search.toString()}` : "";
+  return request<{ items: DailyAnalytics[]; total: number }>(`/workouts/sessions/analytics/daily${query}`, { token });
 }

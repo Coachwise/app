@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
-import { ArrowLeft, Plus, GripVertical, Trash2, RefreshCw, Search } from 'lucide-react';
-import type { Exercise } from '../api/types';
+import { ArrowLeft, Plus, GripVertical, Trash2, RefreshCw, Search, Dumbbell } from 'lucide-react';
+import type { Exercise, ExerciseSportType } from '../api/types';
 import * as ExercisesAPI from '../api/exercises';
 import * as PlansAPI from '../api/plans';
 import { useAuth } from '../contexts/AuthContext';
 import { ExerciseBuilder } from './ExerciseBuilder';
+import { HeatSlider } from './ui';
 
 interface PlanBuilderProps {
   onCancel: () => void;
@@ -21,7 +22,24 @@ type PlanExercise = {
   sets: number;
   repsOrDuration: number;
   restInterval: number;
+  intensity: number;
 };
+
+// Helper component for sport type badge
+function SportTypeBadge({ sportType }: { sportType: ExerciseSportType }) {
+  const colors = {
+    STRENGTH: 'bg-blue-100 text-blue-700',
+    CLIMBING: 'bg-purple-100 text-purple-700',
+    CARDIO: 'bg-red-100 text-red-700',
+    MOBILITY: 'bg-green-100 text-green-700',
+    GENERAL: 'bg-gray-100 text-gray-700',
+  };
+  return (
+    <span className={`px-2 py-0.5 rounded text-xs font-medium ${colors[sportType]}`}>
+      {sportType}
+    </span>
+  );
+}
 
 export function PlanBuilder({ onCancel, onSave }: PlanBuilderProps) {
   const { tokens } = useAuth();
@@ -35,6 +53,7 @@ export function PlanBuilder({ onCancel, onSave }: PlanBuilderProps) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showExerciseBuilder, setShowExerciseBuilder] = useState(false);
+  const [sportTypeFilter, setSportTypeFilter] = useState<ExerciseSportType | 'ALL'>('ALL');
 
   const nsToSeconds = (value?: number | null) => Math.max(0, Math.round((value ?? 0) / 1e9));
   const secondsToNs = (value: number) => Math.max(0, Math.round(value) * 1e9);
@@ -80,6 +99,7 @@ export function PlanBuilder({ onCancel, onSave }: PlanBuilderProps) {
         sets: exercise.sets?.length || 1,
         repsOrDuration,
         restInterval,
+        intensity: 5,
       },
     ]);
     setShowExerciseSelector(false);
@@ -113,6 +133,7 @@ export function PlanBuilder({ onCancel, onSave }: PlanBuilderProps) {
             exercise_id: exercise.exerciseId,
             exercise_order: index + 1,
             rest_time: secondsToNs(exercise.restInterval),
+            intensity: exercise.intensity,
           })
         )
       );
@@ -136,7 +157,18 @@ export function PlanBuilder({ onCancel, onSave }: PlanBuilderProps) {
     );
   };
 
+  const updateIntensity = (key: string, next: number) => {
+    setExercises((prev) =>
+      prev.map((ex) => (ex.key === key ? { ...ex, intensity: Math.max(1, Math.min(10, next)) } : ex))
+    );
+  };
+
   const existingExerciseIds = useMemo(() => new Set(exercises.map((ex) => ex.exerciseId)), [exercises]);
+
+  const filteredExercises = useMemo(() => {
+    if (sportTypeFilter === 'ALL') return exerciseLibrary;
+    return exerciseLibrary.filter((ex) => ex.sport_type === sportTypeFilter);
+  }, [exerciseLibrary, sportTypeFilter]);
 
   if (showExerciseBuilder) {
     return (
@@ -213,15 +245,15 @@ export function PlanBuilder({ onCancel, onSave }: PlanBuilderProps) {
           </div>
 
           {showExerciseSelector && (
-            <div className="mb-4 border border-dashed border-gray-200 rounded-lg p-4 bg-gray-50">
+            <div className="mb-4 border border-gray-200 rounded-lg p-4 bg-white shadow-sm">
               <div className="flex gap-2 mb-3">
                 <div className="flex-1 relative">
                   <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
                   <input
                     value={exerciseSearch}
                     onChange={(e) => setExerciseSearch(e.target.value)}
-                    placeholder="Search your exercises..."
-                    className="w-full pl-9 pr-3 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                    placeholder="Search exercises..."
+                    className="w-full pl-9 pr-3 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent text-sm"
                   />
                 </div>
                 <button
@@ -229,23 +261,54 @@ export function PlanBuilder({ onCancel, onSave }: PlanBuilderProps) {
                   className="px-3 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 flex items-center gap-2 text-sm"
                 >
                   <RefreshCw className={`w-4 h-4 ${loadingExercises ? 'animate-spin' : ''}`} />
-                  Refresh
                 </button>
                 <button
                   onClick={() => setShowExerciseBuilder(true)}
-                  className="px-3 py-2 bg-[#0E0E55] text-white rounded-lg hover:bg-[#1A1A6E] flex items-center gap-2 text-sm"
+                  className="px-3 py-2 bg-yellow-500 text-[#0E0E55] rounded-lg hover:bg-yellow-400 flex items-center gap-2 text-sm font-medium"
                 >
                   <Plus className="w-4 h-4" />
-                  New Exercise
+                  New
                 </button>
               </div>
 
-              {loadingExercises && <div className="text-sm text-gray-600">Loading exercises...</div>}
-              {!loadingExercises && (exerciseLibrary?.length ?? 0) === 0 && (
-                <div className="text-sm text-gray-600">No exercises found. Create one first, then add it here.</div>
+              {/* Sport Type Filters */}
+              <div className="flex gap-2 mb-3 flex-wrap">
+                {(['ALL', 'STRENGTH', 'CLIMBING', 'CARDIO', 'MOBILITY', 'GENERAL'] as const).map((type) => (
+                  <button
+                    key={type}
+                    onClick={() => setSportTypeFilter(type)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                      sportTypeFilter === type
+                        ? 'bg-[#0E0E55] text-white'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                  >
+                    {type}
+                  </button>
+                ))}
+              </div>
+
+              {loadingExercises && (
+                <div className="text-sm text-gray-600 py-4 text-center">
+                  <RefreshCw className="w-5 h-5 animate-spin inline-block mb-1" />
+                  <div>Loading exercises...</div>
+                </div>
               )}
-              <div className="space-y-2 max-h-64 overflow-auto">
-                {(exerciseLibrary ?? []).map((exercise) => {
+              {!loadingExercises && (exerciseLibrary?.length ?? 0) === 0 && (
+                <div className="text-sm text-gray-600 py-8 text-center">
+                  <Dumbbell className="w-8 h-8 mx-auto mb-2 text-gray-400" />
+                  <div className="font-medium">No exercises found</div>
+                  <div className="text-xs text-gray-500 mt-1">Create your first exercise to get started</div>
+                </div>
+              )}
+              {!loadingExercises && filteredExercises.length === 0 && exerciseLibrary.length > 0 && (
+                <div className="text-sm text-gray-600 py-8 text-center">
+                  <div className="font-medium">No exercises match this filter</div>
+                  <div className="text-xs text-gray-500 mt-1">Try a different sport type</div>
+                </div>
+              )}
+              <div className="space-y-2 max-h-96 overflow-auto">
+                {filteredExercises.map((exercise) => {
                   const summary = exercise.sets?.[0];
                   const isTime = !!summary?.duration;
                   const displayTarget = isTime ? `${nsToSeconds(summary?.duration)} sec` : `${summary?.rep_count ?? 0} reps`;
@@ -253,21 +316,32 @@ export function PlanBuilder({ onCancel, onSave }: PlanBuilderProps) {
                     summary && summary.rest_time !== undefined ? nsToSeconds(summary.rest_time) : 60;
                   const alreadyAdded = existingExerciseIds.has(exercise.id);
                   return (
-                    <div key={exercise.id} className="bg-white border border-gray-200 rounded-lg p-3 flex items-center justify-between gap-3">
-                      <div>
-                        <div className="font-medium text-gray-900">{exercise.name}</div>
-                        <div className="text-sm text-gray-600">
-                          {exercise.sets?.length || 1} sets • {displayTarget} • {rest}s rest
+                    <div key={exercise.id} className="bg-gray-50 border border-gray-200 rounded-lg p-3 hover:border-gray-300 transition-colors">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <div className="font-medium text-gray-900 truncate">{exercise.name}</div>
+                            <SportTypeBadge sportType={exercise.sport_type} />
+                          </div>
+                          <div className="text-sm text-gray-600">
+                            {exercise.sets?.length || 1} sets × {displayTarget} • {rest}s rest
+                          </div>
+                          {exercise.description && (
+                            <div className="text-xs text-gray-500 mt-1 line-clamp-1">{exercise.description}</div>
+                          )}
                         </div>
-                        {exercise.description && <div className="text-xs text-gray-500 mt-1 line-clamp-2">{exercise.description}</div>}
+                        <button
+                          onClick={() => addExerciseToPlan(exercise)}
+                          disabled={alreadyAdded}
+                          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
+                            alreadyAdded
+                              ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                              : 'bg-[#0E0E55] text-white hover:bg-[#1A1A6E]'
+                          }`}
+                        >
+                          {alreadyAdded ? 'Added' : 'Add'}
+                        </button>
                       </div>
-                      <button
-                        onClick={() => addExerciseToPlan(exercise)}
-                        disabled={alreadyAdded}
-                        className="text-sm px-3 py-2 rounded-lg bg-[#0E0E55] text-white disabled:bg-gray-200 disabled:text-gray-500"
-                      >
-                        {alreadyAdded ? 'Added' : 'Add'}
-                      </button>
                     </div>
                   );
                 })}
@@ -281,36 +355,56 @@ export function PlanBuilder({ onCancel, onSave }: PlanBuilderProps) {
               <p className="text-gray-500 text-sm">Tap "Add Exercise" to start building your plan</p>
             </div>
           ) : (
-            <div className="space-y-2">
+            <div className="space-y-3">
               {exercises.map((exercise, index) => (
-                <div key={exercise.key} className="bg-white border border-gray-200 rounded-lg p-4">
+                <div key={exercise.key} className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
                   <div className="flex items-start gap-3">
-                    <button className="mt-1 text-gray-400 hover:text-gray-600 cursor-grab active:cursor-grabbing">
+                    <button className="mt-2 text-gray-400 hover:text-gray-600 cursor-grab active:cursor-grabbing">
                       <GripVertical className="w-5 h-5" />
                     </button>
-                    <div className="flex-1">
-                      <div className="flex items-start justify-between mb-1">
-                        <div>
-                          <span className="text-gray-900">{exercise.name}</span>
-                          <div className="text-gray-600 text-sm">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex-1 min-w-0">
+                          <div className="font-medium text-gray-900 mb-1">{exercise.name}</div>
+                          <div className="text-sm text-gray-600">
                             {exercise.sets} sets × {exercise.repsOrDuration} {exercise.type === 'reps' ? 'reps' : 'sec'}
-                            {' • '}
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => removeExercise(exercise.key)}
+                          className="text-red-500 hover:text-red-600 p-1"
+                          title="Remove exercise"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+
+                      <div className="space-y-3">
+                        {/* Rest Interval */}
+                        <div>
+                          <label className="text-xs font-medium text-gray-700 mb-1.5 block">
+                            Rest Between Sets
+                          </label>
+                          <div className="flex items-center gap-2">
                             <input
                               type="number"
                               min={0}
                               value={exercise.restInterval}
                               onChange={(e) => updateRest(exercise.key, Number(e.target.value))}
-                              className="w-24 inline-flex px-2 py-1 text-sm border border-gray-300 rounded-md ml-1"
-                            />{' '}
-                            s rest
+                              className="w-20 px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                            />
+                            <span className="text-sm text-gray-600">seconds</span>
                           </div>
                         </div>
-                        <button
-                          onClick={() => removeExercise(exercise.key)}
-                          className="text-red-500 hover:text-red-600"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+
+                        {/* Intensity Slider */}
+                        <HeatSlider
+                          value={exercise.intensity}
+                          onChange={(val) => updateIntensity(exercise.key, val)}
+                          label="Intensity Level"
+                          min={1}
+                          max={10}
+                        />
                       </div>
                     </div>
                   </div>

@@ -1,7 +1,8 @@
-import { useEffect, useMemo, useState } from 'react';
-import { ArrowLeft, Plus, Trash2, Loader2, Eye } from 'lucide-react';
+import { useEffect, useMemo, useState, useRef } from 'react';
+import { ArrowLeft, Plus, Trash2, Loader2, Eye, Upload, X } from 'lucide-react';
 import * as ExercisesAPI from '../api/exercises';
-import type { Exercise } from '../api/types';
+import * as MediaAPI from '../api/media';
+import type { Exercise, ExerciseSportType } from '../api/types';
 import { useAuth } from '../contexts/AuthContext';
 
 type EditableSet = {
@@ -24,9 +25,14 @@ const uuid = () => (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.
 
 export function ExerciseBuilder({ onCancel, onSaved, exercise }: ExerciseBuilderProps) {
   const { tokens } = useAuth();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [name, setName] = useState(exercise?.name || '');
   const [description, setDescription] = useState(exercise?.description || '');
   const [isPublic, setIsPublic] = useState<boolean>(!!exercise?.public);
+  const [sportType, setSportType] = useState<ExerciseSportType>(exercise?.sport_type || 'GENERAL');
+  const [mediaId, setMediaId] = useState<string | null>(exercise?.media_id || null);
+  const [mediaUrl, setMediaUrl] = useState<string | null>(exercise?.media?.url || null);
+  const [uploadingMedia, setUploadingMedia] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [sets, setSets] = useState<EditableSet[]>(() => {
@@ -78,6 +84,32 @@ export function ExerciseBuilder({ onCancel, onSaved, exercise }: ExerciseBuilder
     );
   }, []);
 
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !tokens?.access_token) return;
+
+    setUploadingMedia(true);
+    setError(null);
+    try {
+      const uploadedMedia = await MediaAPI.uploadMedia(tokens.access_token, file);
+      setMediaId(uploadedMedia.id);
+      setMediaUrl(uploadedMedia.url);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Failed to upload media';
+      setError(msg);
+    } finally {
+      setUploadingMedia(false);
+    }
+  };
+
+  const handleRemoveMedia = () => {
+    setMediaId(null);
+    setMediaUrl(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
   const handleSave = async () => {
     if (!tokens?.access_token || !canSave || saving) return;
     setSaving(true);
@@ -87,6 +119,8 @@ export function ExerciseBuilder({ onCancel, onSaved, exercise }: ExerciseBuilder
         name: name.trim(),
         description: description.trim(),
         public: isPublic,
+        sport_type: sportType,
+        media_id: mediaId,
         sets: sets.map((set, idx) => ({
           name: set.name || `Set ${idx + 1}`,
           rest_time: secondsToNs(set.restSeconds),
@@ -150,6 +184,76 @@ export function ExerciseBuilder({ onCancel, onSaved, exercise }: ExerciseBuilder
               rows={3}
               className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent resize-none text-[#3D3D3D]"
             />
+          </div>
+
+          <div>
+            <label className="text-[#3D3D3D] mb-2 block">Sport Type</label>
+            <select
+              value={sportType}
+              onChange={(e) => setSportType(e.target.value as ExerciseSportType)}
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent text-[#3D3D3D] bg-white"
+            >
+              <option value="STRENGTH">Strength</option>
+              <option value="CLIMBING">Climbing</option>
+              <option value="CARDIO">Cardio</option>
+              <option value="MOBILITY">Mobility</option>
+              <option value="GENERAL">General</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="text-[#3D3D3D] mb-2 block">Media (optional)</label>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*,video/*"
+              onChange={handleFileSelect}
+              className="hidden"
+            />
+
+            {mediaUrl ? (
+              <div className="relative border border-gray-300 rounded-lg overflow-hidden">
+                {mediaUrl.match(/\.(jpg|jpeg|png|gif|webp)$/i) ? (
+                  <img src={mediaUrl} alt="Exercise media" className="w-full h-48 object-cover" />
+                ) : (
+                  <video
+                    src={mediaUrl}
+                    className="w-full h-48 object-cover"
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    controls
+                  />
+                )}
+                <button
+                  onClick={handleRemoveMedia}
+                  className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
+                  aria-label="Remove media"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploadingMedia}
+                className="w-full p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-yellow-500 transition-colors flex flex-col items-center justify-center gap-2 text-gray-600 hover:text-gray-900 disabled:opacity-50"
+              >
+                {uploadingMedia ? (
+                  <>
+                    <Loader2 className="w-8 h-8 animate-spin" />
+                    <span className="text-sm">Uploading...</span>
+                  </>
+                ) : (
+                  <>
+                    <Upload className="w-8 h-8" />
+                    <span className="text-sm">Upload image or video</span>
+                  </>
+                )}
+              </button>
+            )}
           </div>
 
           <label className="flex items-center gap-3 cursor-pointer select-none">

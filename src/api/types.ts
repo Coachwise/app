@@ -74,12 +74,17 @@ export interface ExerciseSet {
   duration?: number | null;
 }
 
+export type ExerciseSportType = 'STRENGTH' | 'CLIMBING' | 'CARDIO' | 'MOBILITY' | 'GENERAL';
+
 export interface Exercise {
   id: UUID;
   user_id?: UUID | null;
   name: string;
   description: string;
   public: boolean;
+  sport_type: ExerciseSportType;
+  media_id?: UUID | null;
+  media?: Media | null;
   sets: ExerciseSet[];
   created_at: string;
   updated_at: string;
@@ -100,7 +105,9 @@ export interface PlanExercise {
   plan_id: UUID;
   exercise_order: number;
   rest_time: number;
+  intensity: number; // 1-10 scale
   created_at: string;
+  exercise?: Exercise; // Populated when joined from backend
 }
 
 export interface PlanAssignee {
@@ -109,6 +116,19 @@ export interface PlanAssignee {
   user_id: UUID;
   assigner: UUID;
   created_at: string;
+}
+
+export interface PlanSchedule {
+  id: UUID;
+  plan_id: UUID;
+  user_id: UUID;
+  status: string;
+  scheduled_for?: string;
+  scheduled_at?: string;
+  scheduled_date?: string;
+  created_at?: string;
+  updated_at?: string;
+  plan?: Plan;
 }
 
 export interface Session {
@@ -120,6 +140,8 @@ export interface Session {
   started_at: string;
   ended_at?: string | null;
   notes?: string | null;
+  intensity?: number | null; // 1-10 scale
+  quality?: number | null; // 1-5 scale (5-star rating)
   created_at: string;
   updated_at: string;
 }
@@ -138,6 +160,7 @@ export interface WorkoutLog {
   completed: boolean;
   attempts?: number | null;
   notes?: string | null;
+  logged_at: string;
   created_at: string;
 }
 
@@ -227,6 +250,8 @@ export interface ExerciseForm {
   name: string;
   description: string;
   public: boolean;
+  sport_type?: ExerciseSportType;
+  media_id?: UUID | null;
   sets?: Array<{
     name: string;
     rest_time: number;
@@ -249,21 +274,38 @@ export interface PlanExercisePayload {
   exercise_id: UUID;
   exercise_order: number;
   rest_time: number;
+  intensity?: number; // 1-10 scale, optional (defaults to 5 on backend)
 }
 
 export interface PlanAssignPayload {
   user_id: UUID;
 }
 
+export interface CreatePlanSchedulePayload {
+  plan_id: UUID;
+  scheduled_for: string;
+  status?: string;
+}
+
+export interface UpdatePlanSchedulePayload {
+  scheduled_for?: string;
+  status?: string;
+}
+
 export interface CreateSessionPayload {
   session_type: Session["session_type"];
   plan_id?: UUID;
+  started_at?: string;
+  status?: string;
   notes?: string;
 }
 
 export interface UpdateSessionPayload {
-  status?: "ACTIVE" | "COMPLETED" | "ABANDONED";
+  status?: string;
+  started_at?: string;
   notes?: string;
+  intensity: number; // Required: 1-10 scale
+  quality: number; // Required: 1-5 scale (5-star rating)
 }
 
 export interface CreateWorkoutLogPayload {

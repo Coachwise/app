@@ -4,6 +4,7 @@ export * as MediaAPI from "./media";
 export * as ChatsAPI from "./chats";
 export * as ExercisesAPI from "./exercises";
 export * as SessionsAPI from "./sessions";
+export * as PlanSchedulesAPI from "./planSchedules";
 export * as TagsAPI from "./tags";
 export * as FeedsAPI from "./feeds";
 export * as PlansAPI from "./plans";

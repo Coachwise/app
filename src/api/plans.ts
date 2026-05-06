@@ -13,7 +13,7 @@ export function listPlans(token: string, params?: { public?: boolean }) {
   const search = new URLSearchParams();
   if (params?.public !== undefined) search.set("public", String(params.public));
   const query = search.toString() ? `?${search.toString()}` : "";
-  return request<Plan[]>(`/plans${query}`, { token });
+  return request<{ items: Plan[]; total: number }>(`/plans${query}`, { token });
 }
 
 export function createPlan(token: string, body: CreatePlanPayload) {

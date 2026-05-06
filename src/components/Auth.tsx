@@ -8,7 +8,7 @@ interface AuthProps {
   onLogin: () => void;
 }
 
-type AuthMode = 'login' | 'register' | 'otp';
+type AuthMode = 'login' | 'register' | 'otp' | 'forgot' | 'reset';
 
 export function Auth({ onLogin }: AuthProps) {
   const { t, language, setLanguage, isRTL } = useLanguage();
@@ -21,6 +21,8 @@ export function Auth({ onLogin }: AuthProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [availability, setAvailability] = useState<'unknown' | 'checking' | 'ok' | 'email_exists' | 'username_exists'>('unknown');
+  const [forgotFlow, setForgotFlow] = useState(false);
+  const [resetTokens, setResetTokens] = useState<{ access_token: string; refresh_token: string; token: string } | null>(null);
 
   const [formData, setFormData] = useState({
     fullName: '',
@@ -121,7 +123,23 @@ export function Auth({ onLogin }: AuthProps) {
         return;
       }
 
-      // OTP verify
+      if (mode === 'forgot') {
+        await AuthAPI.forgotPassword({ email: formData.email });
+        setMode('otp');
+        return;
+      }
+
+      if (mode === 'reset') {
+        if (formData.password.length < 8) throw new Error('Password must be at least 8 characters');
+        if (formData.password !== formData.confirmPassword) throw new Error('Passwords do not match');
+        if (!resetTokens) throw new Error('Session expired, please start over');
+        await AuthAPI.changePassword(resetTokens.access_token, { password: formData.password });
+        setTokens(resetTokens);
+        onLogin();
+        return;
+      }
+
+      // OTP verify (used for both registration and forgot password flows)
       if (!formData.otpCode || formData.otpCode.length < 6) {
         throw new Error('Enter the 6-digit code');
       }
@@ -129,6 +147,11 @@ export function Auth({ onLogin }: AuthProps) {
         email: formData.email,
         code: formData.otpCode,
       });
+      if (forgotFlow) {
+        setResetTokens(tokens);
+        setMode('reset');
+        return;
+      }
       setTokens(tokens);
       onLogin();
     } catch (err) {
@@ -194,12 +217,12 @@ export function Auth({ onLogin }: AuthProps) {
             </div>
             <h1 className="text-white text-3xl mb-2">Coachwise</h1>
             <p className="text-white/80">
-              {mode === 'login' ? t('loginToAccount') : mode === 'register' ? t('createYourAccount') : 'Verify your email'}
+              {mode === 'login' ? t('loginToAccount') : mode === 'register' ? t('createYourAccount') : mode === 'forgot' ? 'Reset your password' : mode === 'reset' ? 'Set new password' : 'Verify your email'}
             </p>
           </div>
 
           <div className="bg-white rounded-2xl shadow-2xl p-6">
-            {mode !== 'otp' && (
+            {mode !== 'otp' && mode !== 'forgot' && mode !== 'reset' && (
               <div className="flex bg-gray-100 rounded-lg p-1 mb-6">
                 <button
                   type="button"
@@ -283,25 +306,27 @@ export function Auth({ onLogin }: AuthProps) {
                 </>
               )}
 
-              <div>
-                <label className="block text-[#0E0E55] text-sm mb-2">
-                  {t('email')}
-                </label>
-                <div className="relative">
-                  <Mail className={`absolute top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 ${isRTL ? 'right-3' : 'left-3'}`} />
-                  <input
-                    type="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    placeholder={t('emailPlaceholder')}
-                    className={`w-full bg-gray-50 border border-gray-200 rounded-lg py-3 ${isRTL ? 'pr-10 pl-4' : 'pl-10 pr-4'} text-[#0E0E55] focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent`}
-                    required
-                  />
+              {mode !== 'reset' && (
+                <div>
+                  <label className="block text-[#0E0E55] text-sm mb-2">
+                    {t('email')}
+                  </label>
+                  <div className="relative">
+                    <Mail className={`absolute top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 ${isRTL ? 'right-3' : 'left-3'}`} />
+                    <input
+                      type="email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleChange}
+                      placeholder={t('emailPlaceholder')}
+                      className={`w-full bg-gray-50 border border-gray-200 rounded-lg py-3 ${isRTL ? 'pr-10 pl-4' : 'pl-10 pr-4'} text-[#0E0E55] focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent`}
+                      required={mode !== 'otp'}
+                    />
+                  </div>
                 </div>
-              </div>
+              )}
 
-              {mode !== 'otp' && (
+              {mode !== 'otp' && mode !== 'forgot' && mode !== 'reset' && (
                 <>
                   <div>
                     <label className="block text-[#0E0E55] text-sm mb-2">
@@ -384,6 +409,55 @@ export function Auth({ onLogin }: AuthProps) {
                 </div>
               )}
 
+              {mode === 'reset' && (
+                <>
+                  <div>
+                    <label className="block text-[#0E0E55] text-sm mb-2">New password</label>
+                    <div className="relative">
+                      <Lock className={`absolute top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 ${isRTL ? 'right-3' : 'left-3'}`} />
+                      <input
+                        type={showPassword ? 'text' : 'password'}
+                        name="password"
+                        value={formData.password}
+                        onChange={handleChange}
+                        placeholder="Min. 8 characters"
+                        className={`w-full bg-gray-50 border border-gray-200 rounded-lg py-3 ${isRTL ? 'pr-10 pl-10' : 'pl-10 pr-10'} text-[#0E0E55] focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent`}
+                        required
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className={`absolute top-1/2 -translate-y-1/2 ${isRTL ? 'left-3' : 'right-3'} text-gray-400 hover:text-[#0E0E55]`}
+                      >
+                        {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                      </button>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-[#0E0E55] text-sm mb-2">Confirm new password</label>
+                    <div className="relative">
+                      <Lock className={`absolute top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 ${isRTL ? 'right-3' : 'left-3'}`} />
+                      <input
+                        type={showConfirmPassword ? 'text' : 'password'}
+                        name="confirmPassword"
+                        value={formData.confirmPassword}
+                        onChange={handleChange}
+                        placeholder="Repeat new password"
+                        className={`w-full bg-gray-50 border border-gray-200 rounded-lg py-3 ${isRTL ? 'pr-10 pl-10' : 'pl-10 pr-10'} text-[#0E0E55] focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent`}
+                        required
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        className={`absolute top-1/2 -translate-y-1/2 ${isRTL ? 'left-3' : 'right-3'} text-gray-400 hover:text-[#0E0E55]`}
+                      >
+                        {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                      </button>
+                    </div>
+                  </div>
+                </>
+              )}
+
               {mode === 'login' && (
                 <div className="flex items-center justify-between">
                   <label className="flex items-center gap-2 cursor-pointer">
@@ -399,6 +473,7 @@ export function Auth({ onLogin }: AuthProps) {
                   <button
                     type="button"
                     className="text-sm text-yellow-600 hover:text-yellow-700"
+                    onClick={() => { setForgotFlow(true); setMode('forgot'); setError(null); }}
                   >
                     {t('forgotPassword')}
                   </button>
@@ -429,12 +504,16 @@ export function Auth({ onLogin }: AuthProps) {
                     ? t('login')
                     : mode === 'register'
                       ? t('createAccount')
-                      : 'Verify & Continue'}
+                      : mode === 'forgot'
+                        ? 'Send reset code'
+                        : mode === 'reset'
+                          ? 'Set new password'
+                          : 'Verify & Continue'}
               </button>
             </form>
           </div>
 
-          {mode !== 'otp' && (
+          {mode !== 'otp' && mode !== 'forgot' && mode !== 'reset' && (
             <div className="text-center text-white/80 mt-6">
               <p>
                 {mode === 'login' ? t('dontHaveAccount') : t('alreadyHaveAccount')}{' '}

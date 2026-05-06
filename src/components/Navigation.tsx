@@ -4,11 +4,11 @@ import { useLanguage } from '../contexts/LanguageContext';
 
 interface NavigationProps {
   currentView: ViewType;
-  setCurrentView: (view: ViewType) => void;
+  onNavigate: (view: string) => void;
   userRole: UserRole;
 }
 
-export function Navigation({ currentView, setCurrentView, userRole }: NavigationProps) {
+export function Navigation({ currentView, onNavigate, userRole }: NavigationProps) {
   const { t } = useLanguage();
   
   const navItems = [
@@ -34,7 +34,7 @@ export function Navigation({ currentView, setCurrentView, userRole }: Navigation
           return (
             <button
               key={item.id}
-              onClick={() => setCurrentView(item.id)}
+              onClick={() => onNavigate(item.id)}
               className={`flex flex-col items-center gap-1 py-2 px-4 transition-all ${
                 isActive ? 'text-yellow-500' : 'text-gray-300'
               }`}

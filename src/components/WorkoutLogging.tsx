@@ -1,9 +1,13 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ArrowLeft, Plus, Trash2, Play, Pause, RotateCcw } from 'lucide-react';
 import type { SportType } from '../App';
+import { useAuth } from '../contexts/AuthContext';
+import * as SessionsAPI from '../api/sessions';
+import { SessionFeedbackDialog, type SessionFeedback } from './SessionFeedbackDialog';
 
 interface WorkoutLoggingProps {
   sport: SportType;
+  sessionId: string;
   onBack: () => void;
 }
 
@@ -18,13 +22,18 @@ interface ClimbingAttempt {
   sendType: string;
 }
 
-export function WorkoutLogging({ sport, onBack }: WorkoutLoggingProps) {
+export function WorkoutLogging({ sport, sessionId, onBack }: WorkoutLoggingProps) {
+  const { tokens } = useAuth();
   const [exercise, setExercise] = useState('');
   const [sets, setSets] = useState<FitnessSet[]>([{ weight: '', reps: '', rpe: '' }]);
   const [climbingAttempts, setClimbingAttempts] = useState<ClimbingAttempt[]>([{ grade: '', sendType: '' }]);
   const [notes, setNotes] = useState('');
   const [timer, setTimer] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [showFeedbackDialog, setShowFeedbackDialog] = useState(false);
+  const [finishingSession, setFinishingSession] = useState(false);
 
   const addSet = () => {
     setSets([...sets, { weight: '', reps: '', rpe: '' }]);
@@ -54,10 +63,108 @@ export function WorkoutLogging({ sport, onBack }: WorkoutLoggingProps) {
     setClimbingAttempts(newAttempts);
   };
 
-  const handleSave = () => {
-    // Mock save - in real app would send to backend
-    alert('Workout logged successfully!');
-    onBack();
+  // Timer effect
+  useEffect(() => {
+    let interval: number | undefined;
+    if (isRunning) {
+      interval = window.setInterval(() => {
+        setTimer((t) => t + 1);
+      }, 1000);
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [isRunning]);
+
+  const handleSave = async () => {
+    if (!tokens?.access_token) {
+      setError('Please log in to save workout');
+      return;
+    }
+
+    if (!exercise.trim()) {
+      setError('Please enter an exercise name');
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      // Create workout logs for each set/attempt
+      if (sport === 'fitness') {
+        for (let i = 0; i < sets.length; i++) {
+          const set = sets[i];
+          if (!set.reps && !set.weight) continue; // Skip empty sets
+
+          await SessionsAPI.createWorkoutLog(tokens.access_token, {
+            session_id: sessionId,
+            exercise_name: exercise.trim(),
+            set_number: i + 1,
+            reps: set.reps ? parseInt(set.reps) : undefined,
+            weight: set.weight ? parseFloat(set.weight) : undefined,
+            rpe: set.rpe ? parseFloat(set.rpe) : undefined,
+            completed: true,
+            notes: i === sets.length - 1 && notes.trim() ? notes.trim() : undefined,
+          });
+        }
+      } else if (sport === 'climbing') {
+        for (let i = 0; i < climbingAttempts.length; i++) {
+          const attempt = climbingAttempts[i];
+          if (!attempt.grade) continue; // Skip empty attempts
+
+          await SessionsAPI.createWorkoutLog(tokens.access_token, {
+            session_id: sessionId,
+            exercise_name: exercise.trim() || 'Climb',
+            set_number: i + 1,
+            grade: attempt.grade,
+            attempts: 1,
+            completed: attempt.sendType === 'Flash' || attempt.sendType === 'Send',
+            notes: i === climbingAttempts.length - 1 && notes.trim() ? notes.trim() : undefined,
+          });
+        }
+      }
+
+      // Clear form
+      setExercise('');
+      setSets([{ weight: '', reps: '', rpe: '' }]);
+      setClimbingAttempts([{ grade: '', sendType: '' }]);
+      setNotes('');
+
+      // Success - no alert needed
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to save workout');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleFinishSession = () => {
+    console.log('handleFinishSession called, opening dialog');
+    // Open feedback dialog
+    setShowFeedbackDialog(true);
+  };
+
+  const handleFeedbackSubmit = async (feedback: SessionFeedback) => {
+    if (!tokens?.access_token) return;
+
+    setFinishingSession(true);
+    setError(null);
+
+    try {
+      await SessionsAPI.updateSession(tokens.access_token, sessionId, {
+        status: 'COMPLETED',
+        intensity: feedback.intensity,
+        quality: feedback.quality,
+        notes: feedback.notes || undefined,
+      });
+      setShowFeedbackDialog(false);
+      onBack();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to finish session');
+    } finally {
+      setFinishingSession(false);
+    }
   };
 
   const formatTime = (time: number) => {
@@ -75,13 +182,22 @@ export function WorkoutLogging({ sport, onBack }: WorkoutLoggingProps) {
             <ArrowLeft className="w-6 h-6 text-white" />
           </button>
           <h2 className="text-white capitalize">{sport} Workout</h2>
-          <button className="px-4 py-2 bg-yellow-500 text-[#0E0E55] rounded-lg hover:bg-yellow-400 transition-colors">
-            Save
+          <button
+            onClick={handleFinishSession}
+            className="px-4 py-2 bg-yellow-500 text-[#0E0E55] rounded-lg hover:bg-yellow-400 transition-colors font-bold"
+          >
+            Finish
           </button>
         </div>
       </div>
 
       <div className="p-4 space-y-4">
+        {/* Error Alert */}
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-800 text-sm rounded-lg p-3">
+            {error}
+          </div>
+        )}
         {/* Timer Card */}
         <div className="bg-[#0E0E55] rounded-lg shadow-lg p-6 text-center">
           <div className="text-6xl text-white mb-4 font-mono">{formatTime(timer)}</div>
@@ -288,11 +404,20 @@ export function WorkoutLogging({ sport, onBack }: WorkoutLoggingProps) {
         {/* Save Button */}
         <button
           onClick={handleSave}
-          className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors active:scale-95"
+          disabled={loading}
+          className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed font-bold"
         >
-          Save Workout
+          {loading ? 'Saving...' : 'Log Exercise'}
         </button>
       </div>
+
+      {/* Session Feedback Dialog */}
+      <SessionFeedbackDialog
+        isOpen={showFeedbackDialog}
+        onClose={() => setShowFeedbackDialog(false)}
+        onSubmit={handleFeedbackSubmit}
+        loading={finishingSession}
+      />
     </div>
   );
 }

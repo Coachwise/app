@@ -158,8 +158,24 @@ export function Exercises({ onBack }: ExercisesProps) {
           {!loading &&
             exercises.map((exercise) => (
               <div key={exercise.id} className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
+                <div className="flex items-start gap-3">
+                  {exercise.media?.url && (
+                    <div className="flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden bg-gray-100">
+                      {exercise.media.url.match(/\.(jpg|jpeg|png|gif|webp)$/i) ? (
+                        <img src={exercise.media.url} alt={exercise.name} className="w-full h-full object-cover" />
+                      ) : (
+                        <video
+                          src={exercise.media.url}
+                          className="w-full h-full object-cover"
+                          autoPlay
+                          loop
+                          muted
+                          playsInline
+                        />
+                      )}
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                       <h3 className="text-gray-900 font-semibold">{exercise.name}</h3>
                       {exercise.public && (
@@ -180,7 +196,7 @@ export function Exercises({ onBack }: ExercisesProps) {
                       ))}
                     </div>
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex-shrink-0 flex gap-2">
                     <button
                       onClick={() => setEditing(exercise)}
                       className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200"
