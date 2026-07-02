@@ -1,9 +1,22 @@
 import { request } from "./client";
 import type { User, UserUpdate } from "./types";
 
-export function listUsers(token: string, username?: string) {
-  const query = username ? `?username=${encodeURIComponent(username)}` : "";
-  return request<User[]>(`/users${query}`, { token });
+export interface UserListResponse {
+  items: User[];
+  total: number;
+}
+
+export function listUsers(
+  token: string,
+  params?: { search?: string; coachOnly?: boolean; page?: number; limit?: number }
+) {
+  const q = new URLSearchParams();
+  if (params?.search) q.set("search", params.search);
+  if (params?.coachOnly) q.set("coach_only", "true");
+  if (params?.page) q.set("page", String(params.page));
+  if (params?.limit) q.set("limit", String(params.limit));
+  const query = q.toString() ? `?${q.toString()}` : "";
+  return request<UserListResponse>(`/users${query}`, { token });
 }
 
 export function getUser(token: string, id: string) {

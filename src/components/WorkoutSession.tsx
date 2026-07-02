@@ -7,6 +7,7 @@ import * as PlansAPI from '../api/plans';
 import * as ExercisesAPI from '../api/exercises';
 import type { Exercise } from '../api/types';
 import { SessionFeedbackDialog, type SessionFeedback } from './SessionFeedbackDialog';
+import { useLanguage } from '../contexts/LanguageContext';
 
 interface WorkoutSessionProps {
   planId?: string;
@@ -38,6 +39,7 @@ const SESSION_KEY = 'coachwise-active-session';
 
 export function WorkoutSession({ planId, scheduleId, onBack, onEndSession, isPro = true, onNavigate }: WorkoutSessionProps) {
   const { tokens } = useAuth();
+  const { t } = useLanguage();
   const [showProModal, setShowProModal] = useState(false);
   const [sessionTime, setSessionTime] = useState(0);
   const [isTimerRunning, setIsTimerRunning] = useState(true);
@@ -122,7 +124,7 @@ export function WorkoutSession({ planId, scheduleId, onBack, onEndSession, isPro
 
         setLoading(false);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to start session');
+        setError(err instanceof Error ? err.message : t('failedToStartSession'));
         setLoading(false);
       }
     };
@@ -173,7 +175,7 @@ export function WorkoutSession({ planId, scheduleId, onBack, onEndSession, isPro
         });
       } catch (err) {
         console.error('Failed to save workout log:', err);
-        setError('Failed to save set');
+        setError(t('failedToSaveSet'));
       }
     }
   };
@@ -222,7 +224,7 @@ export function WorkoutSession({ planId, scheduleId, onBack, onEndSession, isPro
       onEndSession();
     } catch (err) {
       console.error('Failed to finish workout:', err);
-      setError('Failed to complete workout');
+      setError(t('failedToCompleteWorkout'));
     } finally {
       setFinishingSession(false);
     }
@@ -298,7 +300,7 @@ export function WorkoutSession({ planId, scheduleId, onBack, onEndSession, isPro
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <p className="text-gray-600">Loading workout...</p>
+        <p className="text-gray-600">{t('loadingWorkout')}</p>
       </div>
     );
   }
@@ -316,7 +318,7 @@ export function WorkoutSession({ planId, scheduleId, onBack, onEndSession, isPro
             <ArrowLeft className="w-6 h-6 text-white" />
           </button>
           <div className="flex flex-col items-center">
-            <h2 className="text-white font-bold">{planId ? 'Workout Session' : 'Freestyle Workout'}</h2>
+            <h2 className="text-white font-bold">{planId ? t('workoutSession') : t('freestyleWorkout')}</h2>
             <div className="flex items-center gap-2 text-yellow-500 text-sm font-mono bg-[#1A1A6E] px-3 py-0.5 rounded-full mt-1">
               <Clock className="w-3 h-3" />
               {formatTime(sessionTime)}
@@ -326,7 +328,7 @@ export function WorkoutSession({ planId, scheduleId, onBack, onEndSession, isPro
             onClick={handleFinishWorkout}
             className="text-white font-medium hover:text-yellow-500 transition-colors"
           >
-            Finish
+            {t('finish')}
           </button>
         </div>
         
@@ -344,13 +346,13 @@ export function WorkoutSession({ planId, scheduleId, onBack, onEndSession, isPro
             <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mb-4">
               <Plus className="w-8 h-8 text-yellow-600" />
             </div>
-            <h3 className="font-bold text-[#0E0E55] text-lg mb-1">No exercises yet</h3>
-            <p className="text-gray-500 text-sm mb-6">Search and add exercises to your freestyle session</p>
+            <h3 className="font-bold text-[#0E0E55] text-lg mb-1">{t('noExercisesYet')}</h3>
+            <p className="text-gray-500 text-sm mb-6">{t('noExercisesDesc')}</p>
             <button
               onClick={openExercisePicker}
               className="bg-[#0E0E55] text-white px-6 py-3 rounded-xl font-bold hover:bg-[#1A1A6E]"
             >
-              Add Exercise
+              {t('addExercise')}
             </button>
           </div>
         )}
@@ -392,7 +394,7 @@ export function WorkoutSession({ planId, scheduleId, onBack, onEndSession, isPro
                     {exercise.name}
                   </h3>
                   <p className="text-sm text-gray-500">
-                    {completedCount}/{exercise.sets.length} sets completed
+                    {t('setsCompletedShort', { completed: completedCount, total: exercise.sets.length })}
                   </p>
                 </div>
                 <div className={`p-2 rounded-full ${isFullyComplete ? 'bg-green-100' : 'bg-gray-100'}`}>
@@ -416,13 +418,13 @@ export function WorkoutSession({ planId, scheduleId, onBack, onEndSession, isPro
                       }`}
                     >
                       <div className="flex flex-col items-center justify-center w-8">
-                        <span className="text-xs font-bold text-gray-400">SET</span>
+                        <span className="text-xs font-bold text-gray-400">{t('setLabel')}</span>
                         <span className="text-sm font-bold text-[#0E0E55]">{setIndex + 1}</span>
                       </div>
 
                       <div className="flex-1 grid grid-cols-2 gap-3">
                         <div className="bg-gray-50 rounded-lg p-1.5 flex flex-col items-center border border-gray-200">
-                           <span className="text-[10px] text-gray-500 font-bold mb-1">KG</span>
+                           <span className="text-[10px] text-gray-500 font-bold mb-1">{t('kg')}</span>
                            <div className="flex items-center gap-2 w-full justify-between px-1">
                              <button onClick={() => updateSet(exerciseIndex, setIndex, 'weight', -2.5)} className="text-gray-400 hover:text-[#0E0E55]"><Minus className="w-3 h-3" /></button>
                              <span className="font-bold text-[#0E0E55]">{set.weight}</span>
@@ -431,7 +433,7 @@ export function WorkoutSession({ planId, scheduleId, onBack, onEndSession, isPro
                         </div>
 
                         <div className="bg-gray-50 rounded-lg p-1.5 flex flex-col items-center border border-gray-200">
-                           <span className="text-[10px] text-gray-500 font-bold mb-1">REPS</span>
+                           <span className="text-[10px] text-gray-500 font-bold mb-1">{t('repsUpper')}</span>
                            <div className="flex items-center gap-2 w-full justify-between px-1">
                              <button onClick={() => updateSet(exerciseIndex, setIndex, 'reps', -1)} className="text-gray-400 hover:text-[#0E0E55]"><Minus className="w-3 h-3" /></button>
                              <span className="font-bold text-[#0E0E55]">{set.reps}</span>
@@ -458,7 +460,7 @@ export function WorkoutSession({ planId, scheduleId, onBack, onEndSession, isPro
                       onClick={() => handleAddSet(exercise.id)}
                       className="text-sm text-yellow-600 font-medium flex items-center gap-1 hover:text-yellow-700"
                     >
-                      <Plus className="w-4 h-4" /> Add Set
+                      <Plus className="w-4 h-4" /> {t('addSet')}
                     </button>
                   </div>
                 </div>
@@ -471,7 +473,7 @@ export function WorkoutSession({ planId, scheduleId, onBack, onEndSession, isPro
             onClick={openExercisePicker}
             className="w-full py-3 border-2 border-dashed border-gray-300 rounded-xl text-gray-500 font-medium flex items-center justify-center gap-2 hover:border-yellow-500 hover:text-yellow-600 transition-colors"
           >
-            <Plus className="w-4 h-4" /> Add Exercise
+            <Plus className="w-4 h-4" /> {t('addExercise')}
           </button>
         )}
       </div>
@@ -483,7 +485,7 @@ export function WorkoutSession({ planId, scheduleId, onBack, onEndSession, isPro
             <button onClick={() => setShowExercisePicker(false)} className="p-2 -ml-2 hover:bg-[#1A1A6E] rounded-lg">
               <X className="w-6 h-6 text-white" />
             </button>
-            <h2 className="text-white font-bold flex-1">Add Exercise</h2>
+            <h2 className="text-white font-bold flex-1">{t('addExercise')}</h2>
           </div>
 
           <div className="p-4">
@@ -494,7 +496,7 @@ export function WorkoutSession({ planId, scheduleId, onBack, onEndSession, isPro
                 type="text"
                 value={exerciseSearch}
                 onChange={e => setExerciseSearch(e.target.value)}
-                placeholder="Search exercises..."
+                placeholder={t('searchExercisesPlaceholder')}
                 className="w-full pl-9 pr-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
               />
             </div>
@@ -502,11 +504,11 @@ export function WorkoutSession({ planId, scheduleId, onBack, onEndSession, isPro
 
           <div className="flex-1 overflow-y-auto px-4 pb-8 space-y-2">
             {searchLoading && (
-              <p className="text-center text-gray-500 text-sm py-8">Searching...</p>
+              <p className="text-center text-gray-500 text-sm py-8">{t('searching')}</p>
             )}
             {!searchLoading && searchResults.length === 0 && (
               <p className="text-center text-gray-500 text-sm py-8">
-                {exerciseSearch ? 'No exercises found' : 'Start typing to search'}
+                {exerciseSearch ? t('noExercisesFound') : t('startTypingToSearch')}
               </p>
             )}
             {!searchLoading && searchResults.map(exercise => (
@@ -537,7 +539,7 @@ export function WorkoutSession({ planId, scheduleId, onBack, onEndSession, isPro
         </div>
       )}
 
-      <div className="fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 p-4 shadow-lg flex items-center justify-between z-30">
+      <div className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white border-t border-gray-200 p-4 shadow-lg flex items-center justify-between z-30">
         <div className="flex items-center gap-3">
             <button 
               onClick={() => setIsTimerRunning(!isTimerRunning)}
@@ -548,7 +550,7 @@ export function WorkoutSession({ planId, scheduleId, onBack, onEndSession, isPro
               {isTimerRunning ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5 ml-1" />}
             </button>
             <div>
-               <p className="text-xs text-gray-500 font-bold">SESSION TIMER</p>
+               <p className="text-xs text-gray-500 font-bold">{t('sessionTimer')}</p>
                <p className="text-xl font-mono text-[#0E0E55] font-bold">{formatTime(sessionTime)}</p>
             </div>
         </div>
@@ -556,7 +558,7 @@ export function WorkoutSession({ planId, scheduleId, onBack, onEndSession, isPro
           onClick={handleFinishWorkout}
           className="bg-[#0E0E55] text-white px-6 py-3 rounded-xl font-bold hover:bg-[#1A1A6E] shadow-lg shadow-[#0E0E55]/20"
         >
-          Finish Workout
+          {t('finishWorkout')}
         </button>
       </div>
 

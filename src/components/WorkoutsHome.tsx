@@ -12,6 +12,7 @@ import type { Plan, PlanSchedule, Session } from '../api/types';
 interface WorkoutsHomeProps {
   onStartSession: (planId?: string, scheduleId?: string) => void;
   onCreatePlan: () => void;
+  onViewPlan?: (planId: string) => void;
   userRole: UserRole;
   onNavigate: (view: string) => void;
   isPro?: boolean;
@@ -21,7 +22,7 @@ interface WorkoutsHomeProps {
 interface WorkoutPlan {
   id: string;
   name: string;
-  duration: string;
+  estimatedSeconds: number;
   type: 'strength' | 'climbing';
   source: 'personal' | 'assigned';
   coachName?: string;
@@ -53,46 +54,7 @@ interface CompletedWorkout {
 const DAY_MS = 24 * 60 * 60 * 1000;
 const WINDOW_RADIUS = 3; // show +/-3 days around center (7 total)
 
-const fallbackPlans: WorkoutPlan[] = [
-  {
-    id: '1',
-    name: 'Upper Body Push',
-    duration: '45 min',
-    type: 'strength',
-    source: 'assigned',
-    coachName: 'Sarah Martinez',
-    exercises: 5
-  },
-  {
-    id: '2',
-    name: 'Climbing Endurance',
-    duration: '60 min',
-    type: 'climbing',
-    source: 'assigned',
-    coachName: 'Mike Chen',
-    exercises: 6
-  },
-  {
-    id: '3',
-    name: 'Morning Mobility',
-    duration: '20 min',
-    type: 'strength',
-    source: 'personal',
-    exercises: 4
-  },
-  {
-    id: '4',
-    name: 'Core Blaster',
-    duration: '15 min',
-    type: 'strength',
-    source: 'personal',
-    exercises: 3
-  }
-];
-
-const initialSchedule: ScheduledWorkout[] = [
-  // No mock schedules - will be loaded from API
-];
+const initialSchedule: ScheduledWorkout[] = [];
 
 const normalizeDate = (date: Date) => {
   const d = new Date(date);
@@ -110,13 +72,12 @@ const buildRangeDays = (center: Date) => {
   return Array.from({ length: WINDOW_RADIUS * 2 + 1 }, (_, i) => new Date(start.getTime() + i * DAY_MS));
 };
 
-const formatRangeLabel = (days: Date[]) => {
+const formatRangeLabel = (days: Date[], locale?: string) => {
   if (!days.length) return '';
   const start = days[0];
   const end = days[days.length - 1];
-  const startLabel = `${start.toLocaleString(undefined, { month: 'short' })} ${start.getDate()}`;
-  const endLabel = `${end.toLocaleString(undefined, { month: 'short' })} ${end.getDate()}`;
-  return `${startLabel} – ${endLabel}`;
+  const fmt = (d: Date) => d.toLocaleDateString(locale, { month: 'short', day: 'numeric' });
+  return `${fmt(start)} – ${fmt(end)}`;
 };
 
 const windowKey = (center: Date) => {
@@ -125,28 +86,13 @@ const windowKey = (center: Date) => {
   return `${dateKey(start)}:${dateKey(end)}`;
 };
 
-const calculateDuration = (startedAt?: string, endedAt?: string): string => {
-  if (!startedAt || !endedAt) return 'N/A';
+export function WorkoutsHome({ onStartSession, onCreatePlan, onViewPlan, userRole, onNavigate, isPro = true, refreshTrigger }: WorkoutsHomeProps) {
+  const { t, language, isRTL } = useLanguage();
+  const { tokens, user } = useAuth();
+  // Use the Persian (Jalali/Shamsi) calendar with Persian month/day names when in Persian.
+  const dateLocale = language === 'fa' ? 'fa-IR-u-ca-persian' : undefined;
 
-  const start = new Date(startedAt);
-  const end = new Date(endedAt);
-  const durationMs = end.getTime() - start.getTime();
-
-  if (durationMs < 0) return 'N/A';
-
-  const minutes = Math.floor(durationMs / 60000);
-  if (minutes < 60) return `${minutes} min`;
-
-  const hours = Math.floor(minutes / 60);
-  const remainingMins = minutes % 60;
-  return remainingMins > 0 ? `${hours}h ${remainingMins}m` : `${hours}h`;
-};
-
-export function WorkoutsHome({ onStartSession, onCreatePlan, userRole, onNavigate, isPro = true, refreshTrigger }: WorkoutsHomeProps) {
-  const { t } = useLanguage();
-  const { tokens } = useAuth();
-
-  const [libraryPlans, setLibraryPlans] = useState<WorkoutPlan[]>(fallbackPlans);
+  const [libraryPlans, setLibraryPlans] = useState<WorkoutPlan[]>([]);
   const [loadingPlans, setLoadingPlans] = useState(false);
   const [planError, setPlanError] = useState<string | null>(null);
 
@@ -176,21 +122,20 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, userRole, onNavigat
 
   const getPlanInfo = (planId: string): WorkoutPlan => {
     return (
-      planLookup.get(planId) ||
-      fallbackPlans.find(p => p.id === planId) || {
+      planLookup.get(planId) || {
         id: planId,
-        name: 'Scheduled Plan',
-        duration: '45 min',
+        name: t('workoutPlan'),
+        estimatedSeconds: 0,
         type: 'strength',
         source: 'personal',
-        exercises: 4
+        exercises: 0,
       }
     );
   };
 
   const loadPlans = useCallback(async () => {
     if (!tokens?.access_token) {
-      setLibraryPlans(fallbackPlans);
+      setLibraryPlans([]);
       setPlanError(null);
       return;
     }
@@ -200,42 +145,35 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, userRole, onNavigat
       const response = await PlansAPI.listPlans(tokens.access_token);
       const plans = response.items;
 
-      // Fetch exercise count for each plan
-      const mappedPlans = await Promise.all(
-        plans.map(async (plan: Plan) => {
-          try {
-            const exercises = await PlansAPI.listPlanExercises(tokens.access_token, plan.id);
-            return {
-              id: plan.id,
-              name: plan.name,
-              duration: '45 min', // Default duration
-              type: 'strength' as const,
-              source: 'personal' as const,
-              exercises: exercises.length,
-            };
-          } catch (err) {
-            // If fetching exercises fails, default to 0
-            return {
-              id: plan.id,
-              name: plan.name,
-              duration: '45 min',
-              type: 'strength' as const,
-              source: 'personal' as const,
-              exercises: 0,
-            };
-          }
-        })
-      );
+      // exercise_count and estimated_seconds come from the list response — no
+      // per-plan request needed.
+      const mappedPlans = plans.map((plan: Plan) => {
+        // A plan owned by someone else (the coach) is one assigned to me.
+        const assigned = !!plan.user && plan.user.id !== user?.id;
+        const owner = plan.user;
+        const coachName = owner
+          ? `${owner.first_name || ''} ${owner.last_name || ''}`.trim() || owner.username
+          : undefined;
+        return {
+          id: plan.id,
+          name: plan.name,
+          estimatedSeconds: plan.estimated_seconds ?? 0,
+          type: 'strength' as const,
+          source: (assigned ? 'assigned' : 'personal') as 'assigned' | 'personal',
+          coachName: assigned ? coachName : undefined,
+          exercises: plan.exercise_count ?? 0,
+        };
+      });
 
-      setLibraryPlans(mappedPlans.length > 0 ? mappedPlans : fallbackPlans);
+      setLibraryPlans(mappedPlans);
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Unable to load plans';
+      const msg = err instanceof Error ? err.message : t('unableToLoadPlans');
       setPlanError(msg);
-      setLibraryPlans(fallbackPlans);
+      setLibraryPlans([]);
     } finally {
       setLoadingPlans(false);
     }
-  }, [tokens?.access_token]);
+  }, [tokens?.access_token, user?.id]);
 
   const loadAllFutureSchedules = useCallback(async () => {
     if (!tokens?.access_token) {
@@ -273,7 +211,7 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, userRole, onNavigat
       setFutureSchedules(mapped);
       setSchedulesLoaded(true);
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Unable to load schedules';
+      const msg = err instanceof Error ? err.message : t('unableToLoadSchedules');
       setScheduleError(msg);
     } finally {
       setScheduleLoading(false);
@@ -385,7 +323,7 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, userRole, onNavigat
         status: created.status,
       }]);
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Unable to schedule workout';
+      const msg = err instanceof Error ? err.message : t('unableToScheduleWorkout');
       setScheduleError(msg);
     } finally {
       setScheduleLoading(false);
@@ -405,14 +343,14 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, userRole, onNavigat
       await PlanSchedulesAPI.updatePlanSchedule(tokens.access_token, instanceId, { status: 'CANCELED' });
       setFutureSchedules(prev => prev.filter(item => item.id !== instanceId));
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Unable to remove workout';
+      const msg = err instanceof Error ? err.message : t('unableToRemoveWorkout');
       setScheduleError(msg);
     }
   };
 
   const handleStartScheduledWorkout = async (instanceId: string, planId: string) => {
     if (!canStartToday) {
-      setScheduleError('You can only start workouts scheduled for today.');
+      setScheduleError(t('onlyStartTodayError'));
       return;
     }
 
@@ -433,7 +371,7 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, userRole, onNavigat
         const plan = session.planId ? getPlanInfo(session.planId) : {
           id: session.id,
           name: `${session.sessionType} Session`,
-          duration: '45 min',
+          estimatedSeconds: 0,
           type: 'strength' as const,
           source: 'personal' as const,
           exercises: 0,
@@ -464,7 +402,7 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, userRole, onNavigat
         const plan = session.planId ? getPlanInfo(session.planId) : {
           id: session.id,
           name: `${session.sessionType} Session`,
-          duration: '45 min',
+          estimatedSeconds: 0,
           type: 'strength' as const,
           source: 'personal' as const,
           exercises: 0,
@@ -535,7 +473,7 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, userRole, onNavigat
     setMouseStartX(null);
   };
 
-  const rangeLabel = formatRangeLabel(visibleDays);
+  const rangeLabel = formatRangeLabel(visibleDays, dateLocale);
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
@@ -543,7 +481,7 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, userRole, onNavigat
         <div className="flex items-center justify-between mb-4">
           <div>
             <h1 className="text-white text-2xl font-bold">{t('workouts')}</h1>
-            <p className="text-gray-300 text-sm">Swipe to browse 6-day windows</p>
+            <p className="text-gray-300 text-sm">{t('swipeToBrowse')}</p>
           </div>
           <HamburgerMenu userRole={userRole} onNavigate={onNavigate} isPro={isPro} />
         </div>
@@ -552,9 +490,9 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, userRole, onNavigat
           <button
             onClick={() => shiftWindow(-3)}
             className="p-2 rounded-lg bg-[#1A1A6E] hover:bg-[#1A1A6E]/80 text-white"
-            aria-label="Previous days"
+            aria-label={t('previousDays')}
           >
-            <ArrowLeft className="w-4 h-4" />
+            {isRTL ? <ArrowRight className="w-4 h-4" /> : <ArrowLeft className="w-4 h-4" />}
           </button>
           <div className="flex items-center gap-2">
             <span className="text-sm font-medium text-white">{rangeLabel}</span>
@@ -566,15 +504,15 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, userRole, onNavigat
               }}
               className="px-3 py-1 rounded-lg bg-yellow-500 hover:bg-yellow-400 text-[#0E0E55] text-xs font-bold transition-colors"
             >
-              Today
+              {t('today')}
             </button>
           </div>
           <button
             onClick={() => shiftWindow(3)}
             className="p-2 rounded-lg bg-[#1A1A6E] hover:bg-[#1A1A6E]/80 text-white"
-            aria-label="Next days"
+            aria-label={t('nextDays')}
           >
-            <ArrowRight className="w-4 h-4" />
+            {isRTL ? <ArrowLeft className="w-4 h-4" /> : <ArrowRight className="w-4 h-4" />}
           </button>
         </div>
 
@@ -618,10 +556,10 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, userRole, onNavigat
                 className={buttonClasses}
               >
                 <span className="text-[10px] font-medium uppercase">
-                  {['S','M','T','W','T','F','S'][date.getDay()]}
+                  {date.toLocaleDateString(dateLocale, { weekday: 'narrow' })}
                 </span>
                 <span className={`text-sm font-bold ${isToday ? '' : 'opacity-80'}`}>
-                  {date.getDate()}
+                  {date.toLocaleDateString(dateLocale, { day: 'numeric' })}
                 </span>
                 {hasData ? (
                   <div className={`w-1.5 h-1.5 rounded-full mt-1 ${isToday ? 'bg-[#0E0E55]' : isPast ? 'bg-green-500' : 'bg-yellow-500'}`} />
@@ -641,7 +579,7 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, userRole, onNavigat
 
         {scheduleLoading && (
           <div className="bg-white border border-gray-200 rounded-lg p-3 text-sm text-gray-600">
-            Refreshing schedule...
+            {t('refreshingSchedule')}
           </div>
         )}
 
@@ -650,17 +588,17 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, userRole, onNavigat
              <div className="flex items-center justify-between px-2">
                 <span className="text-sm font-bold text-gray-500 uppercase tracking-wide">
                   {selectedDate < normalizeDate(new Date())
-                    ? "Completed Workouts"
+                    ? t('completedWorkouts')
                     : dateKey(selectedDate) === dateKey(new Date())
-                    ? "Today's Schedule"
-                    : "Scheduled Workouts"}
+                    ? t('todaysSchedule')
+                    : t('scheduledWorkouts')}
                 </span>
                 {selectedDate >= normalizeDate(new Date()) && (
                   <button
                     onClick={() => setIsScheduling(true)}
                     className="text-xs font-bold text-yellow-600 hover:text-yellow-700 flex items-center gap-1"
                   >
-                    <Plus className="w-3 h-3" /> Add Another
+                    <Plus className="w-3 h-3" /> {t('addAnother')}
                   </button>
                 )}
              </div>
@@ -679,16 +617,16 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, userRole, onNavigat
                       <div className="flex items-center gap-2">
                         {workout.source === 'assigned' ? (
                           <span className="flex items-center gap-1 text-xs text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md font-medium">
-                            <User className="w-3 h-3" /> Assigned
+                            <User className="w-3 h-3" /> {t('assigned')}
                           </span>
                         ) : (
                           <span className="flex items-center gap-1 text-xs text-green-600 bg-green-50 px-2 py-0.5 rounded-md font-medium">
-                            <Dumbbell className="w-3 h-3" /> My Plan
+                            <Dumbbell className="w-3 h-3" /> {t('myPlan')}
                           </span>
                         )}
                         {isCompleted && !isPastDate && (
                           <span className="flex items-center gap-1 text-xs text-green-600 bg-green-50 px-2 py-0.5 rounded-md font-medium">
-                            <CheckCircle className="w-3 h-3" /> Done
+                            <CheckCircle className="w-3 h-3" /> {t('done')}
                           </span>
                         )}
                       </div>
@@ -698,7 +636,7 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, userRole, onNavigat
                           <button
                             onClick={(e) => handleRemoveWorkout(workout.instanceId, e)}
                             className="p-1.5 bg-gray-50 rounded-full text-gray-400 hover:bg-red-50 hover:text-red-500 transition-colors"
-                            title="Remove from schedule"
+                            title={t('removeFromSchedule')}
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
@@ -707,7 +645,7 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, userRole, onNavigat
                     </div>
 
                     <h2 className="text-xl text-[#0E0E55] font-bold mb-3">{workout.name}</h2>
-                    {workout.coachName && <p className="text-sm text-gray-500 mb-3">By {workout.coachName}</p>}
+                    {workout.coachName && <p className="text-sm text-gray-500 mb-3">{t('byCoach', { coach: workout.coachName })}</p>}
 
                     {/* Past date: Show daily analytics and session metrics */}
                     {isPastDate && isCompleted ? (
@@ -730,7 +668,7 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, userRole, onNavigat
                                   <Dumbbell className="w-4 h-4 text-[#0E0E55]" />
                                 </div>
                                 <div>
-                                  <p className="text-[10px] text-gray-500 uppercase">Exercises</p>
+                                  <p className="text-[10px] text-gray-500 uppercase">{t('exercisesLabel')}</p>
                                   <p className="font-bold text-sm text-[#0E0E55]">{workout.exercises}</p>
                                 </div>
                               </div>
@@ -745,7 +683,7 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, userRole, onNavigat
                                     }`} />
                                   </div>
                                   <div>
-                                    <p className="text-[10px] text-gray-500 uppercase">Intensity</p>
+                                    <p className="text-[10px] text-gray-500 uppercase">{t('intensity')}</p>
                                     <p className={`font-bold text-sm ${
                                       workout.sessionData.intensity <= 3 ? 'text-green-600' :
                                       workout.sessionData.intensity <= 6 ? 'text-yellow-600' :
@@ -761,7 +699,7 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, userRole, onNavigat
                                     <Trophy className="w-4 h-4 text-gray-400" />
                                   </div>
                                   <div>
-                                    <p className="text-[10px] text-gray-500 uppercase">Intensity</p>
+                                    <p className="text-[10px] text-gray-500 uppercase">{t('intensity')}</p>
                                     <p className="font-bold text-sm text-gray-400">--</p>
                                   </div>
                                 </div>
@@ -777,7 +715,7 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, userRole, onNavigat
                                     }`} />
                                   </div>
                                   <div>
-                                    <p className="text-[10px] text-gray-500 uppercase">Quality</p>
+                                    <p className="text-[10px] text-gray-500 uppercase">{t('quality')}</p>
                                     <p className={`font-bold text-sm ${
                                       workout.sessionData.quality <= 2 ? 'text-red-600' :
                                       workout.sessionData.quality <= 3 ? 'text-yellow-600' :
@@ -793,7 +731,7 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, userRole, onNavigat
                                     <CheckCircle className="w-4 h-4 text-gray-400" />
                                   </div>
                                   <div>
-                                    <p className="text-[10px] text-gray-500 uppercase">Quality</p>
+                                    <p className="text-[10px] text-gray-500 uppercase">{t('quality')}</p>
                                     <p className="font-bold text-sm text-gray-400">--</p>
                                   </div>
                                 </div>
@@ -805,24 +743,24 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, userRole, onNavigat
                               {analytics && analytics.sessions_count > 1 && (
                                 <div className="mb-3 flex items-center gap-1.5 text-xs text-green-700 font-semibold">
                                   <Trophy className="w-3.5 h-3.5" />
-                                  <span>{analytics.sessions_count} sessions completed today</span>
+                                  <span>{t('sessionsCompletedToday', { count: analytics.sessions_count })}</span>
                                 </div>
                               )}
                               <div className="grid grid-cols-3 gap-3 mb-3">
                                 <div>
-                                  <p className="text-[10px] text-gray-600 uppercase font-semibold mb-1">Duration</p>
+                                  <p className="text-[10px] text-gray-600 uppercase font-semibold mb-1">{t('duration')}</p>
                                   <p className="font-bold text-base text-green-700">
                                     {analytics ? formatDuration(analytics.total_duration) : 'N/A'}
                                   </p>
                                 </div>
                                 <div>
-                                  <p className="text-[10px] text-gray-600 uppercase font-semibold mb-1">Sets</p>
+                                  <p className="text-[10px] text-gray-600 uppercase font-semibold mb-1">{t('setsLabel')}</p>
                                   <p className="font-bold text-base text-green-700">
                                     {analytics?.total_sets ?? '--'}
                                   </p>
                                 </div>
                                 <div>
-                                  <p className="text-[10px] text-gray-600 uppercase font-semibold mb-1">Reps</p>
+                                  <p className="text-[10px] text-gray-600 uppercase font-semibold mb-1">{t('repsLabel')}</p>
                                   <p className="font-bold text-base text-green-700">
                                     {analytics?.total_reps ?? '--'}
                                   </p>
@@ -831,14 +769,14 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, userRole, onNavigat
 
                               {analytics && analytics.plans_completed && analytics.plans_completed.length > 0 && (
                                 <p className="text-[10px] text-gray-600 mb-2">
-                                  <span className="font-semibold uppercase">Plans: </span>
+                                  <span className="font-semibold uppercase">{t('plansColon')} </span>
                                   <span className="text-green-700 font-medium">
                                     {analytics.plans_completed.join(', ')}
                                   </span>
                                 </p>
                               )}
                               <p className="text-[10px] text-green-600 uppercase font-semibold flex items-center gap-1">
-                                <CheckCircle className="w-3 h-3" /> Workout Completed
+                                <CheckCircle className="w-3 h-3" /> {t('workoutCompletedLabel')}
                               </p>
                             </div>
                           </>
@@ -851,7 +789,7 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, userRole, onNavigat
                             <Dumbbell className="w-4 h-4 text-[#0E0E55]" />
                           </div>
                           <div>
-                            <p className="text-[10px] text-gray-500 uppercase">Exercises</p>
+                            <p className="text-[10px] text-gray-500 uppercase">{t('exercisesLabel')}</p>
                             <p className="font-bold text-sm text-[#0E0E55]">{workout.exercises}</p>
                           </div>
                         </div>
@@ -866,7 +804,7 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, userRole, onNavigat
                               }`} />
                             </div>
                             <div>
-                              <p className="text-[10px] text-gray-500 uppercase">Intensity</p>
+                              <p className="text-[10px] text-gray-500 uppercase">{t('intensity')}</p>
                               <p className={`font-bold text-sm ${
                                 workout.sessionData.intensity <= 3 ? 'text-green-600' :
                                 workout.sessionData.intensity <= 6 ? 'text-yellow-600' :
@@ -882,7 +820,7 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, userRole, onNavigat
                               <Trophy className="w-4 h-4 text-gray-400" />
                             </div>
                             <div>
-                              <p className="text-[10px] text-gray-500 uppercase">Intensity</p>
+                              <p className="text-[10px] text-gray-500 uppercase">{t('intensity')}</p>
                               <p className="font-bold text-sm text-gray-400">--</p>
                             </div>
                           </div>
@@ -898,7 +836,7 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, userRole, onNavigat
                               }`} />
                             </div>
                             <div>
-                              <p className="text-[10px] text-gray-500 uppercase">Quality</p>
+                              <p className="text-[10px] text-gray-500 uppercase">{t('quality')}</p>
                               <p className={`font-bold text-sm ${
                                 workout.sessionData.quality <= 2 ? 'text-red-600' :
                                 workout.sessionData.quality <= 3 ? 'text-yellow-600' :
@@ -914,7 +852,7 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, userRole, onNavigat
                               <CheckCircle className="w-4 h-4 text-gray-400" />
                             </div>
                             <div>
-                              <p className="text-[10px] text-gray-500 uppercase">Quality</p>
+                              <p className="text-[10px] text-gray-500 uppercase">{t('quality')}</p>
                               <p className="font-bold text-sm text-gray-400">--</p>
                             </div>
                           </div>
@@ -931,7 +869,7 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, userRole, onNavigat
                             className="flex-1 py-3 rounded-xl font-bold transition-all flex items-center justify-center gap-2 shadow-lg shadow-green-500/10 text-sm bg-green-600 text-white hover:bg-green-700"
                           >
                             <Play className="w-4 h-4 fill-current" />
-                            Repeat Workout
+                            {t('repeatWorkout')}
                           </button>
                         ) : !isCompleted ? (
                           <button
@@ -942,10 +880,10 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, userRole, onNavigat
                                 ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
                                 : 'bg-[#0E0E55] text-white hover:bg-[#1A1A6E]'
                             }`}
-                            title={!canStartToday ? 'You can only start today\'s workout' : undefined}
+                            title={!canStartToday ? t('onlyStartTodayTitle') : undefined}
                           >
                             <Play className="w-4 h-4 fill-current" />
-                            Start Workout
+                            {t('startWorkout')}
                           </button>
                         ) : null}
                       </div>
@@ -960,7 +898,7 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, userRole, onNavigat
               onClick={() => onStartSession()}
               className="w-full mt-3 px-6 py-3 bg-white text-[#0E0E55] border-2 border-[#0E0E55]/10 rounded-xl font-bold hover:bg-gray-50 transition-colors"
             >
-              Start Freestyle
+              {t('startFreestyle')}
             </button>
           )}
           </div>
@@ -974,13 +912,13 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, userRole, onNavigat
 
              {selectedDate < normalizeDate(new Date()) ? (
                <>
-                 <h3 className="text-lg font-bold text-[#0E0E55] mb-2">No Activity</h3>
-                 <p className="text-gray-500">No workouts logged for {selectedDate.toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' })}.</p>
+                 <h3 className="text-lg font-bold text-[#0E0E55] mb-2">{t('noActivity')}</h3>
+                 <p className="text-gray-500">{t('noWorkoutsLogged', { date: selectedDate.toLocaleDateString(dateLocale, { weekday: 'long', month: 'short', day: 'numeric' }) })}</p>
                </>
              ) : (
                <>
-                 <h3 className="text-lg font-bold text-[#0E0E55] mb-2">Rest Day</h3>
-                 <p className="text-gray-500 mb-6">No workouts scheduled for {selectedDate.toLocaleDateString(undefined, { weekday: 'long' })}.</p>
+                 <h3 className="text-lg font-bold text-[#0E0E55] mb-2">{t('restDay')}</h3>
+                 <p className="text-gray-500 mb-6">{t('noWorkoutsScheduled', { day: selectedDate.toLocaleDateString(dateLocale, { weekday: 'long' }) })}</p>
 
                  <div className="grid grid-cols-1 gap-3">
                    <button
@@ -988,7 +926,7 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, userRole, onNavigat
                      className="w-full px-6 py-3 bg-yellow-500 text-[#0E0E55] rounded-xl font-bold hover:bg-yellow-400 transition-colors shadow-md flex items-center justify-center gap-2"
                    >
                      <Plus className="w-5 h-5" />
-                     Schedule Workout
+                     {t('scheduleWorkout')}
                    </button>
 
                    {dateKey(selectedDate) === dateKey(new Date()) && (
@@ -996,7 +934,7 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, userRole, onNavigat
                         onClick={() => onStartSession()}
                         className="w-full px-6 py-3 bg-white text-[#0E0E55] border-2 border-[#0E0E55]/10 rounded-xl font-bold hover:bg-gray-50 transition-colors"
                       >
-                        Start Freestyle
+                        {t('startFreestyle')}
                      </button>
                    )}
                  </div>
@@ -1009,7 +947,7 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, userRole, onNavigat
           <div className="fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center p-4">
             <div className="bg-white w-full max-w-md rounded-3xl p-6 shadow-2xl animate-in slide-in-from-bottom-20">
               <div className="flex items-center justify-between mb-6">
-                <h3 className="text-xl font-bold text-[#0E0E55]">Select a Plan</h3>
+                <h3 className="text-xl font-bold text-[#0E0E55]">{t('selectAPlan')}</h3>
                 <button 
                   onClick={() => setIsScheduling(false)}
                   className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors"
@@ -1019,7 +957,7 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, userRole, onNavigat
               </div>
               
               {loadingPlans && (
-                <p className="text-xs text-gray-500 mb-3">Loading your plans...</p>
+                <p className="text-xs text-gray-500 mb-3">{t('loadingYourPlans')}</p>
               )}
               {planError && (
                 <p className="text-xs text-red-600 mb-3">{planError}</p>
@@ -1038,14 +976,17 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, userRole, onNavigat
                         <div className="flex items-center gap-2 mt-1">
                           {plan.source === 'assigned' ? (
                             <span className="text-xs text-blue-600 bg-blue-50 px-2 py-0.5 rounded">
-                              Coach {plan.coachName}
+                              {t('coachLabel', { coach: plan.coachName || '' })}
                             </span>
                           ) : (
                             <span className="text-xs text-green-600 bg-green-50 px-2 py-0.5 rounded">
-                              My Plan
+                              {t('myPlan')}
                             </span>
                           )}
-                          <span className="text-xs text-gray-400">• {plan.duration}</span>
+                          <span className="text-xs text-gray-400">• {t('exercisesCount', { count: plan.exercises.toLocaleString(language === 'fa' ? 'fa-IR' : 'en-US') })}</span>
+                          {plan.estimatedSeconds > 0 && (
+                            <span className="text-xs text-gray-400">• {t('estMinutes', { count: Math.max(1, Math.round(plan.estimatedSeconds / 60)).toLocaleString(language === 'fa' ? 'fa-IR' : 'en-US') })}</span>
+                          )}
                         </div>
                       </div>
                       <div className="h-8 w-8 rounded-full bg-gray-50 flex items-center justify-center group-hover:bg-yellow-500 transition-colors">
@@ -1060,7 +1001,7 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, userRole, onNavigat
         )}
 
         <div>
-          <h3 className="text-[#0E0E55] font-bold text-lg mb-3">Quick Actions</h3>
+          <h3 className="text-[#0E0E55] font-bold text-lg mb-3">{t('quickActions')}</h3>
           <div className="grid grid-cols-2 gap-3">
             <button 
               onClick={onCreatePlan}
@@ -1069,8 +1010,8 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, userRole, onNavigat
               <div className="w-10 h-10 bg-blue-50 rounded-full flex items-center justify-center mb-3 group-hover:bg-blue-100 transition-colors">
                 <Plus className="w-5 h-5 text-blue-600" />
               </div>
-              <h4 className="font-bold text-[#0E0E55]">Create Plan</h4>
-              <p className="text-xs text-gray-500 mt-1">Build a custom routine</p>
+              <h4 className="font-bold text-[#0E0E55]">{t('createPlan')}</h4>
+              <p className="text-xs text-gray-500 mt-1">{t('buildCustomRoutine')}</p>
             </button>
 
             <button 
@@ -1080,29 +1021,35 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, userRole, onNavigat
               <div className="w-10 h-10 bg-purple-50 rounded-full flex items-center justify-center mb-3 group-hover:bg-purple-100 transition-colors">
                 <Calendar className="w-5 h-5 text-purple-600" />
               </div>
-              <h4 className="font-bold text-[#0E0E55]">Find Plans</h4>
-              <p className="text-xs text-gray-500 mt-1">Browse coach library</p>
+              <h4 className="font-bold text-[#0E0E55]">{t('findPlans')}</h4>
+              <p className="text-xs text-gray-500 mt-1">{t('browseCoachLibrary')}</p>
             </button>
           </div>
         </div>
 
         <div>
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-[#0E0E55] font-bold text-lg">Your Library</h3>
-            <button className="text-yellow-600 text-sm font-medium">View All</button>
+            <h3 className="text-[#0E0E55] font-bold text-lg">{t('yourLibrary')}</h3>
+            <button className="text-yellow-600 text-sm font-medium">{t('viewAll')}</button>
           </div>
           {planError && (
             <p className="text-sm text-red-600 mb-2">{planError}</p>
           )}
           {loadingPlans && (
-            <p className="text-sm text-gray-500 mb-2">Loading your plans...</p>
+            <p className="text-sm text-gray-500 mb-2">{t('loading')}</p>
           )}
-          
+          {!loadingPlans && !planError && libraryPlans.length === 0 && (
+            <div className="bg-white rounded-xl p-6 text-center border border-gray-100 shadow-sm">
+              <p className="text-gray-600 mb-1">{t('noPlansYet')}</p>
+              <p className="text-gray-400 text-sm">{t('noPlansHint')}</p>
+            </div>
+          )}
+
           <div className="space-y-3">
             {libraryPlans.map((plan) => (
               <div key={plan.id} className="bg-white p-4 rounded-xl border border-gray-100 flex items-center justify-between shadow-sm">
-                <div className="flex items-center gap-3">
-                  <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${
+                <button onClick={() => onViewPlan?.(plan.id)} className="flex items-center gap-3 flex-1 min-w-0 text-left hover:opacity-80 transition-opacity">
+                  <div className={`w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0 ${
                     plan.source === 'assigned' ? 'bg-blue-50' : 'bg-green-50'
                   }`}>
                     {plan.source === 'assigned' ? (
@@ -1111,23 +1058,29 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, userRole, onNavigat
                       <Dumbbell className="w-6 h-6 text-green-500" />
                     )}
                   </div>
-                  <div>
+                  <div className="min-w-0">
                     <h4 className="font-bold text-[#0E0E55]">{plan.name}</h4>
                     <div className="flex items-center gap-2 text-xs mt-0.5">
                       {plan.source === 'assigned' ? (
-                        <span className="text-blue-600 font-medium">Assigned {plan.coachName ? `by ${plan.coachName}` : 'plan'}</span>
+                        <span className="text-blue-600 font-medium">{plan.coachName ? t('assignedByCoach', { coach: plan.coachName }) : t('assignedPlan')}</span>
                       ) : (
-                        <span className="text-green-600 font-medium">My Plan</span>
+                        <span className="text-green-600 font-medium">{t('myPlan')}</span>
                       )}
                       <span className="text-gray-300">|</span>
-                      <span className="text-gray-500">{plan.duration}</span>
+                      <span className="text-gray-500">{t('exercisesCount', { count: plan.exercises.toLocaleString(language === 'fa' ? 'fa-IR' : 'en-US') })}</span>
+                      {plan.estimatedSeconds > 0 && (
+                        <>
+                          <span className="text-gray-300">|</span>
+                          <span className="text-gray-500">{t('estMinutes', { count: Math.max(1, Math.round(plan.estimatedSeconds / 60)).toLocaleString(language === 'fa' ? 'fa-IR' : 'en-US') })}</span>
+                        </>
+                      )}
                     </div>
                   </div>
-                </div>
-                <button 
+                </button>
+                <button
                   onClick={() => handleScheduleWorkout(plan.id)}
-                  className="p-2 hover:bg-gray-100 rounded-full text-gray-400 hover:text-[#0E0E55] transition-colors"
-                  title="Add to schedule"
+                  className="p-2 hover:bg-gray-100 rounded-full text-gray-400 hover:text-[#0E0E55] transition-colors flex-shrink-0"
+                  title={t('addToSchedule')}
                 >
                   <Plus className="w-5 h-5" />
                 </button>

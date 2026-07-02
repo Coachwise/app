@@ -36,7 +36,7 @@ export function PrivacySettings({ onBack }: PrivacySettingsProps) {
           </button>
           <div className="flex items-center gap-2">
             <Shield className="w-6 h-6 text-yellow-500" />
-            <h1 className="text-white text-xl">Privacy & Security</h1>
+            <h1 className="text-white text-xl">{t('privacySecurity')}</h1>
           </div>
         </div>
       </div>
@@ -47,7 +47,7 @@ export function PrivacySettings({ onBack }: PrivacySettingsProps) {
           <div className="p-4 border-b border-gray-200">
             <h2 className="text-[#0E0E55] flex items-center gap-2">
               <Lock className="w-5 h-5" />
-              Account Privacy
+              {t('accountPrivacy')}
             </h2>
           </div>
           
@@ -55,38 +55,38 @@ export function PrivacySettings({ onBack }: PrivacySettingsProps) {
             {/* Profile Visibility */}
             <div>
               <label className="block text-gray-900 mb-2">
-                Profile Visibility
+                {t('profileVisibility')}
               </label>
               <p className="text-sm text-gray-600 mb-3">
-                Control who can see your profile information
+                {t('profileVisibilityDesc')}
               </p>
               <select
                 value={profileVisibility}
                 onChange={(e) => setProfileVisibility(e.target.value as any)}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
               >
-                <option value="public">Public - Anyone can view</option>
-                <option value="followers">Followers Only</option>
-                <option value="private">Private - Only you</option>
+                <option value="public">{t('visibilityPublic')}</option>
+                <option value="followers">{t('followersOnly')}</option>
+                <option value="private">{t('visibilityPrivate')}</option>
               </select>
             </div>
 
             {/* Workout Visibility */}
             <div className="pt-4 border-t border-gray-200">
               <label className="block text-gray-900 mb-2">
-                Workout Visibility
+                {t('workoutVisibility')}
               </label>
               <p className="text-sm text-gray-600 mb-3">
-                Control who can see your workouts and progress
+                {t('workoutVisibilityDesc')}
               </p>
               <select
                 value={workoutVisibility}
                 onChange={(e) => setWorkoutVisibility(e.target.value as any)}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
               >
-                <option value="public">Public - Anyone can view</option>
-                <option value="followers">Followers Only</option>
-                <option value="private">Private - Only you</option>
+                <option value="public">{t('visibilityPublic')}</option>
+                <option value="followers">{t('followersOnly')}</option>
+                <option value="private">{t('visibilityPrivate')}</option>
               </select>
             </div>
 
@@ -95,10 +95,10 @@ export function PrivacySettings({ onBack }: PrivacySettingsProps) {
               <div className="flex items-center justify-between">
                 <div className="flex-1">
                   <label className="block text-gray-900">
-                    Show Email on Profile
+                    {t('showEmailProfile')}
                   </label>
                   <p className="text-sm text-gray-600 mt-1">
-                    Let others see your email address
+                    {t('showEmailDesc')}
                   </p>
                 </div>
                 <button
@@ -121,10 +121,10 @@ export function PrivacySettings({ onBack }: PrivacySettingsProps) {
               <div className="flex items-center justify-between">
                 <div className="flex-1">
                   <label className="block text-gray-900">
-                    Show Phone Number
+                    {t('showPhoneNumber')}
                   </label>
                   <p className="text-sm text-gray-600 mt-1">
-                    Let others see your phone number
+                    {t('showPhoneDesc')}
                   </p>
                 </div>
                 <button
@@ -147,10 +147,10 @@ export function PrivacySettings({ onBack }: PrivacySettingsProps) {
               <div className="flex items-center justify-between">
                 <div className="flex-1">
                   <label className="block text-gray-900">
-                    Show Activity Status
+                    {t('showActivityStatus')}
                   </label>
                   <p className="text-sm text-gray-600 mt-1">
-                    Let others see when you're active
+                    {t('showActivityDesc')}
                   </p>
                 </div>
                 <button
@@ -175,7 +175,7 @@ export function PrivacySettings({ onBack }: PrivacySettingsProps) {
           <div className="p-4 border-b border-gray-200">
             <h2 className="text-[#0E0E55] flex items-center gap-2">
               <Users className="w-5 h-5" />
-              Interactions
+              {t('interactions')}
             </h2>
           </div>
           
@@ -183,19 +183,19 @@ export function PrivacySettings({ onBack }: PrivacySettingsProps) {
             {/* Allow Messages From */}
             <div>
               <label className="block text-gray-900 mb-2">
-                Allow Messages From
+                {t('allowMessagesFrom')}
               </label>
               <p className="text-sm text-gray-600 mb-3">
-                Control who can send you direct messages
+                {t('allowMessagesDesc')}
               </p>
               <select
                 value={allowMessages}
                 onChange={(e) => setAllowMessages(e.target.value as any)}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
               >
-                <option value="everyone">Everyone</option>
-                <option value="followers">Followers I Follow Back</option>
-                <option value="coaches">Coaches Only</option>
+                <option value="everyone">{t('everyone')}</option>
+                <option value="followers">{t('followersIFollow')}</option>
+                <option value="coaches">{t('coachesOnly')}</option>
               </select>
             </div>
 
@@ -204,10 +204,10 @@ export function PrivacySettings({ onBack }: PrivacySettingsProps) {
               <div className="flex items-center justify-between">
                 <div className="flex-1">
                   <label className="block text-gray-900">
-                    Allow Tagging in Posts
+                    {t('allowTagging')}
                   </label>
                   <p className="text-sm text-gray-600 mt-1">
-                    Let others tag you in their posts
+                    {t('allowTaggingDesc')}
                   </p>
                 </div>
                 <button
@@ -230,10 +230,10 @@ export function PrivacySettings({ onBack }: PrivacySettingsProps) {
               <div className="flex items-center justify-between">
                 <div className="flex-1">
                   <label className="block text-gray-900">
-                    Allow Follow Requests
+                    {t('allowFollowRequests')}
                   </label>
                   <p className="text-sm text-gray-600 mt-1">
-                    Let others send you follow requests
+                    {t('allowFollowRequestsDesc')}
                   </p>
                 </div>
                 <button
@@ -258,7 +258,7 @@ export function PrivacySettings({ onBack }: PrivacySettingsProps) {
           <div className="p-4 border-b border-gray-200">
             <h2 className="text-[#0E0E55] flex items-center gap-2">
               <Shield className="w-5 h-5" />
-              Security
+              {t('security')}
             </h2>
           </div>
           
@@ -268,8 +268,8 @@ export function PrivacySettings({ onBack }: PrivacySettingsProps) {
               <div className="flex items-center gap-3">
                 <Lock className="w-5 h-5 text-[#0E0E55]" />
                 <div className="text-left">
-                  <p className="text-gray-900">Change Password</p>
-                  <p className="text-sm text-gray-600">Update your account password</p>
+                  <p className="text-gray-900">{t('changePassword')}</p>
+                  <p className="text-sm text-gray-600">{t('changePasswordDesc')}</p>
                 </div>
               </div>
               <ChevronRight className="w-5 h-5 text-gray-400" />
@@ -282,10 +282,10 @@ export function PrivacySettings({ onBack }: PrivacySettingsProps) {
                   <Shield className="w-5 h-5 text-[#0E0E55]" />
                   <div>
                     <label className="block text-gray-900">
-                      Two-Factor Authentication
+                      {t('twoFactorAuth')}
                     </label>
                     <p className="text-sm text-gray-600 mt-1">
-                      Add an extra layer of security
+                      {t('twoFactorDesc')}
                     </p>
                   </div>
                 </div>
@@ -309,8 +309,8 @@ export function PrivacySettings({ onBack }: PrivacySettingsProps) {
               <div className="flex items-center gap-3">
                 <Eye className="w-5 h-5 text-[#0E0E55]" />
                 <div className="text-left">
-                  <p className="text-gray-900">Login Activity</p>
-                  <p className="text-sm text-gray-600">See where you're logged in</p>
+                  <p className="text-gray-900">{t('loginActivity')}</p>
+                  <p className="text-sm text-gray-600">{t('loginActivityDesc')}</p>
                 </div>
               </div>
               <ChevronRight className="w-5 h-5 text-gray-400" />
@@ -326,7 +326,7 @@ export function PrivacySettings({ onBack }: PrivacySettingsProps) {
           >
             <h2 className="text-[#0E0E55] flex items-center gap-2">
               <UserX className="w-5 h-5" />
-              Blocked Users ({blockedUsers.length})
+              {t('blockedUsers', { count: blockedUsers.length })}
             </h2>
             <ChevronRight className={`w-5 h-5 text-gray-400 transition-transform ${showBlockedUsers ? 'rotate-90' : ''}`} />
           </button>
@@ -334,7 +334,7 @@ export function PrivacySettings({ onBack }: PrivacySettingsProps) {
           {showBlockedUsers && (
             <div className="p-4">
               {blockedUsers.length === 0 ? (
-                <p className="text-gray-600 text-center py-4">No blocked users</p>
+                <p className="text-gray-600 text-center py-4">{t('noBlockedUsers')}</p>
               ) : (
                 <div className="space-y-3">
                   {blockedUsers.map((user) => (
@@ -351,7 +351,7 @@ export function PrivacySettings({ onBack }: PrivacySettingsProps) {
                         </div>
                       </div>
                       <button className="px-4 py-2 bg-[#0E0E55] text-white rounded-lg hover:bg-[#1A1A6E] transition-colors text-sm">
-                        Unblock
+                        {t('unblock')}
                       </button>
                     </div>
                   ))}
@@ -366,31 +366,31 @@ export function PrivacySettings({ onBack }: PrivacySettingsProps) {
           <div className="p-4 border-b border-gray-200">
             <h2 className="text-[#0E0E55] flex items-center gap-2">
               <Globe className="w-5 h-5" />
-              Data & Account
+              {t('dataAccount')}
             </h2>
           </div>
           
           <div className="p-4 space-y-4">
             <button className="w-full flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition-colors">
               <div className="text-left">
-                <p className="text-gray-900">Download Your Data</p>
-                <p className="text-sm text-gray-600">Get a copy of your information</p>
+                <p className="text-gray-900">{t('downloadData')}</p>
+                <p className="text-sm text-gray-600">{t('downloadDataDesc')}</p>
               </div>
               <ChevronRight className="w-5 h-5 text-gray-400" />
             </button>
 
             <button className="w-full flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition-colors border-t border-gray-200 pt-4">
               <div className="text-left">
-                <p className="text-gray-900">Deactivate Account</p>
-                <p className="text-sm text-gray-600">Temporarily disable your account</p>
+                <p className="text-gray-900">{t('deactivateAccount')}</p>
+                <p className="text-sm text-gray-600">{t('deactivateDesc')}</p>
               </div>
               <ChevronRight className="w-5 h-5 text-gray-400" />
             </button>
 
             <button className="w-full flex items-center justify-between p-3 hover:bg-red-50 rounded-lg transition-colors border-t border-gray-200 pt-4">
               <div className="text-left">
-                <p className="text-red-500">Delete Account</p>
-                <p className="text-sm text-red-400">Permanently delete your account</p>
+                <p className="text-red-500">{t('deleteAccount')}</p>
+                <p className="text-sm text-red-400">{t('deleteAccountDesc')}</p>
               </div>
               <ChevronRight className="w-5 h-5 text-red-400" />
             </button>

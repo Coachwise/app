@@ -24,6 +24,11 @@ export interface User {
   password_expired: boolean;
   pro_until?: string | null;
   pro: boolean;
+  is_coach: boolean;
+  // Connection state relative to the current viewer (set by the backend on
+  // list/get user endpoints). "none" | "pending_outgoing" | "pending_incoming" | "connected".
+  connection_status?: string;
+  is_connected?: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -97,6 +102,9 @@ export interface Plan {
   name: string;
   created_at: string;
   updated_at: string;
+  exercise_count?: number; // included by the plans list so the UI needn't fetch exercises per plan
+  estimated_seconds?: number; // rough completion estimate computed by the backend
+  user?: User; // the plan owner (the coach, for a plan assigned to you)
 }
 
 export interface PlanExercise {
@@ -116,6 +124,218 @@ export interface PlanAssignee {
   user_id: UUID;
   assigner: UUID;
   created_at: string;
+}
+
+// A plan reference bundled inside a coach package (hydrated by the backend).
+export interface PackagePlanRef {
+  id: UUID;
+  name: string;
+}
+
+// A coach-owned, sellable "tier" that bundles a set of plans. Pricing/feature
+// fields are metadata only for now (no payment processing).
+export interface CoachPackage {
+  id: UUID;
+  coach_id: UUID;
+  name: string;
+  description?: string | null;
+  price_monthly?: number | null;
+  price_annual?: number | null;
+  price_one_time?: number | null;
+  trial_days: number;
+  check_in_frequency?: string | null;
+  video_access: boolean;
+  nutrition_guides: boolean;
+  custom_features: string[];
+  is_active: boolean;
+  popular: boolean;
+  plan_count: number;
+  plans: PackagePlanRef[];
+  created_at: string;
+  updated_at: string;
+}
+
+// An athlete's enrollment in a coach's package.
+export interface PackageSubscription {
+  id: UUID;
+  package_id: UUID;
+  coach_id: UUID;
+  client_id: UUID;
+  status: string;
+  created_at: string;
+  updated_at: string;
+}
+
+// --- Assessment tests ---
+
+// v1 metrics map onto workout_logs columns: COUNT→reps, KG→weight, SECOND→duration.
+export type TestMetric = 'COUNT' | 'KG' | 'SECOND';
+
+// A test item can measure a combination of metrics (e.g. weighted pull-up =
+// reps + weight), so each metric is an independent flag.
+export interface TestItem {
+  id: UUID;
+  exercise_id: UUID;
+  exercise_name: string;
+  track_reps: boolean;
+  track_weight: boolean;
+  track_time: boolean;
+  target_value?: number | null;
+  item_order: number;
+}
+
+export interface Test {
+  id: UUID;
+  coach_id: UUID;
+  name: string;
+  description?: string | null;
+  public: boolean;
+  item_count: number;
+  items: TestItem[];
+  // The owner, hydrated on fetch (shown when a coach assigned the protocol).
+  coach?: User | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface TestItemInput {
+  exercise_id: UUID;
+  track_reps: boolean;
+  track_weight: boolean;
+  track_time: boolean;
+  target_value?: number | null;
+}
+
+export interface TestPayload {
+  name: string;
+  description?: string | null;
+  public?: boolean;
+  items?: TestItemInput[];
+}
+
+export type TestRequestStatus = 'PENDING' | 'SUBMITTED' | 'SEEN';
+
+export interface TestRequestRecord {
+  exercise_id: UUID;
+  exercise_name?: string;
+  reps?: number | null;
+  weight?: number | null;
+  duration_seconds?: number | null;
+}
+
+export interface TestRequest {
+  id: UUID;
+  test_id?: UUID | null;
+  coach_id?: UUID | null;
+  athlete_id: UUID;
+  name?: string | null;
+  status: TestRequestStatus;
+  note?: string | null;
+  submitted_at?: string | null;
+  seen_at?: string | null;
+  created_at: string;
+  updated_at: string;
+  athlete?: User | null;
+  coach?: User | null;
+  // `self` is true for athlete self-assessments (no coach/template).
+  test: { id: UUID | null; name: string; description?: string | null; self?: boolean };
+  items: TestItem[];
+  records: TestRequestRecord[];
+}
+
+// One result the athlete submits for a coach-requested test item.
+export interface SubmittedRecord {
+  test_item_id: UUID;
+  reps?: number;
+  weight?: number;
+  time?: number;
+}
+
+// A coach's assignment of a protocol to a client, with the client + run stats.
+export interface CoachAssignment {
+  test_id: UUID;
+  athlete_id: UUID;
+  assigned_at: string;
+  test_name: string;
+  item_count: number;
+  runs_count: number;
+  last_run_at?: string | null;
+  athlete: User;
+}
+
+// One exercise result in a self-assessment (athlete picks the exercise directly).
+export interface SelfRecord {
+  exercise_id: UUID;
+  reps?: number;
+  weight?: number;
+  time?: number;
+}
+
+export interface Achievement {
+  id: UUID;
+  athlete_id: UUID;
+  coach_id: UUID;
+  title: string;
+  description?: string | null;
+  created_at: string;
+}
+
+export interface PersonalRecord {
+  exercise_id: UUID;
+  exercise_name: string;
+  best_weight?: number | null;
+  best_reps?: number | null;
+  best_time?: number | null;
+}
+
+export interface AchievementLayout {
+  order: string[];
+  hidden: string[];
+}
+
+export interface UserAchievements {
+  records: PersonalRecord[];
+  badges: Achievement[];
+  layout: AchievementLayout;
+  active_clients: number;
+}
+
+export interface PackagePayload {
+  name: string;
+  description?: string | null;
+  price_monthly?: number | null;
+  price_annual?: number | null;
+  price_one_time?: number | null;
+  trial_days?: number;
+  check_in_frequency?: string | null;
+  video_access?: boolean;
+  nutrition_guides?: boolean;
+  custom_features?: string[];
+  is_active?: boolean;
+  popular?: boolean;
+  plan_ids?: UUID[];
+}
+
+// A single plan a coach has assigned to one of their clients.
+export interface AssignedPlanInfo {
+  plan_id: UUID;
+  plan_name: string;
+  package_id?: UUID | null; // set when the plan came from a package; null = added manually
+  assigned_at: string;
+}
+
+// A package a client is subscribed to under the coach.
+export interface ClientPackageInfo {
+  package_id: UUID;
+  package_name: string;
+  subscribed_at: string;
+}
+
+// A client of the coach = a user enrolled in one of the coach's packages,
+// enriched with their package subscriptions and the plans the coach assigned.
+export interface CoachClient extends User {
+  packages: ClientPackageInfo[];
+  assigned_plans: AssignedPlanInfo[];
 }
 
 export interface PlanSchedule {

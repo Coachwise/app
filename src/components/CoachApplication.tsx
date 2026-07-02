@@ -1,5 +1,9 @@
-import { useState } from 'react';
-import { ArrowLeft, Upload, CheckCircle2 } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { ArrowLeft, Upload, CheckCircle2, Clock, XCircle } from 'lucide-react';
+import { useLanguage } from '../contexts/LanguageContext';
+import { useAuth } from '../contexts/AuthContext';
+import * as CoachesAPI from '../api/coaches';
+import type { CoachApplication as CoachApplicationModel } from '../api/coaches';
 
 interface CoachApplicationProps {
   onCancel: () => void;
@@ -7,6 +11,8 @@ interface CoachApplicationProps {
 }
 
 export function CoachApplication({ onCancel, onSubmit }: CoachApplicationProps) {
+  const { t } = useLanguage();
+  const { tokens } = useAuth();
   const [formData, setFormData] = useState({
     fullName: '',
     specialty: '',
@@ -17,6 +23,24 @@ export function CoachApplication({ onCancel, onSubmit }: CoachApplicationProps) 
     instagram: '',
   });
   const [documents, setDocuments] = useState<string[]>([]);
+  const [application, setApplication] = useState<CoachApplicationModel | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Load any existing application so we show its status instead of the form.
+  useEffect(() => {
+    const token = tokens?.access_token;
+    if (!token) return;
+    let cancelled = false;
+    CoachesAPI.getMyApplication(token)
+      .then((app) => {
+        if (!cancelled) setApplication(app);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [tokens?.access_token]);
 
   const specialties = [
     'Powerlifting',
@@ -29,17 +53,71 @@ export function CoachApplication({ onCancel, onSubmit }: CoachApplicationProps) 
     'Sports Performance',
   ];
 
-  const handleSubmit = () => {
-    // Mock submit - would send to backend for Coachwise approval
-    onSubmit();
+  const handleSubmit = async () => {
+    const token = tokens?.access_token;
+    if (!token || submitting) return;
+    if (!formData.fullName.trim() || !formData.specialty || !formData.certifications.trim()) {
+      setError(t('fillRequiredFields'));
+      return;
+    }
+    setSubmitting(true);
+    setError(null);
+    try {
+      const created = await CoachesAPI.applyCoach(token, {
+        full_name: formData.fullName.trim(),
+        specialty: formData.specialty,
+        experience_years: formData.experience ? Number(formData.experience) : 0,
+        certifications: formData.certifications.trim(),
+        bio: formData.bio.trim() || undefined,
+        website: formData.website.trim() || undefined,
+        instagram: formData.instagram.trim() || undefined,
+      });
+      setApplication(created); // switch to the status view
+      onSubmit?.();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Failed to submit');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // Mock file upload
     if (e.target.files && e.target.files.length > 0) {
       setDocuments([...documents, e.target.files[0].name]);
     }
   };
+
+  // Status view — shown once the user has an application (and it's not a
+  // rejection they're re-applying from).
+  if (application && application.status !== 'REJECTED') {
+    const pending = application.status === 'PENDING';
+    return (
+      <div className="min-h-screen bg-gray-100">
+        <div className="bg-[#0E0E55] px-4 py-4 sticky top-0 z-10">
+          <div className="flex items-center justify-between">
+            <button onClick={onCancel} className="p-2 -ml-2 hover:bg-[#1A1A6E] rounded-lg transition-colors">
+              <ArrowLeft className="w-6 h-6 text-white" />
+            </button>
+            <h2 className="text-white">{t('becomeACoach')}</h2>
+            <div className="w-10" />
+          </div>
+        </div>
+        <div className="p-4">
+          <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200 text-center">
+            <div className={`w-14 h-14 rounded-full mx-auto mb-4 flex items-center justify-center ${pending ? 'bg-yellow-100' : 'bg-green-100'}`}>
+              {pending ? <Clock className="w-7 h-7 text-yellow-600" /> : <CheckCircle2 className="w-7 h-7 text-green-600" />}
+            </div>
+            <h3 className="text-[#0E0E55] text-lg mb-2">{pending ? t('applicationPending') : t('applicationApproved')}</h3>
+            <p className="text-gray-600 text-sm mb-4">{pending ? t('applicationPendingDesc') : t('applicationApprovedDesc')}</p>
+            <div className="bg-gray-50 rounded-lg p-3 text-sm">
+              <span className="text-gray-500">{t('submissionId')}: </span>
+              <span className="text-[#0E0E55] font-mono break-all">{application.id}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -49,45 +127,56 @@ export function CoachApplication({ onCancel, onSubmit }: CoachApplicationProps) 
           <button onClick={onCancel} className="p-2 -ml-2 hover:bg-[#1A1A6E] rounded-lg transition-colors">
             <ArrowLeft className="w-6 h-6 text-white" />
           </button>
-          <h2 className="text-white">Become a Coach</h2>
+          <h2 className="text-white">{t('becomeACoach')}</h2>
           <div className="w-10"></div>
         </div>
       </div>
 
       <div className="p-4 space-y-6">
+        {/* Rejection banner (re-applying) */}
+        {application?.status === 'REJECTED' && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3">
+            <XCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="text-red-900">{t('applicationRejected')}</p>
+              <p className="text-red-800 text-sm">{application.review_note || t('applicationRejectedDesc')}</p>
+            </div>
+          </div>
+        )}
+
         {/* Info Banner */}
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <p className="text-blue-900 mb-2">Become a Coachwise Coach</p>
+          <p className="text-blue-900 mb-2">{t('becomeCoachwiseCoach')}</p>
           <p className="text-blue-800 text-sm">
-            Applications are reviewed within 48 hours. We'll verify your credentials and notify you via email.
+            {t('applicationsReviewed')}
           </p>
         </div>
 
         {/* Application Form */}
         <div className="bg-white rounded-lg shadow-md p-4 border border-gray-200">
-          <h3 className="text-[#3D3D3D] mb-4">Application Details</h3>
+          <h3 className="text-[#3D3D3D] mb-4">{t('applicationDetails')}</h3>
           
           <div className="space-y-4">
             <div>
-              <label className="text-[#3D3D3D] mb-2 block">Full Name</label>
+              <label className="text-[#3D3D3D] mb-2 block">{t('fullName')}</label>
               <input
                 type="text"
                 value={formData.fullName}
                 onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
                 className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent text-[#3D3D3D]"
-                placeholder="Your full name"
+                placeholder={t('yourFullName')}
               />
             </div>
 
             {/* Specialty */}
             <div>
-              <label className="block mb-2 text-gray-900">Primary Specialty *</label>
+              <label className="block mb-2 text-gray-900">{t('primarySpecialty')}</label>
               <select
                 value={formData.specialty}
                 onChange={(e) => setFormData({ ...formData, specialty: e.target.value })}
                 className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
-                <option value="">Select specialty...</option>
+                <option value="">{t('selectSpecialty')}</option>
                 {specialties.map(specialty => (
                   <option key={specialty} value={specialty}>{specialty}</option>
                 ))}
@@ -96,12 +185,12 @@ export function CoachApplication({ onCancel, onSubmit }: CoachApplicationProps) 
 
             {/* Experience */}
             <div>
-              <label className="block mb-2 text-gray-900">Years of Coaching Experience *</label>
+              <label className="block mb-2 text-gray-900">{t('yearsCoachingExp')}</label>
               <input
                 type="number"
                 value={formData.experience}
                 onChange={(e) => setFormData({ ...formData, experience: e.target.value })}
-                placeholder="e.g., 5"
+                placeholder={t('eg5')}
                 min="0"
                 className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
@@ -109,26 +198,26 @@ export function CoachApplication({ onCancel, onSubmit }: CoachApplicationProps) 
 
             {/* Certifications */}
             <div>
-              <label className="block mb-2 text-gray-900">Certifications *</label>
+              <label className="block mb-2 text-gray-900">{t('certifications')} *</label>
               <textarea
                 value={formData.certifications}
                 onChange={(e) => setFormData({ ...formData, certifications: e.target.value })}
-                placeholder="List your certifications (e.g., NSCA-CSCS, USAC Level 2, etc.)"
+                placeholder={t('listCertifications')}
                 rows={3}
                 className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
               />
               <p className="text-gray-600 text-sm mt-1">
-                Include certification name, issuing organization, and year obtained
+                {t('includeCertInfo')}
               </p>
             </div>
 
             {/* Bio */}
             <div>
-              <label className="block mb-2 text-gray-900">Professional Bio *</label>
+              <label className="block mb-2 text-gray-900">{t('professionalBio')}</label>
               <textarea
                 value={formData.bio}
                 onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
-                placeholder="Tell us about your coaching philosophy and experience..."
+                placeholder={t('coachingPhilosophy')}
                 rows={5}
                 className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
               />
@@ -136,7 +225,7 @@ export function CoachApplication({ onCancel, onSubmit }: CoachApplicationProps) 
 
             {/* Document Upload */}
             <div>
-              <label className="block mb-2 text-gray-900">Upload Credentials</label>
+              <label className="block mb-2 text-gray-900">{t('uploadCredentials')}</label>
               <div className="bg-white border-2 border-dashed border-gray-300 rounded-lg p-6">
                 <input
                   type="file"
@@ -151,8 +240,8 @@ export function CoachApplication({ onCancel, onSubmit }: CoachApplicationProps) 
                   className="flex flex-col items-center cursor-pointer"
                 >
                   <Upload className="w-8 h-8 text-gray-400 mb-2" />
-                  <span className="text-gray-900 mb-1">Upload Documents</span>
-                  <span className="text-gray-600 text-sm">PDF, JPG, or PNG (Max 10MB)</span>
+                  <span className="text-gray-900 mb-1">{t('uploadDocuments')}</span>
+                  <span className="text-gray-600 text-sm">{t('pdfJpgPng')}</span>
                 </label>
               </div>
               {documents.length > 0 && (
@@ -169,7 +258,7 @@ export function CoachApplication({ onCancel, onSubmit }: CoachApplicationProps) 
 
             {/* Social Links */}
             <div>
-              <label className="block mb-2 text-gray-900">Website (Optional)</label>
+              <label className="block mb-2 text-gray-900">{t('websiteOptional')}</label>
               <input
                 type="url"
                 value={formData.website}
@@ -180,7 +269,7 @@ export function CoachApplication({ onCancel, onSubmit }: CoachApplicationProps) 
             </div>
 
             <div>
-              <label className="block mb-2 text-gray-900">Instagram (Optional)</label>
+              <label className="block mb-2 text-gray-900">{t('instagramOptional')}</label>
               <input
                 type="text"
                 value={formData.instagram}
@@ -192,14 +281,26 @@ export function CoachApplication({ onCancel, onSubmit }: CoachApplicationProps) 
 
             {/* Platform Fee Notice */}
             <div className="bg-gray-100 border border-gray-300 rounded-lg p-4">
-              <p className="text-gray-900 mb-2">Platform Fee Structure</p>
+              <p className="text-gray-900 mb-2">{t('platformFeeStructure')}</p>
               <p className="text-gray-700 text-sm mb-2">
-                Coachwise charges a 5% platform fee plus payment processing fees on all earnings.
+                {t('platformFeeDesc')}
               </p>
               <p className="text-gray-600 text-sm">
-                Example: If you charge $100/month, you receive $93 after fees.
+                {t('platformFeeExample')}
               </p>
             </div>
+
+            {error && (
+              <div className="bg-red-50 border border-red-200 text-red-800 text-sm rounded-lg p-3">{error}</div>
+            )}
+
+            <button
+              onClick={handleSubmit}
+              disabled={submitting}
+              className="w-full py-3 rounded-lg bg-yellow-500 text-[#0E0E55] font-medium hover:bg-yellow-400 transition-colors disabled:opacity-60"
+            >
+              {submitting ? t('submitting') : (application?.status === 'REJECTED' ? t('reapply') : t('submitApplication'))}
+            </button>
           </div>
         </div>
       </div>

@@ -13,39 +13,57 @@ import { SubscriptionTierBuilder } from './components/SubscriptionTierBuilder';
 import { TierComparison } from './components/TierComparison';
 import { Navigation } from './components/Navigation';
 import { CoachDashboard } from './components/CoachDashboard';
+import { TestBuilder } from './components/TestBuilder';
+import { AthleteTests } from './components/AthleteTests';
+import { RunAssessment } from './components/RunAssessment';
+import { AssessmentHistory } from './components/AssessmentHistory';
 import { WorkoutsHome } from './components/WorkoutsHome';
 import { WorkoutSession } from './components/WorkoutSession';
 import { AthleteSearch } from './components/AthleteSearch';
 import { MessagesWithChannels } from './components/MessagesWithChannels';
 import { MessageThread } from './components/MessageThread';
 import { ChannelView } from './components/ChannelView';
-import { MessagingDemo } from './components/MessagingDemo';
 import { PrivacySettings } from './components/PrivacySettings';
 import { ProfileSettings } from './components/ProfileSettings';
 import { LanguageProvider } from './contexts/LanguageContext';
 import { useAuth } from './contexts/AuthContext';
 import * as SessionsAPI from './api/sessions';
+import { FEATURES } from './config';
 
 const SESSION_KEY = 'coachwise-active-session';
+// Where the app lands after login / when returning "home". Feed can be hidden
+// for a release via FEATURES.feed — fall back to the workouts screen then.
+const DEFAULT_VIEW: ViewType = FEATURES.feed ? 'feed' : 'workouts-home';
 
 export type SportType = 'fitness' | 'climbing';
 export type UserRole = 'athlete' | 'coach';
 export type UserTier = 'free' | 'pro';
-export type ViewType = 'sport-selection' | 'logging' | 'feed' | 'profile' | 'coach-dashboard' | 'post-creation' | 'exercise-builder' | 'plan-builder' | 'coach-application' | 'coach-marketplace' | 'tier-builder' | 'tier-comparison' | 'workouts-home' | 'workout-session' | 'athlete-search' | 'athletes-coaches' | 'messages' | 'message-thread' | 'channel-view' | 'messaging-demo' | 'privacy-settings' | 'profile-settings';
+export type ViewType = 'sport-selection' | 'logging' | 'feed' | 'profile' | 'coach-dashboard' | 'post-creation' | 'exercise-builder' | 'plan-builder' | 'coach-application' | 'coach-marketplace' | 'tier-builder' | 'tier-comparison' | 'test-builder' | 'athlete-tests' | 'assessment-run' | 'assessment-history' | 'workouts-home' | 'workout-session' | 'athlete-search' | 'athletes-coaches' | 'messages' | 'message-thread' | 'channel-view' | 'privacy-settings' | 'profile-settings';
 
 export default function App() {
-  const { isAuthenticated, logout, user, tokens } = useAuth();
-  const [currentView, setCurrentView] = useState<ViewType>('feed');
+  const { isAuthenticated, user, tokens } = useAuth();
+  const [currentView, setCurrentView] = useState<ViewType>(DEFAULT_VIEW);
   const [selectedSport, setSelectedSport] = useState<SportType>('fitness');
   const [userRole, setUserRole] = useState<UserRole>('athlete');
   const [userTier, setUserTier] = useState<UserTier>('free');
   const [isPro, setIsPro] = useState(false); // Track pro status
   const [viewingUserId, setViewingUserId] = useState<string | null>(null); // Track which user profile we're viewing
+  const [profileReturnView, setProfileReturnView] = useState<ViewType>(DEFAULT_VIEW); // Where "back" returns from a viewed profile
+  const [discoveryTab, setDiscoveryTab] = useState<'discover' | 'network' | 'requests'>('discover'); // Persist Discovery tab across profile visits
   const [currentConversationId, setCurrentConversationId] = useState<string | null>(null); // Track current message thread
   const [currentChannelId, setCurrentChannelId] = useState<string | null>(null); // Track current channel
   const [messagesActiveTab, setMessagesActiveTab] = useState<'dms' | 'channels'>('dms'); // Track active tab in Messages
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null); // Track active workout session
   const [activePlanId, setActivePlanId] = useState<string | null>(null); // Track active plan
+  const [builderPlanId, setBuilderPlanId] = useState<string | null>(null); // Plan opened in the builder for view/edit (null = create)
+  const [builderPackageId, setBuilderPackageId] = useState<string | null>(null); // Package opened in the tier builder for edit (null = create)
+  const [builderTestId, setBuilderTestId] = useState<string | null>(null); // Test opened in the test builder for edit (null = create)
+  const [builderReturnView, setBuilderReturnView] = useState<ViewType>('coach-dashboard'); // where the test builder returns on save/cancel
+  const [protocolId, setProtocolId] = useState<string | null>(null); // protocol being run / viewed in history
+  const [historyAthleteId, setHistoryAthleteId] = useState<string | null>(null); // when a coach views a client's run history
+  const [historyClientName, setHistoryClientName] = useState<string | null>(null);
+  const [historyReturnView, setHistoryReturnView] = useState<ViewType>('athlete-tests'); // where assessment history returns
+  const [coachSection, setCoachSection] = useState('clients'); // coach dashboard active tab (persists across navigation)
   const [activeScheduleId, setActiveScheduleId] = useState<string | null>(null); // Track active schedule
   const [workoutsRefreshTrigger, setWorkoutsRefreshTrigger] = useState(0); // Trigger refresh after workout
 
@@ -66,9 +84,22 @@ export default function App() {
 
   useEffect(() => {
     if (user) {
-      setIsPro(Boolean(user.pro));
+      const coach = Boolean(user.is_coach);
+      setUserRole(coach ? 'coach' : 'athlete');
+      // Coaches are Pro by default (the backend also reports pro=true for them).
+      const pro = Boolean(user.pro) || coach;
+      setIsPro(pro);
+      setUserTier(pro ? 'pro' : 'free');
     }
   }, [user]);
+
+  // Start each page at the top — otherwise scroll carried over from a long list
+  // (e.g. Discovery) clips the top of the next view (cover/avatar on profiles).
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    const scroller = document.querySelector('.overflow-auto');
+    if (scroller) scroller.scrollTop = 0;
+  }, [currentView, viewingUserId]);
 
   const handleLogin = () => {
     if (user?.pro) {
@@ -77,8 +108,12 @@ export default function App() {
   };
 
   const handleViewProfile = (userId: string) => {
+    // Remember where we came from so the profile's back button can return there.
+    setCurrentView((prev) => {
+      if (prev !== 'profile') setProfileReturnView(prev);
+      return 'profile';
+    });
     setViewingUserId(userId);
-    setCurrentView('profile');
   };
 
   const handleViewOwnProfile = () => {
@@ -117,23 +152,23 @@ export default function App() {
   };
 
   const handlePostCreated = () => {
-    setCurrentView('feed');
+    setCurrentView(DEFAULT_VIEW);
   };
 
   const handlePlanSaved = () => {
-    setCurrentView('feed');
+    setCurrentView(DEFAULT_VIEW);
     alert('Plan saved successfully!');
   };
 
   const handleCoachApplicationSubmit = () => {
-    setCurrentView('profile');
-    setUserRole('coach'); // Auto-approve for demo
-    alert('Application submitted! You are now a coach! 🎉');
+    // The application is submitted as PENDING — the CoachApplication screen shows
+    // its status. Coach access is granted later when it's approved (via the
+    // Discord capability link), reflected by the user's is_coach flag.
   };
 
   const handleTierSaved = () => {
+    setBuilderPackageId(null);
     setCurrentView('coach-dashboard');
-    alert('Subscription tier saved!');
   };
 
   const handleSessionEnd = () => {
@@ -154,7 +189,7 @@ export default function App() {
             sessionId={activeSessionId}
             onBack={() => {
               setActiveSessionId(null);
-              setCurrentView('feed');
+              setCurrentView(DEFAULT_VIEW);
             }}
           />
         ) : (
@@ -171,30 +206,90 @@ export default function App() {
           isPro={isPro}
         />; 
       case 'profile':
-        return <Profile 
-          userRole={userRole} 
+        return <Profile
+          userRole={userRole}
           onNavigate={handleNavigate}
+          onBack={() => {
+            setViewingUserId(null);
+            setCurrentView(profileReturnView);
+          }}
+          onMessage={(peerId: string) => {
+            setCurrentConversationId(peerId);
+            setCurrentView('message-thread');
+          }}
           viewingUserId={viewingUserId}
           onViewProfile={handleViewProfile}
           isPro={isPro}
-        />; 
+        />;
       case 'coach-dashboard':
-        return <CoachDashboard 
-          onBack={() => setCurrentView('profile')} 
+        return <CoachDashboard
+          onBack={() => setCurrentView('profile')}
           onNavigate={handleNavigate}
           userRole={userRole}
-        />; 
+          isPro={isPro}
+          onCreatePackage={() => { setBuilderPackageId(null); setCurrentView('tier-builder'); }}
+          onEditPackage={(id: string) => { setBuilderPackageId(id); setCurrentView('tier-builder'); }}
+          onCreatePlan={() => { setBuilderPlanId(null); setCurrentView('plan-builder'); }}
+          onCreateTest={() => { setBuilderTestId(null); setBuilderReturnView('coach-dashboard'); setCurrentView('test-builder'); }}
+          onEditTest={(id: string) => { setBuilderTestId(id); setBuilderReturnView('coach-dashboard'); setCurrentView('test-builder'); }}
+          onViewClientHistory={(testId: string, athleteId: string, clientName: string) => {
+            setProtocolId(testId);
+            setHistoryAthleteId(athleteId); setHistoryClientName(clientName); setHistoryReturnView('coach-dashboard');
+            setCurrentView('assessment-history');
+          }}
+          section={coachSection}
+          onSectionChange={setCoachSection}
+        />;
+      case 'test-builder':
+        return <TestBuilder
+          token={tokens?.access_token || ''}
+          testId={builderTestId || undefined}
+          onCancel={() => { setBuilderTestId(null); setCurrentView(builderReturnView); }}
+          onSave={() => { setBuilderTestId(null); setCurrentView(builderReturnView); }}
+        />;
+      case 'athlete-tests':
+        return <AthleteTests
+          onBack={() => setCurrentView(DEFAULT_VIEW)}
+          onNavigate={handleNavigate}
+          onNewProtocol={() => { setBuilderTestId(null); setBuilderReturnView('athlete-tests'); setCurrentView('test-builder'); }}
+          onEditProtocol={(id: string) => { setBuilderTestId(id); setBuilderReturnView('athlete-tests'); setCurrentView('test-builder'); }}
+          onRunProtocol={(id: string) => { setProtocolId(id); setCurrentView('assessment-run'); }}
+          onViewHistory={(id: string) => {
+            setProtocolId(id);
+            setHistoryAthleteId(null); setHistoryClientName(null); setHistoryReturnView('athlete-tests');
+            setCurrentView('assessment-history');
+          }}
+          userRole={userRole}
+          isPro={isPro}
+        />;
+      case 'assessment-run':
+        return <RunAssessment
+          token={tokens?.access_token || ''}
+          protocolId={protocolId || ''}
+          onCancel={() => setCurrentView('athlete-tests')}
+          onSaved={() => { setHistoryAthleteId(null); setHistoryClientName(null); setHistoryReturnView('athlete-tests'); setCurrentView('assessment-history'); }}
+        />;
+      case 'assessment-history':
+        return <AssessmentHistory
+          token={tokens?.access_token || ''}
+          protocolId={protocolId || ''}
+          athleteId={historyAthleteId || undefined}
+          clientName={historyClientName || undefined}
+          onBack={() => setCurrentView(historyReturnView)}
+          onRun={historyAthleteId ? undefined : () => setCurrentView('assessment-run')}
+        />;
       case 'post-creation':
-        return <PostCreation onCancel={() => setCurrentView('feed')} onPost={handlePostCreated} />;
+        return <PostCreation onCancel={() => setCurrentView(DEFAULT_VIEW)} onPost={handlePostCreated} />;
       case 'exercise-builder':
         return <Exercises onBack={() => setCurrentView('plan-builder')} />;
       case 'plan-builder':
-        return <PlanBuilder 
-          onCancel={() => setCurrentView('workouts-home')} 
-          onSave={handlePlanSaved} 
-          userRole={userRole} 
-          userTier={userTier} 
-        />; 
+        return <PlanBuilder
+          onCancel={() => setCurrentView('workouts-home')}
+          onSave={handlePlanSaved}
+          userRole={userRole}
+          userTier={userTier}
+          planId={builderPlanId || undefined}
+        />;
       case 'coach-application':
         return <CoachApplication 
           onCancel={() => setCurrentView('profile')} 
@@ -203,7 +298,12 @@ export default function App() {
       case 'coach-marketplace':
         return <CoachMarketplace onBack={() => setCurrentView('profile')} onViewProfile={handleViewProfile} />;
       case 'tier-builder':
-        return <SubscriptionTierBuilder onCancel={() => setCurrentView('coach-dashboard')} onSave={handleTierSaved} />;
+        return <SubscriptionTierBuilder
+          token={tokens?.access_token || ''}
+          packageId={builderPackageId || undefined}
+          onCancel={() => { setBuilderPackageId(null); setCurrentView('coach-dashboard'); }}
+          onSave={handleTierSaved}
+        />;
       case 'tier-comparison':
         return <TierComparison onCancel={() => setCurrentView('coach-marketplace')} coachName="Sarah Martinez" />;
       case 'workouts-home':
@@ -215,7 +315,8 @@ export default function App() {
             localStorage.setItem(SESSION_KEY, JSON.stringify({ planId: planId || null, scheduleId: scheduleId || null }));
             setCurrentView('workout-session');
           }}
-          onCreatePlan={() => setCurrentView('plan-builder')}
+          onCreatePlan={() => { setBuilderPlanId(null); setCurrentView('plan-builder'); }}
+          onViewPlan={(planId: string) => { setBuilderPlanId(planId); setCurrentView('plan-builder'); }}
           userRole={userRole}
           onNavigate={handleNavigate}
           isPro={isPro}
@@ -238,11 +339,13 @@ export default function App() {
           onNavigate={handleNavigate}
         />; 
       case 'athlete-search':
-        return <AthleteSearch 
+        return <AthleteSearch
           userRole={userRole}
           onNavigate={handleNavigate}
           onViewProfile={handleViewProfile}
-        />; 
+          activeTab={discoveryTab}
+          onTabChange={setDiscoveryTab}
+        />;
       case 'messages':
         return <MessagesWithChannels 
           userRole={userRole}
@@ -259,8 +362,6 @@ export default function App() {
       case 'channel-view':
         // Rendered as overlay below
         return null;
-      case 'messaging-demo':
-        return <MessagingDemo />;
       case 'privacy-settings':
         return <PrivacySettings onBack={() => setCurrentView('profile')} />;
       case 'profile-settings':
@@ -286,59 +387,24 @@ export default function App() {
       ) : (
         <>
           <div className="min-h-screen bg-gray-100 flex flex-col max-w-md mx-auto">
-            {/* Quick Access Menu - For Demo Purposes */}
-            <div className="bg-[#0E0E55] p-2">
-              <details className="cursor-pointer">
-                <summary className="text-xs text-gray-300 font-medium">🚀 Demo Menu</summary>
-                <div className="mt-2 grid grid-cols-2 gap-1">
-                  <button onClick={() => setCurrentView('messaging-demo')} className="col-span-2 text-xs bg-yellow-500 text-[#0E0E55] p-2 rounded hover:bg-yellow-400 font-bold">
-                    💬 See Messaging Inputs Demo
-                  </button>
-                  <button onClick={() => setCurrentView('feed')} className="text-xs bg-[#1A1A6E] text-gray-200 p-1.5 rounded hover:bg-[#1A1A6E]/80">Feed</button>
-                  <button onClick={() => setCurrentView('workouts-home')} className="text-xs bg-[#1A1A6E] text-gray-200 p-1.5 rounded hover:bg-[#1A1A6E]/80">Workouts</button>
-                  <button onClick={() => setCurrentView('messages')} className="text-xs bg-[#1A1A6E] text-gray-200 p-1.5 rounded hover:bg-[#1A1A6E]/80">Messages</button>
-                  <button onClick={() => setCurrentView('plan-builder')} className="text-xs bg-[#1A1A6E] text-gray-200 p-1.5 rounded hover:bg-[#1A1A6E]/80">Plan Builder</button>
-                  <button onClick={() => setCurrentView('exercise-builder')} className="text-xs bg-[#1A1A6E] text-gray-200 p-1.5 rounded hover:bg-[#1A1A6E]/80">Exercise Builder</button>
-                  <button onClick={() => setCurrentView('coach-marketplace')} className="text-xs bg-[#1A1A6E] text-gray-200 p-1.5 rounded hover:bg-[#1A1A6E]/80">Find Coach</button>
-                  <button onClick={() => setCurrentView('tier-comparison')} className="text-xs bg-[#1A1A6E] text-gray-200 p-1.5 rounded hover:bg-[#1A1A6E]/80">Compare Tiers</button>
-                  <button onClick={() => setCurrentView('coach-application')} className="text-xs bg-[#1A1A6E] text-gray-200 p-1.5 rounded hover:bg-[#1A1A6E]/80">Apply as Coach</button>
-                  <button onClick={() => setCurrentView('tier-builder')} className="text-xs bg-[#1A1A6E] text-gray-200 p-1.5 rounded hover:bg-[#1A1A6E]/80">Create Tier</button>
-                  <button onClick={() => { setUserRole('athlete'); setCurrentView('profile'); }} className="text-xs bg-[#1A1A6E] text-gray-200 p-1.5 rounded hover:bg-[#1A1A6E]/80">User Profile</button>
-                  <button onClick={() => { setUserRole('coach'); setCurrentView('profile'); }} className="text-xs bg-[#1A1A6E] text-gray-200 p-1.5 rounded hover:bg-[#1A1A6E]/80">Coach Profile</button>
-                  <button onClick={() => { setUserRole('coach'); setCurrentView('coach-dashboard'); }} className="text-xs bg-[#1A1A6E] text-gray-200 p-1.5 rounded hover:bg-[#1A1A6E]/80">Coach Dashboard</button>
-                  <button onClick={() => setCurrentView('athlete-search')} className="text-xs bg-[#1A1A6E] text-gray-200 p-1.5 rounded hover:bg-[#1A1A6E]/80">Athletes Search</button>
-                  <button onClick={() => setUserTier(userTier === 'free' ? 'pro' : 'free')} className="text-xs bg-yellow-500 text-[#0E0E55] p-1.5 rounded hover:bg-yellow-400">
-                    {userTier === 'free' ? '🆓 Free' : '⭐ Pro'}
-                  </button>
-                  <button onClick={() => setIsPro(!isPro)} className="text-xs bg-yellow-500 text-[#0E0E55] p-1.5 rounded hover:bg-yellow-400">
-                    {isPro ? '👑 PRO' : '🔒 FREE'}
-                  </button>
-                  <button onClick={logout} className="text-xs bg-red-600 text-white p-1.5 rounded hover:bg-red-700">
-                    Log Out
-                  </button>
-                </div>
-              </details>
-            </div>
-
             <div className="flex-1 overflow-auto pb-16">
               {renderView()}
             </div>
-            <Navigation
-              currentView={currentView}
-              onNavigate={handleNavigate}
-              userRole={userRole}
-            />
+            {currentView !== 'workout-session' && currentView !== 'logging' && (
+              <Navigation
+                currentView={currentView}
+                onNavigate={handleNavigate}
+                userRole={userRole}
+              />
+            )}
           </div>
 
           {/* Render MessageThread and ChannelView as overlays */}
           {currentView === 'message-thread' && (
-            <MessageThread 
+            <MessageThread
               conversationId={currentConversationId}
               onBack={() => setCurrentView('messages')}
-              onJoinChannel={(channelId) => {
-                setCurrentChannelId(channelId);
-                setCurrentView('channel-view');
-              }}
+              onViewProfile={handleViewProfile}
             />
           )}
           

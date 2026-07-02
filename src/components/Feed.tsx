@@ -162,7 +162,7 @@ export function Feed({ onCreatePost, userRole, onNavigate, onViewProfile, isPro 
                   <span className="text-[#0E0E55]">{post.author.name}</span>
                   {post.author.isCoach && (
                     <span className="px-2 py-0.5 bg-yellow-500 text-[#0E0E55] rounded text-xs">
-                      Coach
+                      {t('coachBadge')}
                     </span>
                   )}
                 </button>
@@ -175,9 +175,9 @@ export function Feed({ onCreatePost, userRole, onNavigate, onViewProfile, isPro 
               <div className="bg-yellow-500 rounded-lg p-3 mb-3 flex items-start gap-3">
                 <Trophy className="w-5 h-5 text-[#0E0E55] mt-0.5" />
                 <div>
-                  <div className="text-[#0E0E55] text-sm mb-1">Personal Record!</div>
+                  <div className="text-[#0E0E55] text-sm mb-1">{t('personalRecord')}</div>
                   <div className="text-[#0E0E55]/80 text-sm">
-                    {post.prDetails?.exercise}: {post.prDetails?.weight} × {post.prDetails?.reps} reps
+                    {post.prDetails?.exercise}: {post.prDetails?.weight} × {post.prDetails?.reps} {t('repsUnit')}
                   </div>
                 </div>
               </div>
@@ -192,7 +192,7 @@ export function Feed({ onCreatePost, userRole, onNavigate, onViewProfile, isPro 
                 {post.media.type === 'image' && (
                   <img 
                     src={post.media.url} 
-                    alt="Post media"
+                    alt={t('postMediaAlt')}
                     className="w-full object-cover max-h-96"
                   />
                 )}
@@ -200,7 +200,7 @@ export function Feed({ onCreatePost, userRole, onNavigate, onViewProfile, isPro 
                   <div className="relative bg-gray-900">
                     <img 
                       src={post.media.thumbnail} 
-                      alt="Video thumbnail"
+                      alt={t('videoThumbnailAlt')}
                       className="w-full object-cover max-h-96 opacity-80"
                     />
                     <div className="absolute inset-0 flex items-center justify-center">

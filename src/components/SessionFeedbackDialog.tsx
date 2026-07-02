@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { X } from 'lucide-react';
 import { HeatSlider, StarRating } from './ui';
+import { useLanguage } from '../contexts/LanguageContext';
 
 interface SessionFeedbackDialogProps {
   isOpen: boolean;
@@ -21,6 +22,7 @@ export function SessionFeedbackDialog({
   onSubmit,
   loading = false
 }: SessionFeedbackDialogProps) {
+  const { t } = useLanguage();
   const [intensity, setIntensity] = useState(5);
   const [quality, setQuality] = useState(3); // Default to 3 out of 5
   const [notes, setNotes] = useState('');
@@ -43,11 +45,8 @@ export function SessionFeedbackDialog({
   };
 
   if (!isOpen) {
-    console.log('SessionFeedbackDialog: isOpen is false, not rendering');
     return null;
   }
-
-  console.log('SessionFeedbackDialog: rendering, isOpen=', isOpen);
 
   return (
     <>
@@ -64,7 +63,7 @@ export function SessionFeedbackDialog({
           {/* Header */}
           <div className="flex items-center justify-between p-4 bg-[#0E0E55] rounded-t-lg">
             <h2 className="text-lg font-semibold text-white">
-              Session Feedback
+              {t('sessionFeedback')}
             </h2>
             <button
               onClick={onClose}
@@ -82,12 +81,12 @@ export function SessionFeedbackDialog({
               <HeatSlider
                 value={intensity}
                 onChange={setIntensity}
-                label="How intense was this session?"
+                label={t('howIntenseSession')}
                 min={1}
                 max={10}
               />
               <p className="text-xs text-gray-500 mt-1">
-                Rate the effort and difficulty level
+                {t('rateEffortDifficulty')}
               </p>
             </div>
 
@@ -96,23 +95,23 @@ export function SessionFeedbackDialog({
               <StarRating
                 value={quality}
                 onChange={setQuality}
-                label="How would you rate this session?"
+                label={t('howRateSession')}
                 max={5}
               />
               <p className="text-xs text-gray-500 mt-1">
-                Overall satisfaction and session quality
+                {t('overallSatisfaction')}
               </p>
             </div>
 
             {/* Notes */}
             <div>
               <label className="text-xs font-medium text-gray-700 mb-2 block">
-                Session Notes (Optional)
+                {t('sessionNotesOptional')}
               </label>
               <textarea
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                placeholder="How did you feel? Any highlights or challenges?"
+                placeholder={t('howDidYouFeel')}
                 rows={4}
                 className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent resize-none text-sm"
                 disabled={loading}
@@ -127,14 +126,14 @@ export function SessionFeedbackDialog({
               disabled={loading}
               className="flex-1 px-4 py-3 text-gray-700 bg-white border-2 border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
             >
-              Skip
+              {t('skip')}
             </button>
             <button
               onClick={handleSubmit}
               disabled={loading}
               className="flex-1 px-4 py-3 bg-yellow-500 text-[#0E0E55] rounded-lg hover:bg-yellow-400 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-bold"
             >
-              {loading ? 'Saving...' : 'Finish Session'}
+              {loading ? t('saving') : t('finishSession')}
             </button>
           </div>
         </div>

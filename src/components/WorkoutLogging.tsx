@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { ArrowLeft, Plus, Trash2, Play, Pause, RotateCcw } from 'lucide-react';
 import type { SportType } from '../App';
 import { useAuth } from '../contexts/AuthContext';
+import { useLanguage } from '../contexts/LanguageContext';
 import * as SessionsAPI from '../api/sessions';
 import { SessionFeedbackDialog, type SessionFeedback } from './SessionFeedbackDialog';
 
@@ -24,6 +25,7 @@ interface ClimbingAttempt {
 
 export function WorkoutLogging({ sport, sessionId, onBack }: WorkoutLoggingProps) {
   const { tokens } = useAuth();
+  const { t } = useLanguage();
   const [exercise, setExercise] = useState('');
   const [sets, setSets] = useState<FitnessSet[]>([{ weight: '', reps: '', rpe: '' }]);
   const [climbingAttempts, setClimbingAttempts] = useState<ClimbingAttempt[]>([{ grade: '', sendType: '' }]);
@@ -78,12 +80,12 @@ export function WorkoutLogging({ sport, sessionId, onBack }: WorkoutLoggingProps
 
   const handleSave = async () => {
     if (!tokens?.access_token) {
-      setError('Please log in to save workout');
+      setError(t('loginToSaveWorkout'));
       return;
     }
 
     if (!exercise.trim()) {
-      setError('Please enter an exercise name');
+      setError(t('enterExerciseName'));
       return;
     }
 
@@ -133,14 +135,13 @@ export function WorkoutLogging({ sport, sessionId, onBack }: WorkoutLoggingProps
 
       // Success - no alert needed
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save workout');
+      setError(err instanceof Error ? err.message : t('failedToSaveWorkout'));
     } finally {
       setLoading(false);
     }
   };
 
   const handleFinishSession = () => {
-    console.log('handleFinishSession called, opening dialog');
     // Open feedback dialog
     setShowFeedbackDialog(true);
   };
@@ -161,7 +162,7 @@ export function WorkoutLogging({ sport, sessionId, onBack }: WorkoutLoggingProps
       setShowFeedbackDialog(false);
       onBack();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to finish session');
+      setError(err instanceof Error ? err.message : t('failedToFinishSession'));
     } finally {
       setFinishingSession(false);
     }
@@ -181,12 +182,12 @@ export function WorkoutLogging({ sport, sessionId, onBack }: WorkoutLoggingProps
           <button onClick={onBack} className="p-2 -ml-2 hover:bg-[#1A1A6E] rounded-lg transition-colors">
             <ArrowLeft className="w-6 h-6 text-white" />
           </button>
-          <h2 className="text-white capitalize">{sport} Workout</h2>
+          <h2 className="text-white">{t('workoutTitle', { sport: sport === 'fitness' ? t('sportFitness') : t('sportClimbing') })}</h2>
           <button
             onClick={handleFinishSession}
             className="px-4 py-2 bg-yellow-500 text-[#0E0E55] rounded-lg hover:bg-yellow-400 transition-colors font-bold"
           >
-            Finish
+            {t('finish')}
           </button>
         </div>
       </div>
@@ -208,7 +209,7 @@ export function WorkoutLogging({ sport, sessionId, onBack }: WorkoutLoggingProps
                 className="flex items-center gap-2 px-6 py-3 bg-yellow-500 text-[#0E0E55] rounded-lg hover:bg-yellow-400 transition-colors"
               >
                 <Play className="w-5 h-5" />
-                <span>{timer === 0 ? 'Start' : 'Resume'}</span>
+                <span>{timer === 0 ? t('start') : t('resume')}</span>
               </button>
             ) : (
               <button
@@ -216,7 +217,7 @@ export function WorkoutLogging({ sport, sessionId, onBack }: WorkoutLoggingProps
                 className="flex items-center gap-2 px-6 py-3 bg-yellow-500 text-[#0E0E55] rounded-lg hover:bg-yellow-400 transition-colors"
               >
                 <Pause className="w-5 h-5" />
-                <span>Pause</span>
+                <span>{t('pause')}</span>
               </button>
             )}
             {timer > 0 && (
@@ -228,7 +229,7 @@ export function WorkoutLogging({ sport, sessionId, onBack }: WorkoutLoggingProps
                 className="flex items-center gap-2 px-6 py-3 bg-white text-[#0E0E55] rounded-lg hover:bg-gray-100 transition-colors border border-gray-200"
               >
                 <RotateCcw className="w-5 h-5" />
-                <span>Reset</span>
+                <span>{t('reset')}</span>
               </button>
             )}
           </div>
@@ -237,13 +238,13 @@ export function WorkoutLogging({ sport, sessionId, onBack }: WorkoutLoggingProps
         {/* Exercise/Activity Name */}
         <div>
           <label className="block mb-2 text-gray-900">
-            {sport === 'fitness' ? 'Exercise' : 'Activity'}
+            {sport === 'fitness' ? t('exerciseSingular') : t('activity')}
           </label>
           <input
             type="text"
             value={exercise}
             onChange={(e) => setExercise(e.target.value)}
-            placeholder={sport === 'fitness' ? 'e.g., Deadlift' : 'e.g., Boulder Problem'}
+            placeholder={sport === 'fitness' ? t('deadliftPlaceholder') : t('boulderPlaceholder')}
             className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
         </div>
@@ -252,13 +253,13 @@ export function WorkoutLogging({ sport, sessionId, onBack }: WorkoutLoggingProps
         {sport === 'fitness' && (
           <div>
             <div className="flex items-center justify-between mb-3">
-              <label className="text-gray-900">Sets</label>
+              <label className="text-gray-900">{t('setsLabel')}</label>
               <button
                 onClick={addSet}
                 className="flex items-center gap-1 text-blue-600 hover:text-blue-700"
               >
                 <Plus className="w-4 h-4" />
-                <span className="text-sm">Add Set</span>
+                <span className="text-sm">{t('addSet')}</span>
               </button>
             </div>
             
@@ -266,7 +267,7 @@ export function WorkoutLogging({ sport, sessionId, onBack }: WorkoutLoggingProps
               {sets.map((set, index) => (
                 <div key={index} className="bg-white border border-gray-200 rounded-lg p-4">
                   <div className="flex items-center justify-between mb-3">
-                    <span className="text-gray-600">Set {index + 1}</span>
+                    <span className="text-gray-600">{t('setNumber', { n: index + 1 })}</span>
                     {sets.length > 1 && (
                       <button
                         onClick={() => removeSet(index)}
@@ -279,7 +280,7 @@ export function WorkoutLogging({ sport, sessionId, onBack }: WorkoutLoggingProps
                   
                   <div className="grid grid-cols-3 gap-3">
                     <div>
-                      <label className="block text-xs text-gray-600 mb-1">Weight (kg)</label>
+                      <label className="block text-xs text-gray-600 mb-1">{t('weightKg')}</label>
                       <input
                         type="number"
                         value={set.weight}
@@ -289,7 +290,7 @@ export function WorkoutLogging({ sport, sessionId, onBack }: WorkoutLoggingProps
                       />
                     </div>
                     <div>
-                      <label className="block text-xs text-gray-600 mb-1">Reps</label>
+                      <label className="block text-xs text-gray-600 mb-1">{t('repsLabel')}</label>
                       <input
                         type="number"
                         value={set.reps}
@@ -299,7 +300,7 @@ export function WorkoutLogging({ sport, sessionId, onBack }: WorkoutLoggingProps
                       />
                     </div>
                     <div>
-                      <label className="block text-xs text-gray-600 mb-1">RPE</label>
+                      <label className="block text-xs text-gray-600 mb-1">{t('rpe')}</label>
                       <input
                         type="number"
                         value={set.rpe}
@@ -321,13 +322,13 @@ export function WorkoutLogging({ sport, sessionId, onBack }: WorkoutLoggingProps
         {sport === 'climbing' && (
           <div>
             <div className="flex items-center justify-between mb-3">
-              <label className="text-gray-900">Attempts</label>
+              <label className="text-gray-900">{t('attempts')}</label>
               <button
                 onClick={addClimb}
                 className="flex items-center gap-1 text-green-600 hover:text-green-700"
               >
                 <Plus className="w-4 h-4" />
-                <span className="text-sm">Add Attempt</span>
+                <span className="text-sm">{t('addAttempt')}</span>
               </button>
             </div>
             
@@ -335,7 +336,7 @@ export function WorkoutLogging({ sport, sessionId, onBack }: WorkoutLoggingProps
               {climbingAttempts.map((attempt, index) => (
                 <div key={index} className="bg-white border border-gray-200 rounded-lg p-4">
                   <div className="flex items-center justify-between mb-3">
-                    <span className="text-gray-600">Attempt {index + 1}</span>
+                    <span className="text-gray-600">{t('attemptNumber', { n: index + 1 })}</span>
                     {climbingAttempts.length > 1 && (
                       <button
                         onClick={() => removeClimb(index)}
@@ -348,13 +349,13 @@ export function WorkoutLogging({ sport, sessionId, onBack }: WorkoutLoggingProps
                   
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-xs text-gray-600 mb-1">Grade</label>
+                      <label className="block text-xs text-gray-600 mb-1">{t('grade')}</label>
                       <select
                         value={attempt.grade}
                         onChange={(e) => updateClimb(index, 'grade', e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                       >
-                        <option value="">Select...</option>
+                        <option value="">{t('selectPlaceholder')}</option>
                         <option value="V0">V0</option>
                         <option value="V1">V1</option>
                         <option value="V2">V2</option>
@@ -369,17 +370,17 @@ export function WorkoutLogging({ sport, sessionId, onBack }: WorkoutLoggingProps
                       </select>
                     </div>
                     <div>
-                      <label className="block text-xs text-gray-600 mb-1">Send Type</label>
+                      <label className="block text-xs text-gray-600 mb-1">{t('sendType')}</label>
                       <select
                         value={attempt.sendType}
                         onChange={(e) => updateClimb(index, 'sendType', e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                       >
-                        <option value="">Select...</option>
-                        <option value="Flash">Flash</option>
-                        <option value="Send">Send</option>
-                        <option value="Project">Project</option>
-                        <option value="Attempt">Attempt</option>
+                        <option value="">{t('selectPlaceholder')}</option>
+                        <option value="Flash">{t('sendFlash')}</option>
+                        <option value="Send">{t('sendSend')}</option>
+                        <option value="Project">{t('sendProject')}</option>
+                        <option value="Attempt">{t('sendAttempt')}</option>
                       </select>
                     </div>
                   </div>
@@ -391,11 +392,11 @@ export function WorkoutLogging({ sport, sessionId, onBack }: WorkoutLoggingProps
 
         {/* Notes */}
         <div>
-          <label className="block mb-2 text-gray-900">Notes (Optional)</label>
+          <label className="block mb-2 text-gray-900">{t('notesOptional')}</label>
           <textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
-            placeholder="How did it feel? Any observations?"
+            placeholder={t('notesPlaceholder')}
             rows={4}
             className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
           />
@@ -407,7 +408,7 @@ export function WorkoutLogging({ sport, sessionId, onBack }: WorkoutLoggingProps
           disabled={loading}
           className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed font-bold"
         >
-          {loading ? 'Saving...' : 'Log Exercise'}
+          {loading ? t('saving') : t('logExercise')}
         </button>
       </div>
 

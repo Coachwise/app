@@ -4,6 +4,7 @@ import { ExerciseBuilder } from './ExerciseBuilder';
 import * as ExercisesAPI from '../api/exercises';
 import type { Exercise } from '../api/types';
 import { useAuth } from '../contexts/AuthContext';
+import { useLanguage } from '../contexts/LanguageContext';
 
 interface ExercisesProps {
   onBack: () => void;
@@ -13,6 +14,7 @@ const nsToSeconds = (value?: number | null) => Math.max(0, Math.round((value ?? 
 
 export function Exercises({ onBack }: ExercisesProps) {
   const { tokens } = useAuth();
+  const { t } = useLanguage();
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -23,7 +25,7 @@ export function Exercises({ onBack }: ExercisesProps) {
 
   const fetchExercises = async (opts?: { publicOnly?: boolean; search?: string }) => {
     if (!tokens?.access_token) {
-      setError('Not authenticated');
+      setError(t('notAuthenticated'));
       return;
     }
     setLoading(true);
@@ -37,7 +39,7 @@ export function Exercises({ onBack }: ExercisesProps) {
       });
       setExercises(items);
     } catch (e) {
-      const msg = e instanceof Error ? e.message : 'Unable to load exercises';
+      const msg = e instanceof Error ? e.message : t('unableToLoadExercises');
       setError(msg);
     } finally {
       setLoading(false);
@@ -63,13 +65,13 @@ export function Exercises({ onBack }: ExercisesProps) {
 
   const handleDelete = async (id: string) => {
     if (!tokens?.access_token) return;
-    const confirmed = window.confirm('Delete this exercise?');
+    const confirmed = window.confirm(t('deleteExerciseConfirm'));
     if (!confirmed) return;
     try {
       await ExercisesAPI.deleteExercise(tokens.access_token, id);
       setExercises((prev) => prev.filter((ex) => ex.id !== id));
     } catch (e) {
-      const msg = e instanceof Error ? e.message : 'Unable to delete exercise';
+      const msg = e instanceof Error ? e.message : t('unableToDeleteExercise');
       setError(msg);
     }
   };
@@ -96,14 +98,14 @@ export function Exercises({ onBack }: ExercisesProps) {
           </button>
           <h2 className="text-white flex items-center gap-2">
             <Dumbbell className="w-5 h-5" />
-            Exercises
+            {t('exercisesLabel')}
           </h2>
           <button
             onClick={() => setCreating(true)}
             className="px-4 py-2 bg-yellow-500 text-[#0E0E55] rounded-lg hover:bg-yellow-400 transition-colors flex items-center gap-2"
           >
             <Plus className="w-4 h-4" />
-            <span>New</span>
+            <span>{t('newLabel')}</span>
           </button>
         </div>
       </div>
@@ -119,7 +121,7 @@ export function Exercises({ onBack }: ExercisesProps) {
                 type="search"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search exercises by name"
+                placeholder={t('searchExercisesByName')}
                 className="w-full pl-9 pr-3 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
@@ -128,7 +130,7 @@ export function Exercises({ onBack }: ExercisesProps) {
               className="px-3 py-2 bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200 flex items-center gap-2"
             >
               <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-              <span className="text-sm">Refresh</span>
+              <span className="text-sm">{t('refresh')}</span>
             </button>
           </div>
           <label className="flex items-center gap-2 text-sm text-gray-700">
@@ -142,17 +144,17 @@ export function Exercises({ onBack }: ExercisesProps) {
               }}
               className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
             />
-            Show public exercises only
+            {t('showPublicOnly')}
           </label>
         </div>
 
         <div className="space-y-3">
           {loading && (
-            <div className="text-gray-600 text-sm">Loading exercises...</div>
+            <div className="text-gray-600 text-sm">{t('loadingExercises')}</div>
           )}
           {!loading && exercises.length === 0 && (
             <div className="bg-white border border-dashed border-gray-300 rounded-lg p-6 text-center text-gray-600">
-              No exercises found. Try creating one.
+              {t('noExercisesTryCreate')}
             </div>
           )}
           {!loading &&
@@ -179,19 +181,19 @@ export function Exercises({ onBack }: ExercisesProps) {
                     <div className="flex items-center gap-2">
                       <h3 className="text-gray-900 font-semibold">{exercise.name}</h3>
                       {exercise.public && (
-                        <span className="text-xs px-2 py-0.5 rounded-full bg-green-100 text-green-700">Public</span>
+                        <span className="text-xs px-2 py-0.5 rounded-full bg-green-100 text-green-700">{t('publicLabel')}</span>
                       )}
                     </div>
-                    <p className="text-gray-600 text-sm mt-1">{exercise.description || 'No description yet.'}</p>
+                    <p className="text-gray-600 text-sm mt-1">{exercise.description || t('noDescriptionYet')}</p>
                     <div className="mt-3 space-y-1">
                       {exercise.sets.map((set, idx) => (
                         <div key={set.id || idx} className="text-sm text-gray-700">
-                          <span className="font-medium">Set {idx + 1}:</span>{' '}
-                          <span>{set.name || 'Untitled'}</span>
+                          <span className="font-medium">{t('setNumberColon', { n: idx + 1 })}</span>{' '}
+                          <span>{set.name || t('untitled')}</span>
                           {' • '}
-                          <span>{set.rep_count !== undefined && set.rep_count !== null ? `${set.rep_count} reps` : `${nsToSeconds(set.duration)} sec`}</span>
+                          <span>{set.rep_count !== undefined && set.rep_count !== null ? `${set.rep_count} ${t('repsUnit')}` : `${nsToSeconds(set.duration)} ${t('secUnit')}`}</span>
                           {' • '}
-                          <span>{nsToSeconds(set.rest_time)}s rest</span>
+                          <span>{t('restShort', { sec: nsToSeconds(set.rest_time) })}</span>
                         </div>
                       ))}
                     </div>
@@ -200,14 +202,14 @@ export function Exercises({ onBack }: ExercisesProps) {
                     <button
                       onClick={() => setEditing(exercise)}
                       className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200"
-                      aria-label="Edit exercise"
+                      aria-label={t('editExercise')}
                     >
                       <Edit3 className="w-4 h-4 text-gray-700" />
                     </button>
                     <button
                       onClick={() => handleDelete(exercise.id)}
                       className="p-2 rounded-lg bg-red-50 hover:bg-red-100"
-                      aria-label="Delete exercise"
+                      aria-label={t('removeExerciseTitle')}
                     >
                       <Trash2 className="w-4 h-4 text-red-600" />
                     </button>

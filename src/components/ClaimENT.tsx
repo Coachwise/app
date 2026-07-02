@@ -105,7 +105,7 @@ export function ClaimENT({ onBack, onNavigate, userRole, isPro }: ClaimENTProps)
             </button>
             <div className="flex items-center gap-2">
               <Zap className="w-6 h-6 text-yellow-500" />
-              <h1 className="text-white text-xl">Spark Rewards</h1>
+              <h1 className="text-white text-xl">{t('sparkRewards')}</h1>
             </div>
           </div>
           <HamburgerMenu 
@@ -121,7 +121,7 @@ export function ClaimENT({ onBack, onNavigate, userRole, isPro }: ClaimENTProps)
           <div className="bg-yellow-500 rounded-lg p-4">
             <div className="flex items-center gap-2 mb-2">
               <Coins className="w-5 h-5 text-[#0E0E55]" />
-              <span className="text-[#0E0E55] text-sm">App Balance</span>
+              <span className="text-[#0E0E55] text-sm">{t('appBalance')}</span>
             </div>
             <div className="text-[#0E0E55] text-3xl font-bold">
               {availableBalance.toFixed(1)}
@@ -133,7 +133,7 @@ export function ClaimENT({ onBack, onNavigate, userRole, isPro }: ClaimENTProps)
           <div className="bg-[#1A1A40] rounded-lg p-4 border-2 border-yellow-500/50">
             <div className="flex items-center gap-2 mb-2">
               <TrendingUp className="w-5 h-5 text-yellow-500" />
-              <span className="text-white text-sm">Pending</span>
+              <span className="text-white text-sm">{t('pending')}</span>
             </div>
             <div className="text-white text-3xl font-bold">
               {pendingBalance.toFixed(1)}
@@ -149,7 +149,7 @@ export function ClaimENT({ onBack, onNavigate, userRole, isPro }: ClaimENTProps)
               <Crown className="w-5 h-5 text-yellow-500" />
             </div>
             <div>
-              <h3 className="text-white font-medium text-sm mb-1">Claiming Coming Soon</h3>
+              <h3 className="text-white font-medium text-sm mb-1">{t('claimingComingSoon')}</h3>
               <p className="text-gray-300 text-xs leading-relaxed">
                 Tokens are not distributed on-chain yet. Just hold your tokens on the app. As soon as the token is distributed and listed, you will be allowed to claim it right after.
               </p>
@@ -160,7 +160,7 @@ export function ClaimENT({ onBack, onNavigate, userRole, isPro }: ClaimENTProps)
             className="w-full mt-3 bg-[#0E0E55] text-gray-400 py-3 rounded-lg flex items-center justify-center gap-2 font-semibold cursor-not-allowed border border-[#1A1A6E]"
           >
             <Zap className="w-5 h-5" />
-            <span>Withdrawals Paused</span>
+            <span>{t('withdrawalsPaused')}</span>
           </button>
         </div>
       </div>
@@ -295,7 +295,7 @@ export function ClaimENT({ onBack, onNavigate, userRole, isPro }: ClaimENTProps)
           <div className="flex gap-3">
             <Zap className="w-5 h-5 text-yellow-500 flex-shrink-0 mt-0.5" />
             <div className="text-sm text-gray-200">
-              <div className="font-semibold mb-1 text-yellow-500">What is Spark?</div>
+              <div className="font-semibold mb-1 text-yellow-500">{t('whatIsSpark')}</div>
               <div className="text-gray-300">
                 Spark is the energy currency of Coachwise. Earn it by staying active, coaching others, and contributing to the community. Hold your Spark tokens here until they are ready to be claimed on-chain!
               </div>

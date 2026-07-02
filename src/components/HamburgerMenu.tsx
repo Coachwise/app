@@ -1,10 +1,11 @@
 import { useMemo, useState } from 'react';
-import { Menu, X, Bell, Shield, LogOut, Settings, Users, DollarSign, Globe, User, Crown, Coins } from 'lucide-react';
+import { Menu, X, Bell, Shield, LogOut, Settings, Users, DollarSign, Globe, User, Crown, Coins, ClipboardList } from 'lucide-react';
 import type { UserRole } from '../App';
 import { useLanguage } from '../contexts/LanguageContext';
 import type { Language } from '../translations';
 import { ENTBalanceWidget } from './ENTBalanceWidget';
 import { useAuth } from '../contexts/AuthContext';
+import { FEATURES } from '../config';
 
 interface HamburgerMenuProps {
   userRole: UserRole;
@@ -23,7 +24,7 @@ export function HamburgerMenu({
   userUsername,
   isPro
 }: HamburgerMenuProps) {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { t, language, setLanguage, isRTL } = useLanguage();
   const [showLanguageSelector, setShowLanguageSelector] = useState(false);
@@ -145,24 +146,28 @@ export function HamburgerMenu({
                     </div>
                     <div className="flex-1 text-left">
                       <span className="font-semibold block">{t('becomePro')}</span>
-                      <span className="text-xs text-[#0E0E55]/70">Unlock all features</span>
+                      <span className="text-xs text-[#0E0E55]/70">{t('unlockAllFeatures')}</span>
                     </div>
                   </button>
                   <div className="border-t border-gray-200 my-2"></div>
                 </>
               )}
 
-              {/* ENT Balance Widget */}
-              <ENTBalanceWidget 
-                availableBalance={7.0}
-                pendingBalance={5.5}
-                onNavigate={(view) => {
-                  onNavigate(view);
-                  setIsMenuOpen(false);
-                }}
-                compact={true}
-              />
-              <div className="border-t border-gray-200 my-2"></div>
+              {/* ENT Balance Widget (SPARK) — hidden for first release */}
+              {FEATURES.spark && (
+                <>
+                  <ENTBalanceWidget
+                    availableBalance={7.0}
+                    pendingBalance={5.5}
+                    onNavigate={(view) => {
+                      onNavigate(view);
+                      setIsMenuOpen(false);
+                    }}
+                    compact={true}
+                  />
+                  <div className="border-t border-gray-200 my-2"></div>
+                </>
+              )}
 
               {/* Coach-specific actions */}
               {userRole === 'coach' && (
@@ -194,7 +199,17 @@ export function HamburgerMenu({
               {/* Athlete-specific action - SUBTLE STYLE */}
               {userRole !== 'coach' && (
                 <>
-                  <button 
+                  <button
+                    onClick={() => {
+                      onNavigate('athlete-tests');
+                      setIsMenuOpen(false);
+                    }}
+                    className="w-full flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg transition-colors text-left"
+                  >
+                    <ClipboardList className="w-5 h-5 text-gray-600" />
+                    <span className="text-[#0E0E55]">{t('myAssessments')}</span>
+                  </button>
+                  <button
                     onClick={() => {
                       onNavigate('coach-application');
                       setIsMenuOpen(false);
@@ -209,17 +224,6 @@ export function HamburgerMenu({
               )}
 
               {/* General actions for all users */}
-              <button 
-                onClick={() => {
-                  onNavigate('athletes-coaches');
-                  setIsMenuOpen(false);
-                }}
-                className="w-full flex items-center gap-3 p-3 hover:bg-gray-100 rounded-lg transition-colors text-left"
-              >
-                <Users className="w-5 h-5 text-[#0E0E55]" />
-                <span className="text-gray-700">{t('athletesAndCoaches')}</span>
-              </button>
-
               <button className="w-full flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg transition-colors text-left">
                 <Bell className="w-5 h-5 text-gray-600" />
                 <span className="text-[#0E0E55]">{t('notifications')}</span>
@@ -275,7 +279,13 @@ export function HamburgerMenu({
 
               <div className="border-t border-gray-200 my-2"></div>
 
-              <button className="w-full flex items-center gap-3 p-3 hover:bg-red-50 rounded-lg transition-colors text-red-600 text-left">
+              <button
+                onClick={() => {
+                  setIsMenuOpen(false);
+                  logout();
+                }}
+                className="w-full flex items-center gap-3 p-3 hover:bg-red-50 rounded-lg transition-colors text-red-600 text-left"
+              >
                 <LogOut className="w-5 h-5" />
                 <span>{t('logOut')}</span>
               </button>

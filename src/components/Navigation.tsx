@@ -1,6 +1,11 @@
-import { Home, Dumbbell, LayoutDashboard, MessageCircle } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Home, Dumbbell, LayoutDashboard, MessageCircle, Compass } from 'lucide-react';
 import type { ViewType, UserRole } from '../App';
 import { useLanguage } from '../contexts/LanguageContext';
+import { useAuth } from '../contexts/AuthContext';
+import * as ConnectionsAPI from '../api/connections';
+import * as MessagesAPI from '../api/messages';
+import { FEATURES } from '../config';
 
 interface NavigationProps {
   currentView: ViewType;
@@ -10,9 +15,38 @@ interface NavigationProps {
 
 export function Navigation({ currentView, onNavigate, userRole }: NavigationProps) {
   const { t } = useLanguage();
-  
+  const { tokens } = useAuth();
+  const [hasRequests, setHasRequests] = useState(false);
+  const [hasUnreadMessages, setHasUnreadMessages] = useState(false);
+
+  // Notification dots: Discover (pending connection requests) and Messages
+  // (unread conversations). Re-checked on every view change so they clear once
+  // the user handles them. (A future socket can trigger this same refresh.)
+  useEffect(() => {
+    const token = tokens?.access_token;
+    if (!token) return;
+    let cancelled = false;
+
+    ConnectionsAPI.listRequests(token, { status: 'PENDING', limit: 1 })
+      .then((res) => {
+        if (!cancelled) setHasRequests(res.total > 0);
+      })
+      .catch(() => {});
+
+    MessagesAPI.listThreads(token, { limit: 50 })
+      .then((res) => {
+        if (!cancelled) setHasUnreadMessages(res.items.some((thr) => thr.unread_count > 0));
+      })
+      .catch(() => {});
+
+    return () => {
+      cancelled = true;
+    };
+  }, [tokens?.access_token, currentView]);
+
   const navItems = [
-    { id: 'feed' as ViewType, icon: Home, label: t('feed') },
+    ...(FEATURES.feed ? [{ id: 'feed' as ViewType, icon: Home, label: t('feed') }] : []),
+    { id: 'athlete-search' as ViewType, icon: Compass, label: t('discover') },
     { id: 'workouts-home' as ViewType, icon: Dumbbell, label: t('workouts') },
     ...(userRole === 'coach' ? [
       { id: 'messages' as ViewType, icon: MessageCircle, label: t('messages') },
@@ -31,6 +65,10 @@ export function Navigation({ currentView, onNavigate, userRole }: NavigationProp
             (item.id === 'workouts-home' && (currentView === 'workout-session' || currentView === 'logging')) ||
             (item.id === 'messages' && (currentView === 'message-thread' || currentView === 'channel-view'));
           
+          const showDot =
+            (item.id === 'athlete-search' && hasRequests) ||
+            (item.id === 'messages' && hasUnreadMessages);
+
           return (
             <button
               key={item.id}
@@ -39,7 +77,12 @@ export function Navigation({ currentView, onNavigate, userRole }: NavigationProp
                 isActive ? 'text-yellow-500' : 'text-gray-300'
               }`}
             >
-              <Icon className="w-6 h-6" />
+              <span className="relative">
+                <Icon className="w-6 h-6" />
+                {showDot && (
+                  <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-red-500 rounded-full border border-[#0E0E55]" />
+                )}
+              </span>
               <span className="text-xs">{item.label}</span>
             </button>
           );

@@ -57,7 +57,7 @@ export function ProfileSettings({ userRole, onBack }: ProfileSettingsProps) {
     const file = event.target.files?.[0];
     if (!file) return;
     if (!tokens?.access_token) {
-      setError('Not authenticated');
+      setError(t('notAuthenticated'));
       return;
     }
 
@@ -74,7 +74,7 @@ export function ProfileSettings({ userRole, onBack }: ProfileSettingsProps) {
         reader.readAsDataURL(file);
       }
     } catch (e) {
-      const msg = e instanceof Error ? e.message : 'Unable to upload image';
+      const msg = e instanceof Error ? e.message : t('unableToUploadImage');
       setError(msg);
     } finally {
       setUploadingImage(null);
@@ -84,7 +84,7 @@ export function ProfileSettings({ userRole, onBack }: ProfileSettingsProps) {
 
   const handleSave = async () => {
     if (!tokens?.access_token) {
-      setError('Not authenticated');
+      setError(t('notAuthenticated'));
       return;
     }
     setSaving(true);
@@ -102,7 +102,7 @@ export function ProfileSettings({ userRole, onBack }: ProfileSettingsProps) {
       await refreshUser();
       onBack();
     } catch (e) {
-      const msg = e instanceof Error ? e.message : 'Unable to save profile';
+      const msg = e instanceof Error ? e.message : t('unableToSaveProfile');
       setError(msg);
     } finally {
       setSaving(false);
@@ -123,7 +123,7 @@ export function ProfileSettings({ userRole, onBack }: ProfileSettingsProps) {
             </button>
             <div className="flex items-center gap-2">
               <User className="w-6 h-6 text-yellow-500" />
-              <h1 className="text-white text-xl">Profile Settings</h1>
+              <h1 className="text-white text-xl">{t('profileSettings')}</h1>
             </div>
           </div>
           <button
@@ -132,7 +132,7 @@ export function ProfileSettings({ userRole, onBack }: ProfileSettingsProps) {
             className="flex items-center gap-2 px-4 py-2 bg-yellow-500 text-[#0E0E55] rounded-lg hover:bg-yellow-400 transition-colors disabled:opacity-60"
           >
             <Save className="w-4 h-4" />
-            <span className="text-sm">{saving ? 'Saving...' : 'Save'}</span>
+            <span className="text-sm">{saving ? t('saving') : t('save')}</span>
           </button>
         </div>
       </div>
@@ -143,7 +143,7 @@ export function ProfileSettings({ userRole, onBack }: ProfileSettingsProps) {
           {coverImage ? (
             <img 
               src={coverImage} 
-              alt="Cover"
+              alt={t('coverAlt')}
               className="w-full h-full object-cover"
             />
           ) : (
@@ -199,14 +199,14 @@ export function ProfileSettings({ userRole, onBack }: ProfileSettingsProps) {
           {/* Basic Information Section */}
           <div className="bg-white rounded-lg shadow-sm">
             <div className="p-4 border-b border-gray-200">
-              <h2 className="text-[#0E0E55]">Basic Information</h2>
+              <h2 className="text-[#0E0E55]">{t('basicInformation')}</h2>
             </div>
             
             <div className="p-4 space-y-4">
               {/* First Name */}
               <div>
                 <label className="block text-gray-900 mb-2">
-                  First Name
+                  {t('firstName')}
                 </label>
                 <input
                   type="text"
@@ -219,7 +219,7 @@ export function ProfileSettings({ userRole, onBack }: ProfileSettingsProps) {
               {/* Last Name */}
               <div>
                 <label className="block text-gray-900 mb-2">
-                  Last Name
+                  {t('lastName')}
                 </label>
                 <input
                   type="text"
@@ -232,7 +232,7 @@ export function ProfileSettings({ userRole, onBack }: ProfileSettingsProps) {
               {/* Username */}
               <div>
                 <label className="block text-gray-900 mb-2">
-                  Username
+                  {t('username')}
                 </label>
                 <input
                   type="text"
@@ -245,17 +245,17 @@ export function ProfileSettings({ userRole, onBack }: ProfileSettingsProps) {
               {/* Bio */}
               <div>
                 <label className="block text-gray-900 mb-2">
-                  Bio
+                  {t('bio')}
                 </label>
                 <textarea
                   value={bio}
                   onChange={(e) => setBio(e.target.value)}
                   rows={4}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent resize-none"
-                  placeholder="Tell us about yourself..."
+                  placeholder={t('bioPlaceholder')}
                 />
                 <p className="text-sm text-gray-600 mt-1">
-                  {bio.length}/200 characters
+                  {t('charactersCount', { count: bio.length })}
                 </p>
               </div>
 
@@ -263,14 +263,14 @@ export function ProfileSettings({ userRole, onBack }: ProfileSettingsProps) {
               <div>
                 <label className="block text-gray-900 mb-2 flex items-center gap-2">
                   <MapPin className="w-4 h-4" />
-                  Location
+                  {t('location')}
                 </label>
                 <input
                   type="text"
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
-                  placeholder="City, Country"
+                  placeholder={t('cityCountry')}
                 />
               </div>
 
@@ -278,7 +278,7 @@ export function ProfileSettings({ userRole, onBack }: ProfileSettingsProps) {
               <div>
                 <label className="block text-gray-900 mb-2 flex items-center gap-2">
                   <Calendar className="w-4 h-4" />
-                  Birthday
+                  {t('birthday')}
                 </label>
                 <input
                   type="date"
@@ -293,7 +293,7 @@ export function ProfileSettings({ userRole, onBack }: ProfileSettingsProps) {
           {/* Contact Information Section */}
           <div className="bg-white rounded-lg shadow-sm">
             <div className="p-4 border-b border-gray-200">
-              <h2 className="text-[#0E0E55]">Contact Information</h2>
+              <h2 className="text-[#0E0E55]">{t('contactInformation')}</h2>
             </div>
             
             <div className="p-4 space-y-4">
@@ -301,7 +301,7 @@ export function ProfileSettings({ userRole, onBack }: ProfileSettingsProps) {
               <div>
                 <label className="block text-gray-900 mb-2 flex items-center gap-2">
                   <Mail className="w-4 h-4" />
-                  Email
+                  {t('email')}
                 </label>
                 <input
                   type="email"
@@ -315,7 +315,7 @@ export function ProfileSettings({ userRole, onBack }: ProfileSettingsProps) {
               <div>
                 <label className="block text-gray-900 mb-2 flex items-center gap-2">
                   <Phone className="w-4 h-4" />
-                  Phone Number
+                  {t('phoneNumber')}
                 </label>
                 <input
                   type="tel"
@@ -330,7 +330,7 @@ export function ProfileSettings({ userRole, onBack }: ProfileSettingsProps) {
           {/* Social Links Section */}
           <div className="bg-white rounded-lg shadow-sm">
             <div className="p-4 border-b border-gray-200">
-              <h2 className="text-[#0E0E55]">Social Links</h2>
+              <h2 className="text-[#0E0E55]">{t('socialLinks')}</h2>
             </div>
             
             <div className="p-4 space-y-4">
@@ -338,7 +338,7 @@ export function ProfileSettings({ userRole, onBack }: ProfileSettingsProps) {
               <div>
                 <label className="block text-gray-900 mb-2 flex items-center gap-2">
                   <Globe className="w-4 h-4" />
-                  Website
+                  {t('website')}
                 </label>
                 <input
                   type="url"
@@ -353,7 +353,7 @@ export function ProfileSettings({ userRole, onBack }: ProfileSettingsProps) {
               <div>
                 <label className="block text-gray-900 mb-2 flex items-center gap-2">
                   <Instagram className="w-4 h-4" />
-                  Instagram
+                  {t('instagram')}
                 </label>
                 <input
                   type="text"
@@ -372,7 +372,7 @@ export function ProfileSettings({ userRole, onBack }: ProfileSettingsProps) {
               <div className="p-4 border-b border-gray-200">
                 <h2 className="text-[#0E0E55] flex items-center gap-2">
                   <Briefcase className="w-5 h-5" />
-                  Professional Information
+                  {t('professionalInformation')}
                 </h2>
               </div>
               
@@ -380,56 +380,56 @@ export function ProfileSettings({ userRole, onBack }: ProfileSettingsProps) {
                 {/* Specialization */}
                 <div>
                   <label className="block text-gray-900 mb-2">
-                    Specialization
+                    {t('specialization')}
                   </label>
                   <input
                     type="text"
                     value={specialization}
                     onChange={(e) => setSpecialization(e.target.value)}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
-                    placeholder="e.g., Strength Training, Olympic Lifting"
+                    placeholder={t('specializationPlaceholder')}
                   />
                 </div>
 
                 {/* Certifications */}
                 <div>
                   <label className="block text-gray-900 mb-2">
-                    Certifications
+                    {t('certifications')}
                   </label>
                   <input
                     type="text"
                     value={certification}
                     onChange={(e) => setCertification(e.target.value)}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
-                    placeholder="e.g., NSCA-CSCS, ACE"
+                    placeholder={t('certificationsPlaceholder')}
                   />
                 </div>
 
                 {/* Years of Experience */}
                 <div>
                   <label className="block text-gray-900 mb-2">
-                    Years of Experience
+                    {t('yearsExperience')}
                   </label>
                   <input
                     type="text"
                     value={experience}
                     onChange={(e) => setExperience(e.target.value)}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
-                    placeholder="e.g., 5 years"
+                    placeholder={t('experiencePlaceholder')}
                   />
                 </div>
 
                 {/* Session Rate */}
                 <div>
                   <label className="block text-gray-900 mb-2">
-                    Session Rate
+                    {t('sessionRate')}
                   </label>
                   <input
                     type="text"
                     value={rate}
                     onChange={(e) => setRate(e.target.value)}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
-                    placeholder="e.g., $50/session"
+                    placeholder={t('ratePlaceholder')}
                   />
                 </div>
               </div>
@@ -441,7 +441,7 @@ export function ProfileSettings({ userRole, onBack }: ProfileSettingsProps) {
             onClick={handleSave}
             className="w-full py-3 bg-[#0E0E55] text-white rounded-lg hover:bg-[#1A1A6E] transition-colors"
           >
-            Save Changes
+            {t('saveChanges')}
           </button>
         </div>
       </div>

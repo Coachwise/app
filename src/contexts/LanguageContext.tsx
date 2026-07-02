@@ -13,7 +13,7 @@ const LanguageContext = createContext<LanguageContextType | undefined>(undefined
 export function LanguageProvider({ children }: { children: ReactNode }) {
   const [language, setLanguageState] = useState<Language>(() => {
     const saved = localStorage.getItem('coachwise-language');
-    return (saved as Language) || 'en';
+    return (saved as Language) || 'fa';
   });
 
   const isRTL = language === 'fa';

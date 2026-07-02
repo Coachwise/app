@@ -1,12 +1,19 @@
-import { useState } from 'react';
-import { ArrowLeft, Plus, Copy, Trash2 } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { ArrowLeft, Plus, Trash2, Check } from 'lucide-react';
+import { useLanguage } from '../contexts/LanguageContext';
+import { useAuth } from '../contexts/AuthContext';
+import { PackagesAPI, PlansAPI } from '../api';
+import type { Plan } from '../api/types';
+import { toast } from 'sonner';
 
 interface SubscriptionTierBuilderProps {
   onCancel: () => void;
   onSave: () => void;
-  existingTier?: SubscriptionTier;
+  token: string;
+  packageId?: string; // when set, edit an existing package
 }
 
+// Kept for back-compat with the (still-mock) marketplace TierComparison.
 export interface SubscriptionTier {
   id: string;
   name: string;
@@ -28,25 +35,75 @@ export interface SubscriptionTier {
   popular?: boolean;
 }
 
-export function SubscriptionTierBuilder({ onCancel, onSave, existingTier }: SubscriptionTierBuilderProps) {
-  const [name, setName] = useState(existingTier?.name || '');
-  const [description, setDescription] = useState(existingTier?.description || '');
-  const [monthlyPrice, setMonthlyPrice] = useState(existingTier?.pricing.monthly?.toString() || '');
-  const [annualPrice, setAnnualPrice] = useState(existingTier?.pricing.annual?.toString() || '');
-  const [oneTimePrice, setOneTimePrice] = useState(existingTier?.pricing.oneTime?.toString() || '');
-  const [plansIncluded, setPlansIncluded] = useState(existingTier?.features.plansIncluded.toString() || '1');
-  const [checkInFrequency, setCheckInFrequency] = useState(existingTier?.features.checkInFrequency || 'weekly');
-  const [videoAccess, setVideoAccess] = useState(existingTier?.features.videoAccess || false);
-  const [nutritionGuides, setNutritionGuides] = useState(existingTier?.features.nutritionGuides || false);
-  const [customFeatures, setCustomFeatures] = useState<string[]>(existingTier?.features.customFeatures || []);
-  const [trialDays, setTrialDays] = useState(existingTier?.trialDays.toString() || '0');
+const TOTAL_STEPS = 4;
+
+const toIntOrNull = (v: string): number | null => {
+  const n = parseInt(v, 10);
+  return Number.isFinite(n) ? n : null;
+};
+
+export function SubscriptionTierBuilder({ onCancel, onSave, token, packageId }: SubscriptionTierBuilderProps) {
+  const { t } = useLanguage();
+  const { user } = useAuth();
+  const [step, setStep] = useState(1);
+  const [name, setName] = useState('');
+  const [description, setDescription] = useState('');
+  const [monthlyPrice, setMonthlyPrice] = useState('');
+  const [annualPrice, setAnnualPrice] = useState('');
+  const [oneTimePrice, setOneTimePrice] = useState('');
+  const [checkInFrequency, setCheckInFrequency] = useState('weekly');
+  const [videoAccess, setVideoAccess] = useState(false);
+  const [nutritionGuides, setNutritionGuides] = useState(false);
+  const [customFeatures, setCustomFeatures] = useState<string[]>([]);
+  const [trialDays, setTrialDays] = useState('0');
+  const [popular, setPopular] = useState(false);
   const [newFeature, setNewFeature] = useState('');
 
-  const handleSave = () => {
-    if (name.trim() && (monthlyPrice || annualPrice || oneTimePrice)) {
-      // Mock save - would send to backend
-      onSave();
-    }
+  const [plans, setPlans] = useState<Plan[]>([]);
+  const [selectedPlanIds, setSelectedPlanIds] = useState<string[]>([]);
+  const [saving, setSaving] = useState(false);
+  const isEdit = Boolean(packageId);
+
+  // Load the coach's plans (for bundling) and, when editing, the package itself.
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      try {
+        const res = await PlansAPI.listPlans(token);
+        // Only the coach's own plans can be bundled (the backend enforces ownership).
+        if (active) setPlans(res.items.filter((p) => p.user_id === user?.id));
+      } catch (e) {
+        toast.error((e as Error).message);
+      }
+      if (!packageId) return;
+      try {
+        const pkg = await PackagesAPI.getPackage(token, packageId);
+        if (!active) return;
+        setName(pkg.name);
+        setDescription(pkg.description || '');
+        setMonthlyPrice(pkg.price_monthly != null ? String(pkg.price_monthly) : '');
+        setAnnualPrice(pkg.price_annual != null ? String(pkg.price_annual) : '');
+        setOneTimePrice(pkg.price_one_time != null ? String(pkg.price_one_time) : '');
+        setCheckInFrequency(pkg.check_in_frequency || 'weekly');
+        setVideoAccess(pkg.video_access);
+        setNutritionGuides(pkg.nutrition_guides);
+        setCustomFeatures(pkg.custom_features || []);
+        setTrialDays(String(pkg.trial_days));
+        setPopular(pkg.popular);
+        setSelectedPlanIds((pkg.plans || []).map((p) => p.id));
+      } catch (e) {
+        toast.error((e as Error).message);
+      }
+    })();
+    return () => {
+      active = false;
+    };
+  }, [token, packageId, user?.id]);
+
+  const togglePlan = (id: string) => {
+    setSelectedPlanIds((prev) =>
+      prev.includes(id) ? prev.filter((p) => p !== id) : [...prev, id]
+    );
   };
 
   const addCustomFeature = () => {
@@ -60,218 +117,274 @@ export function SubscriptionTierBuilder({ onCancel, onSave, existingTier }: Subs
     setCustomFeatures(customFeatures.filter((_, i) => i !== index));
   };
 
-  const handleClone = () => {
-    // Would create a copy of this tier
-    alert('Tier cloned as template!');
+  const hasPrice = Boolean(monthlyPrice || annualPrice || oneTimePrice);
+  const isFormValid = () => Boolean(name.trim()) && hasPrice;
+
+  // A step must be valid before you can advance past it.
+  const canAdvance = (s: number) => {
+    if (s === 1) return Boolean(name.trim());
+    if (s === 3) return hasPrice;
+    return true;
   };
 
-  const isFormValid = () => {
-    return name.trim() && (monthlyPrice || annualPrice || oneTimePrice);
+  const stepTitles = [t('stepBasics'), t('stepPlans'), t('stepPricing'), t('stepFeatures')];
+
+  const handleSave = async () => {
+    if (!isFormValid() || saving) return;
+    setSaving(true);
+    const payload = {
+      name: name.trim(),
+      description: description.trim() || null,
+      price_monthly: toIntOrNull(monthlyPrice),
+      price_annual: toIntOrNull(annualPrice),
+      price_one_time: toIntOrNull(oneTimePrice),
+      trial_days: parseInt(trialDays, 10) || 0,
+      check_in_frequency: checkInFrequency,
+      video_access: videoAccess,
+      nutrition_guides: nutritionGuides,
+      custom_features: customFeatures,
+      popular,
+      plan_ids: selectedPlanIds,
+    };
+    try {
+      if (packageId) {
+        await PackagesAPI.updatePackage(token, packageId, payload);
+      } else {
+        await PackagesAPI.createPackage(token, payload);
+      }
+      toast.success(t('saved'));
+      onSave();
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
     <div className="min-h-screen bg-gray-100">
-      {/* Header */}
+      {/* Header + progress */}
       <div className="bg-[#0E0E55] px-4 py-4 sticky top-0 z-10">
-        <div className="flex items-center justify-between">
-          <button onClick={onCancel} className="p-2 -ml-2 hover:bg-[#1A1A6E] rounded-lg transition-colors">
+        <div className="flex items-center justify-between mb-3">
+          <button
+            onClick={() => (step === 1 ? onCancel() : setStep(step - 1))}
+            className="p-2 -ml-2 hover:bg-[#1A1A6E] rounded-lg transition-colors"
+          >
             <ArrowLeft className="w-6 h-6 text-white" />
           </button>
-          <h2 className="text-white">Create Tier</h2>
-          <button
-            onClick={handleSave}
-            disabled={!isFormValid()}
-            className="px-4 py-2 bg-yellow-500 text-[#0E0E55] rounded-lg hover:bg-yellow-400 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
-          >
-            Save
-          </button>
+          <h2 className="text-white">{isEdit ? t('editTier') : t('createTier')}</h2>
+          {step < TOTAL_STEPS ? (
+            <button
+              onClick={() => canAdvance(step) && setStep(step + 1)}
+              disabled={!canAdvance(step)}
+              className="px-4 py-2 bg-yellow-500 text-[#0E0E55] rounded-lg hover:bg-yellow-400 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+            >
+              {t('next')}
+            </button>
+          ) : (
+            <button
+              onClick={handleSave}
+              disabled={!isFormValid() || saving}
+              className="px-4 py-2 bg-yellow-500 text-[#0E0E55] rounded-lg hover:bg-yellow-400 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+            >
+              {saving ? t('saving') : t('save')}
+            </button>
+          )}
+        </div>
+        {/* Step segments */}
+        <div className="flex gap-1.5 mb-2">
+          {Array.from({ length: TOTAL_STEPS }, (_, i) => i + 1).map((s) => (
+            <div
+              key={s}
+              className={`h-1.5 flex-1 rounded-full transition-colors ${
+                s <= step ? 'bg-yellow-500' : 'bg-[#1A1A6E]'
+              }`}
+            />
+          ))}
+        </div>
+        <div className="flex items-center justify-between">
+          <span className="text-white text-sm">{stepTitles[step - 1]}</span>
+          <span className="text-gray-300 text-xs">
+            {t('stepProgress', { current: String(step), total: String(TOTAL_STEPS) })}
+          </span>
         </div>
       </div>
 
-      <div className="p-4 space-y-4">
-        {/* Tier Name & Price */}
-        <div className="bg-white rounded-lg shadow-md p-4 border border-gray-200">
-          <div className="space-y-4">
+      <div className="p-4 space-y-4 pb-8">
+        {/* STEP 1 — Basics */}
+        {step === 1 && (
+          <>
             <div>
-              <label className="text-[#3D3D3D] mb-2 block">Tier Name</label>
+              <label className="text-[#3D3D3D] mb-2 block">{t('tierName')}</label>
               <input
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="e.g., Premium Plan"
+                placeholder={t('premiumPlanPlaceholder')}
                 className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent text-[#3D3D3D]"
               />
             </div>
-            
             <div>
-              <label className="text-[#3D3D3D] mb-2 block">Monthly Price ($)</label>
-              <input
-                type="number"
-                value={monthlyPrice}
-                onChange={(e) => setMonthlyPrice(e.target.value)}
-                placeholder="99"
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent text-[#3D3D3D]"
+              <label className="block mb-2 text-gray-900">{t('descriptionRequired')}</label>
+              <textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder={t('whatsIncluded')}
+                rows={4}
+                className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
               />
             </div>
+          </>
+        )}
+
+        {/* STEP 2 — Bundle plans */}
+        {step === 2 && (
+          <div>
+            <label className="block mb-2 text-gray-900">
+              {t('bundledPlans')} ({selectedPlanIds.length})
+            </label>
+            <p className="text-gray-500 text-sm mb-3">{t('bundledPlansHint')}</p>
+            {plans.length === 0 ? (
+              <div className="bg-white border border-dashed border-gray-300 rounded-lg p-6 text-center text-gray-500 text-sm">
+                {t('noPlansToBundle')}
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {plans.map((plan) => {
+                  const checked = selectedPlanIds.includes(plan.id);
+                  return (
+                    <button
+                      key={plan.id}
+                      type="button"
+                      onClick={() => togglePlan(plan.id)}
+                      className={`w-full flex items-center justify-between p-3 rounded-lg border transition-colors text-left ${
+                        checked ? 'bg-yellow-50 border-yellow-500' : 'bg-white border-gray-200 hover:border-gray-300'
+                      }`}
+                    >
+                      <div>
+                        <div className="text-[#0E0E55] text-sm">{plan.name}</div>
+                        {plan.exercise_count != null && (
+                          <div className="text-gray-500 text-xs">
+                            {t('exercises')}: {plan.exercise_count}
+                          </div>
+                        )}
+                      </div>
+                      <span
+                        className={`w-6 h-6 rounded-md flex items-center justify-center border ${
+                          checked ? 'bg-yellow-500 border-yellow-500' : 'border-gray-300'
+                        }`}
+                      >
+                        {checked && <Check className="w-4 h-4 text-[#0E0E55]" />}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
           </div>
-        </div>
+        )}
 
-        {/* Description */}
-        <div>
-          <label className="block mb-2 text-gray-900">Description *</label>
-          <textarea
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            placeholder="What's included in this tier?"
-            rows={3}
-            className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-          />
-        </div>
-
-        {/* Pricing Options */}
-        <div>
-          <label className="block mb-3 text-gray-900">Pricing Options *</label>
-          <div className="space-y-3">
+        {/* STEP 3 — Pricing & trial */}
+        {step === 3 && (
+          <>
             <div>
-              <label className="block text-sm text-gray-600 mb-1">Monthly Price ($)</label>
+              <label className="block text-sm text-gray-600 mb-1">{t('monthlyPrice')}</label>
               <input
-                type="number"
-                value={monthlyPrice}
-                onChange={(e) => setMonthlyPrice(e.target.value)}
-                placeholder="30"
-                min="0"
-                step="0.01"
+                type="number" value={monthlyPrice} onChange={(e) => setMonthlyPrice(e.target.value)}
+                placeholder="300000" min="0" step="1"
                 className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
             <div>
-              <label className="block text-sm text-gray-600 mb-1">Annual Price ($)</label>
+              <label className="block text-sm text-gray-600 mb-1">{t('annualPrice')}</label>
               <input
-                type="number"
-                value={annualPrice}
-                onChange={(e) => setAnnualPrice(e.target.value)}
-                placeholder="300"
-                min="0"
-                step="0.01"
+                type="number" value={annualPrice} onChange={(e) => setAnnualPrice(e.target.value)}
+                placeholder="3000000" min="0" step="1"
                 className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
               {annualPrice && monthlyPrice && (
                 <p className="text-green-600 text-sm mt-1">
-                  Save ${((Number(monthlyPrice) * 12) - Number(annualPrice)).toFixed(2)}/year
+                  {t('savePerYear', { amount: ((Number(monthlyPrice) * 12) - Number(annualPrice)).toLocaleString() })}
                 </p>
               )}
             </div>
             <div>
-              <label className="block text-sm text-gray-600 mb-1">One-Time Purchase ($)</label>
+              <label className="block text-sm text-gray-600 mb-1">{t('oneTimePurchase')}</label>
               <input
-                type="number"
-                value={oneTimePrice}
-                onChange={(e) => setOneTimePrice(e.target.value)}
-                placeholder="150"
-                min="0"
-                step="0.01"
+                type="number" value={oneTimePrice} onChange={(e) => setOneTimePrice(e.target.value)}
+                placeholder="1500000" min="0" step="1"
                 className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
-          </div>
-        </div>
-
-        {/* Free Trial */}
-        <div>
-          <label className="block mb-2 text-gray-900">Free Trial (Days)</label>
-          <input
-            type="number"
-            value={trialDays}
-            onChange={(e) => setTrialDays(e.target.value)}
-            placeholder="7"
-            min="0"
-            className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          />
-          <div className="mt-2 flex gap-2">
-            {[0, 7, 14, 30].map(days => (
-              <button
-                key={days}
-                onClick={() => setTrialDays(days.toString())}
-                className="px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded-lg hover:bg-gray-200 transition-colors"
-              >
-                {days === 0 ? 'None' : `${days}d`}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Features */}
-        <div>
-          <label className="block mb-3 text-gray-900">Tier Features</label>
-          
-          <div className="space-y-4">
-            {/* Plans Included */}
             <div>
-              <label className="block text-sm text-gray-600 mb-1">Number of Plans Included</label>
+              <label className="block mb-2 text-gray-900">{t('freeTrialDays')}</label>
               <input
-                type="number"
-                value={plansIncluded}
-                onChange={(e) => setPlansIncluded(e.target.value)}
-                min="1"
+                type="number" value={trialDays} onChange={(e) => setTrialDays(e.target.value)}
+                placeholder="7" min="0"
                 className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
+              <div className="mt-2 flex gap-2">
+                {[0, 7, 14, 30].map((days) => (
+                  <button
+                    key={days}
+                    onClick={() => setTrialDays(days.toString())}
+                    className="px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded-lg hover:bg-gray-200 transition-colors"
+                  >
+                    {days === 0 ? t('none') : `${days}${t('daysSuffix')}`}
+                  </button>
+                ))}
+              </div>
             </div>
+            {!hasPrice && <p className="text-red-500 text-sm">{t('pricingOptions')}</p>}
+          </>
+        )}
 
-            {/* Check-in Frequency */}
+        {/* STEP 4 — Features + review */}
+        {step === 4 && (
+          <>
             <div>
-              <label className="block text-sm text-gray-600 mb-1">Check-in Frequency</label>
+              <label className="block text-sm text-gray-600 mb-1">{t('checkInFrequency')}</label>
               <select
                 value={checkInFrequency}
                 onChange={(e) => setCheckInFrequency(e.target.value)}
                 className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
-                <option value="daily">Daily</option>
-                <option value="weekly">Weekly</option>
-                <option value="biweekly">Bi-weekly</option>
-                <option value="monthly">Monthly</option>
-                <option value="none">None</option>
+                <option value="daily">{t('freqDaily')}</option>
+                <option value="weekly">{t('freqWeekly')}</option>
+                <option value="biweekly">{t('freqBiweekly')}</option>
+                <option value="monthly">{t('freqMonthly')}</option>
+                <option value="none">{t('none')}</option>
               </select>
             </div>
 
-            {/* Feature Toggles */}
             <div className="space-y-2">
               <label className="flex items-center gap-3 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={videoAccess}
-                  onChange={(e) => setVideoAccess(e.target.checked)}
-                  className="w-5 h-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
-                />
-                <span className="text-gray-900">Access to video library</span>
+                <input type="checkbox" checked={videoAccess} onChange={(e) => setVideoAccess(e.target.checked)}
+                  className="w-5 h-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500" />
+                <span className="text-gray-900">{t('accessVideoLibrary')}</span>
               </label>
-
               <label className="flex items-center gap-3 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={nutritionGuides}
-                  onChange={(e) => setNutritionGuides(e.target.checked)}
-                  className="w-5 h-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
-                />
-                <span className="text-gray-900">Nutrition guides included</span>
+                <input type="checkbox" checked={nutritionGuides} onChange={(e) => setNutritionGuides(e.target.checked)}
+                  className="w-5 h-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500" />
+                <span className="text-gray-900">{t('nutritionGuidesIncluded')}</span>
+              </label>
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input type="checkbox" checked={popular} onChange={(e) => setPopular(e.target.checked)}
+                  className="w-5 h-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500" />
+                <span className="text-gray-900">{t('markAsPopular')}</span>
               </label>
             </div>
 
-            {/* Custom Features */}
             <div>
-              <label className="block text-sm text-gray-600 mb-2">Custom Features</label>
+              <label className="block text-sm text-gray-600 mb-2">{t('customFeaturesLabel')}</label>
               <div className="flex gap-2 mb-2">
                 <input
-                  type="text"
-                  value={newFeature}
-                  onChange={(e) => setNewFeature(e.target.value)}
-                  placeholder="e.g., Form video analysis"
+                  type="text" value={newFeature} onChange={(e) => setNewFeature(e.target.value)}
+                  placeholder={t('formVideoPlaceholder')}
                   className="flex-1 px-4 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   onKeyPress={(e) => e.key === 'Enter' && addCustomFeature()}
                 />
-                <button
-                  onClick={addCustomFeature}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                >
+                <button onClick={addCustomFeature} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
                   <Plus className="w-5 h-5" />
                 </button>
               </div>
@@ -280,10 +393,7 @@ export function SubscriptionTierBuilder({ onCancel, onSave, existingTier }: Subs
                   {customFeatures.map((feature, index) => (
                     <div key={index} className="flex items-center justify-between bg-gray-100 rounded-lg px-3 py-2">
                       <span className="text-gray-800 text-sm">{feature}</span>
-                      <button
-                        onClick={() => removeCustomFeature(index)}
-                        className="text-red-500 hover:text-red-600"
-                      >
+                      <button onClick={() => removeCustomFeature(index)} className="text-red-500 hover:text-red-600">
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
@@ -291,48 +401,37 @@ export function SubscriptionTierBuilder({ onCancel, onSave, existingTier }: Subs
                 </div>
               )}
             </div>
-          </div>
-        </div>
 
-        {/* Preview */}
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <div className="text-blue-900 mb-3">Preview</div>
-          <div className="bg-white rounded-lg p-4">
-            <h3 className="text-gray-900 mb-2">{name || 'Tier Name'}</h3>
-            <p className="text-gray-600 text-sm mb-3">{description || 'Description'}</p>
-            <div className="flex gap-2 mb-3">
-              {monthlyPrice && (
-                <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded text-sm">
-                  ${monthlyPrice}/mo
-                </span>
-              )}
-              {annualPrice && (
-                <span className="px-3 py-1 bg-green-100 text-green-700 rounded text-sm">
-                  ${annualPrice}/yr
-                </span>
-              )}
+            {/* Review */}
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <div className="text-blue-900 mb-3">{t('preview')}</div>
+              <div className="bg-white rounded-lg p-4">
+                <h3 className="text-gray-900 mb-2">{name || t('tierName')}</h3>
+                <p className="text-gray-600 text-sm mb-3">{description || t('descriptionLabel')}</p>
+                <div className="flex gap-2 mb-3 flex-wrap">
+                  {monthlyPrice && (
+                    <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded text-sm">
+                      {Number(monthlyPrice).toLocaleString()}{t('perMoShort')}
+                    </span>
+                  )}
+                  {annualPrice && (
+                    <span className="px-3 py-1 bg-green-100 text-green-700 rounded text-sm">
+                      {Number(annualPrice).toLocaleString()}{t('perYrShort')}
+                    </span>
+                  )}
+                </div>
+                <div className="text-gray-700 text-sm space-y-1">
+                  <div>✓ {t('plansIncludedCount', { count: String(selectedPlanIds.length) })}</div>
+                  <div>✓ {checkInFrequency} {t('checkinsWord')}</div>
+                  {videoAccess && <div>✓ {t('videoLibraryAccessShort')}</div>}
+                  {nutritionGuides && <div>✓ {t('nutritionGuidesShort')}</div>}
+                  {customFeatures.map((feature, i) => (
+                    <div key={i}>✓ {feature}</div>
+                  ))}
+                </div>
+              </div>
             </div>
-            <div className="text-gray-700 text-sm space-y-1">
-              <div>✓ {plansIncluded} plan{Number(plansIncluded) > 1 ? 's' : ''} included</div>
-              <div>✓ {checkInFrequency} check-ins</div>
-              {videoAccess && <div>✓ Video library access</div>}
-              {nutritionGuides && <div>✓ Nutrition guides</div>}
-              {customFeatures.map((feature, i) => (
-                <div key={i}>✓ {feature}</div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Clone Button */}
-        {existingTier && (
-          <button
-            onClick={handleClone}
-            className="w-full flex items-center justify-center gap-2 py-3 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-          >
-            <Copy className="w-5 h-5" />
-            Clone as Template
-          </button>
+          </>
         )}
       </div>
     </div>

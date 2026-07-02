@@ -1,4 +1,5 @@
 import { Crown } from 'lucide-react';
+import { useLanguage } from '../contexts/LanguageContext';
 
 interface ProBadgeProps {
   size?: 'sm' | 'md' | 'lg';
@@ -6,6 +7,7 @@ interface ProBadgeProps {
 }
 
 export function ProBadge({ size = 'md', className = '' }: ProBadgeProps) {
+  const { t } = useLanguage();
   const sizeClasses = {
     sm: 'w-4 h-4 text-[8px]',
     md: 'w-5 h-5 text-[9px]',
@@ -21,7 +23,7 @@ export function ProBadge({ size = 'md', className = '' }: ProBadgeProps) {
   return (
     <div
       className={`${sizeClasses[size]} bg-yellow-500 rounded-full flex items-center justify-center ${className}`}
-      title="Pro User"
+      title={t('proUser')}
     >
       <Crown className={`${iconSizes[size]} text-[#0E0E55]`} />
     </div>

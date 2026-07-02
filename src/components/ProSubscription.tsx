@@ -1,5 +1,6 @@
 import { ArrowLeft, Crown, Check, Zap, Coins } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
+import { FEATURES } from '../config';
 
 interface ProSubscriptionProps {
   onBack: () => void;
@@ -104,8 +105,8 @@ export function ProSubscription({ onBack, onPurchase, entBalance, onNavigate }: 
               <Crown className="w-12 h-12 text-[#0E0E55]" />
             </div>
           </div>
-          <h2 className="text-center text-2xl mb-2">Unlock Your Full Potential</h2>
-          <p className="text-center text-gray-300">Get unlimited access to all premium features</p>
+          <h2 className="text-center text-2xl mb-2">{t('unlockPotential')}</h2>
+          <p className="text-center text-gray-300">{t('getUnlimitedAccess')}</p>
         </div>
 
         {/* Pro Features */}
@@ -128,7 +129,8 @@ export function ProSubscription({ onBack, onPurchase, entBalance, onNavigate }: 
           </div>
         </div>
 
-        {/* ENT Token Payment Option */}
+        {/* ENT Token (SPARK) Payment Option — hidden for first release */}
+        {FEATURES.spark && (<>
         <div className="bg-gradient-to-r from-yellow-500 to-yellow-400 rounded-xl p-5 mb-6 shadow-lg border-2 border-yellow-600">
           <div className="flex items-center gap-3 mb-4">
             <div className="bg-[#0E0E55] rounded-full p-2">
@@ -143,13 +145,13 @@ export function ProSubscription({ onBack, onPurchase, entBalance, onNavigate }: 
           <div className="bg-[#0E0E55] rounded-lg p-4 mb-3">
             <div className="flex items-center justify-between">
               <div>
-                <div className="text-white text-sm mb-1">Your SPARK Balance</div>
+                <div className="text-white text-sm mb-1">{t('yourSparkBalance')}</div>
                 <div className="text-yellow-500 text-2xl font-bold">
                   {entBalance !== undefined ? entBalance.toFixed(1) : '7.0'} SPARK
                 </div>
               </div>
               <div className="text-right">
-                <div className="text-white text-sm mb-1">Required</div>
+                <div className="text-white text-sm mb-1">{t('required')}</div>
                 <div className="text-yellow-400 text-2xl font-bold">10 SPARK</div>
               </div>
             </div>
@@ -183,10 +185,11 @@ export function ProSubscription({ onBack, onPurchase, entBalance, onNavigate }: 
           <span className="text-gray-500 text-sm">{t('or')}</span>
           <div className="flex-1 border-t border-gray-300"></div>
         </div>
+        </>)}
 
         {/* Pricing Plans */}
         <div className="space-y-4 mb-6">
-          <h3 className="text-[#0E0E55] text-center mb-4">Choose Your Plan</h3>
+          <h3 className="text-[#0E0E55] text-center mb-4">{t('chooseYourPlan')}</h3>
           
           {plans.map((plan) => (
             <div
@@ -262,7 +265,7 @@ export function ProSubscription({ onBack, onPurchase, entBalance, onNavigate }: 
 
         {/* FAQ Note */}
         <div className="mt-6 text-center text-gray-500 text-xs">
-          <p>Need help? Contact us at support@coachwise.app</p>
+          <p>{t('needHelpContact')}</p>
         </div>
       </div>
     </div>
