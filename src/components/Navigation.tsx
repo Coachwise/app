@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Home, Dumbbell, LayoutDashboard, MessageCircle, Compass } from 'lucide-react';
 import type { ViewType, UserRole } from '../App';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
+import { useRealtimeRefetch } from '../contexts/RealtimeContext';
 import * as ConnectionsAPI from '../api/connections';
 import * as MessagesAPI from '../api/messages';
 import { FEATURES } from '../config';
@@ -20,29 +21,23 @@ export function Navigation({ currentView, onNavigate, userRole }: NavigationProp
   const [hasUnreadMessages, setHasUnreadMessages] = useState(false);
 
   // Notification dots: Discover (pending connection requests) and Messages
-  // (unread conversations). Re-checked on every view change so they clear once
-  // the user handles them. (A future socket can trigger this same refresh.)
-  useEffect(() => {
+  // (unread conversations). Refreshed on view change (so they clear once the
+  // user handles them) AND live via the realtime "messages"/"connections"
+  // signals (so a new message shows a dot even while on another tab).
+  const refreshDots = useCallback(() => {
     const token = tokens?.access_token;
     if (!token) return;
-    let cancelled = false;
-
     ConnectionsAPI.listRequests(token, { status: 'PENDING', limit: 1 })
-      .then((res) => {
-        if (!cancelled) setHasRequests(res.total > 0);
-      })
+      .then((res) => setHasRequests(res.total > 0))
       .catch(() => {});
-
     MessagesAPI.listThreads(token, { limit: 50 })
-      .then((res) => {
-        if (!cancelled) setHasUnreadMessages(res.items.some((thr) => thr.unread_count > 0));
-      })
+      .then((res) => setHasUnreadMessages(res.items.some((thr) => thr.unread_count > 0)))
       .catch(() => {});
+  }, [tokens?.access_token]);
 
-    return () => {
-      cancelled = true;
-    };
-  }, [tokens?.access_token, currentView]);
+  useEffect(() => { refreshDots(); }, [refreshDots, currentView]);
+  useRealtimeRefetch('messages', refreshDots);
+  useRealtimeRefetch('connections', refreshDots);
 
   const navItems = [
     ...(FEATURES.feed ? [{ id: 'feed' as ViewType, icon: Home, label: t('feed') }] : []),

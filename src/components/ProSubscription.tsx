@@ -1,6 +1,9 @@
+import { useState } from 'react';
 import { ArrowLeft, Crown, Check, Zap, Coins } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
+import { useAuth } from '../contexts/AuthContext';
 import { FEATURES } from '../config';
+import { PurchaseSheet } from './PurchaseSheet';
 
 interface ProSubscriptionProps {
   onBack: () => void;
@@ -9,78 +12,28 @@ interface ProSubscriptionProps {
   onNavigate?: (route: string) => void;
 }
 
-interface SubscriptionPlan {
-  id: string;
-  name: string;
-  duration: string;
-  price: number;
-  originalPrice?: number;
-  discount?: number;
-  savings?: number;
-  popular?: boolean;
-  billingCycle: string;
-}
+export function ProSubscription({ onBack, entBalance, onNavigate }: ProSubscriptionProps) {
+  const { t, language } = useLanguage();
+  const { user, refreshUser } = useAuth();
+  const [sheetOpen, setSheetOpen] = useState(false);
 
-export function ProSubscription({ onBack, onPurchase, entBalance, onNavigate }: ProSubscriptionProps) {
-  const { t } = useLanguage();
-
-  const plans: SubscriptionPlan[] = [
-    {
-      id: 'monthly',
-      name: 'Monthly',
-      duration: '1 Month',
-      price: 5,
-      billingCycle: 'per month',
-    },
-    {
-      id: '3-months',
-      name: '3 Months',
-      duration: '3 Months',
-      price: 12,
-      originalPrice: 15,
-      discount: 20,
-      savings: 3,
-      billingCycle: 'billed every 3 months',
-    },
-    {
-      id: '6-months',
-      name: '6 Months',
-      duration: '6 Months',
-      price: 22.5,
-      originalPrice: 30,
-      discount: 25,
-      savings: 7.5,
-      popular: true,
-      billingCycle: 'billed every 6 months',
-    },
-    {
-      id: 'yearly',
-      name: 'Yearly',
-      duration: '12 Months',
-      price: 42,
-      originalPrice: 60,
-      discount: 30,
-      savings: 18,
-      billingCycle: 'billed annually',
-    },
-  ];
+  const isPro = Boolean(user?.pro);
+  const proUntil = user?.pro_until
+    ? new Date(user.pro_until).toLocaleDateString(language === 'en' ? 'en-US' : 'fa-IR')
+    : null;
 
   const proFeatures = [
-    'Schedule workouts to calendar',
-    'Log unlimited workout sessions',
-    'Create unlimited workout plans',
-    'Track all your PRs and progress',
-    'Advanced analytics & insights',
-    'Priority support',
+    t('proFeatureSchedule'),
+    t('proFeatureLog'),
+    t('proFeaturePlans'),
+    t('proFeaturePRs'),
+    t('proFeatureAnalytics'),
+    t('proFeatureSupport'),
   ];
 
-  const handleSelectPlan = (planId: string) => {
-    if (onPurchase) {
-      onPurchase(planId);
-    } else {
-      alert(`Selected plan: ${planId}`);
-    }
-  };
+  // The SPARK/ENT token path (feature-flagged off) falls back to the real
+  // purchase sheet for now.
+  const handleSelectPlan = () => setSheetOpen(true);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -97,7 +50,7 @@ export function ProSubscription({ onBack, onPurchase, entBalance, onNavigate }: 
         </div>
       </div>
 
-      <div className="p-4 pb-20">
+      <div className="p-4 pb-28">
         {/* Hero Section */}
         <div className="bg-gradient-to-br from-[#0E0E55] to-[#1A1A6E] rounded-2xl p-6 mb-6 text-white">
           <div className="flex items-center justify-center mb-4">
@@ -105,15 +58,29 @@ export function ProSubscription({ onBack, onPurchase, entBalance, onNavigate }: 
               <Crown className="w-12 h-12 text-[#0E0E55]" />
             </div>
           </div>
-          <h2 className="text-center text-2xl mb-2">{t('unlockPotential')}</h2>
-          <p className="text-center text-gray-300">{t('getUnlimitedAccess')}</p>
+          {isPro ? (
+            <>
+              <div className="flex items-center justify-center gap-2 mb-2">
+                <h2 className="text-center text-2xl">{t('proActiveTitle')}</h2>
+                <span className="bg-yellow-500 text-[#0E0E55] text-xs font-medium px-2 py-0.5 rounded-full">{t('activeStatus')}</span>
+              </div>
+              <p className="text-center text-gray-300">
+                {proUntil ? t('proActiveUntil', { date: proUntil }) : t('allFeaturesUnlocked')}
+              </p>
+            </>
+          ) : (
+            <>
+              <h2 className="text-center text-2xl mb-2">{t('unlockPotential')}</h2>
+              <p className="text-center text-gray-300">{t('getUnlimitedAccess')}</p>
+            </>
+          )}
         </div>
 
         {/* Pro Features */}
         <div className="bg-white rounded-xl p-5 mb-6 shadow-sm">
           <h3 className="text-[#0E0E55] mb-4 flex items-center gap-2">
             <Zap className="w-5 h-5 text-yellow-500" />
-            Pro Features
+            {t('proFeaturesTitle')}
           </h3>
           <div className="space-y-3">
             {proFeatures.map((feature, index) => (
@@ -159,7 +126,7 @@ export function ProSubscription({ onBack, onPurchase, entBalance, onNavigate }: 
 
           {(entBalance !== undefined ? entBalance : 7.0) >= 10 ? (
             <button
-              onClick={() => handleSelectPlan('ent-payment')}
+              onClick={() => handleSelectPlan()}
               className="w-full bg-[#0E0E55] text-yellow-500 py-3 rounded-lg hover:bg-[#1A1A6E] transition-colors font-semibold"
             >
               {t('upgradeWithTokens')} ✨
@@ -170,7 +137,7 @@ export function ProSubscription({ onBack, onPurchase, entBalance, onNavigate }: 
                 ⚠️ {t('needMoreSpark')} {(10 - (entBalance !== undefined ? entBalance : 7.0)).toFixed(1)} {t('moreSpark')}
               </div>
               <button
-                onClick={() => onNavigate('claim-ent')}
+                onClick={() => onNavigate?.('claim-ent')}
                 className="w-full bg-[#0E0E55] text-white py-3 rounded-lg hover:bg-[#1A1A6E] transition-colors"
               >
                 {t('earnTokens')}
@@ -187,87 +154,27 @@ export function ProSubscription({ onBack, onPurchase, entBalance, onNavigate }: 
         </div>
         </>)}
 
-        {/* Pricing Plans */}
-        <div className="space-y-4 mb-6">
-          <h3 className="text-[#0E0E55] text-center mb-4">{t('chooseYourPlan')}</h3>
-          
-          {plans.map((plan) => (
-            <div
-              key={plan.id}
-              className={`relative bg-white rounded-xl p-5 shadow-sm border-2 transition-all ${
-                plan.popular
-                  ? 'border-yellow-500 shadow-lg'
-                  : 'border-transparent hover:border-gray-200'
-              }`}
-            >
-              {/* Popular Badge */}
-              {plan.popular && (
-                <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                  <div className="bg-yellow-500 text-[#0E0E55] px-4 py-1 rounded-full text-xs shadow-md flex items-center gap-1">
-                    <Crown className="w-3 h-3" />
-                    Most Popular
-                  </div>
-                </div>
-              )}
-
-              <div className="flex items-start justify-between mb-3">
-                <div>
-                  <h4 className="text-[#0E0E55] text-lg">{plan.name}</h4>
-                  <p className="text-gray-500 text-sm">{plan.duration}</p>
-                </div>
-                <div className="text-right">
-                  {plan.discount && (
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="text-gray-400 line-through text-sm">
-                        ${plan.originalPrice}
-                      </span>
-                      <span className="bg-red-100 text-red-600 px-2 py-0.5 rounded text-xs">
-                        -{plan.discount}%
-                      </span>
-                    </div>
-                  )}
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-3xl text-[#0E0E55]">${plan.price}</span>
-                  </div>
-                  <p className="text-gray-500 text-xs">{plan.billingCycle}</p>
-                </div>
-              </div>
-
-              {plan.savings && (
-                <div className="bg-green-50 text-green-700 px-3 py-2 rounded-lg mb-3 text-sm text-center">
-                  💰 Save ${plan.savings} compared to monthly
-                </div>
-              )}
-
-              <button
-                onClick={() => handleSelectPlan(plan.id)}
-                className={`w-full py-3 rounded-lg transition-colors ${
-                  plan.popular
-                    ? 'bg-yellow-500 text-[#0E0E55] hover:bg-yellow-400'
-                    : 'bg-[#0E0E55] text-white hover:bg-[#1A1A6E]'
-                }`}
-              >
-                Select Plan
-              </button>
-            </div>
-          ))}
-        </div>
-
-        {/* Money Back Guarantee */}
-        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 text-center">
-          <p className="text-blue-900 text-sm">
-            ✨ <span className="font-medium">30-Day Money Back Guarantee</span>
-          </p>
-          <p className="text-blue-700 text-xs mt-1">
-            Try Coachwise Pro risk-free. Cancel anytime.
-          </p>
-        </div>
+        {/* Continue → choose duration, currency & payment method in the sheet */}
+        <button
+          onClick={() => setSheetOpen(true)}
+          className="w-full flex items-center justify-center gap-2 bg-yellow-500 text-[#0E0E55] py-3 rounded-lg hover:bg-yellow-400 transition-colors shadow-md disabled:opacity-50 font-medium"
+        >
+          <Crown className="w-5 h-5" />
+          {isPro ? t('renewPro') : t('upgradeToPro')}
+        </button>
 
         {/* FAQ Note */}
         <div className="mt-6 text-center text-gray-500 text-xs">
           <p>{t('needHelpContact')}</p>
         </div>
       </div>
+
+      <PurchaseSheet
+        open={sheetOpen}
+        onClose={() => setSheetOpen(false)}
+        kind="PRO"
+        onSuccess={async () => { await refreshUser(); onBack(); }}
+      />
     </div>
   );
 }

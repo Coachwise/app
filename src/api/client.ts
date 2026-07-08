@@ -1,4 +1,5 @@
 import { config } from "@/config";
+import { ApiError } from "./errors";
 
 const API_URL = config.apiURL;
 
@@ -9,38 +10,62 @@ export interface RequestOptions<TBody = unknown> {
   token?: string;
   body?: TBody;
   headers?: Record<string, string>;
+  /** Internal: set after a refresh retry so we don't loop. */
+  _retried?: boolean;
+}
+
+// The AuthProvider registers a handler that swaps an expired access token for a
+// fresh one (using the stored refresh token). Kept here to avoid a circular
+// import between the client and the auth context.
+type RefreshHandler = () => Promise<string | null>;
+let refreshHandler: RefreshHandler | null = null;
+export function setTokenRefreshHandler(fn: RefreshHandler | null) {
+  refreshHandler = fn;
 }
 
 export async function request<TResponse, TBody = unknown>(
   path: string,
   options: RequestOptions<TBody> = {}
 ): Promise<TResponse> {
-  const { method = "GET", token, body, headers = {} } = options;
+  const { method = "GET", token, body, headers = {}, _retried = false } = options;
 
-  const isFormData =
-    typeof FormData !== "undefined" && body instanceof FormData;
+  const isFormData = typeof FormData !== "undefined" && body instanceof FormData;
 
-  const finalHeaders: Record<string, string> = {
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    ...headers,
+  const buildHeaders = (authToken?: string): Record<string, string> => {
+    const h: Record<string, string> = {
+      ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
+      ...headers,
+    };
+    if (!isFormData && !h["Content-Type"]) h["Content-Type"] = "application/json";
+    return h;
   };
 
-  if (!isFormData && !finalHeaders["Content-Type"]) {
-    finalHeaders["Content-Type"] = "application/json";
-  }
+  const doFetch = (authToken?: string) =>
+    fetch(`${API_URL}${path}`, {
+      method,
+      headers: buildHeaders(authToken),
+      body: isFormData ? (body as BodyInit) : body ? JSON.stringify(body) : undefined,
+    });
 
-  const res = await fetch(`${API_URL}${path}`, {
-    method,
-    headers: finalHeaders,
-    body: isFormData ? (body as BodyInit) : body ? JSON.stringify(body) : undefined,
-  });
+  let res = await doFetch(token);
+
+  // Access token likely expired → refresh once and retry with a fresh one.
+  if (res.status === 401 && token && refreshHandler && !_retried) {
+    const fresh = await refreshHandler();
+    if (fresh) res = await doFetch(fresh);
+  }
 
   const text = await res.text();
   const data = text ? JSON.parse(text) : null;
 
   if (!res.ok) {
-    const errorMessage = data?.error || res.statusText;
-    throw new Error(errorMessage);
+    throw new ApiError({
+      code: data?.code,
+      message: data?.error || res.statusText,
+      status: res.status,
+      field: data?.field,
+      rule: data?.rule,
+    });
   }
 
   return data as TResponse;

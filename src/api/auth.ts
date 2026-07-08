@@ -56,6 +56,15 @@ export function forgotPassword(body: OTPPayload) {
   return request<{ message: string }>("/auth/password/forget", { method: "POST", body });
 }
 
+// Passwordless phone login: send a code, then verify it for tokens.
+export function sendPhoneOtp(phone: string) {
+  return request<{ message: string }>("/auth/phone/otp", { method: "POST", body: { phone } });
+}
+
+export function verifyPhoneOtp(phone: string, code: string) {
+  return request<AuthTokens>("/auth/phone/verify", { method: "POST", body: { phone, code } });
+}
+
 export function changePassword(token: string, body: PasswordChangePayload) {
   return request<{ message: string }>("/auth/password", {
     method: "PUT",

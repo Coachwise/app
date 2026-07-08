@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useState } from 'react';
-import { RefreshCw } from 'lucide-react';
+import { SquarePen, X } from 'lucide-react';
 import { HamburgerMenu } from './HamburgerMenu';
 import { UserAvatar } from './UserAvatar';
+import { ConnectionPicker } from './ConnectionPicker';
 import type { UserRole } from '../App';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
+import { useRealtimeRefetch } from '../contexts/RealtimeContext';
 import * as MessagesAPI from '../api/messages';
 import type { Thread } from '../api/messages';
 import type { User } from '../api/types';
@@ -32,6 +34,9 @@ export function MessagesWithChannels({ userRole, onNavigate, setCurrentConversat
   const [threads, setThreads] = useState<Thread[]>([]);
   const [loading, setLoading] = useState(false);
 
+  // "New chat" picker: start a conversation with one of your connections.
+  const [showNew, setShowNew] = useState(false);
+
   // Re-callable so a future socket event can refresh the list in place.
   const loadThreads = useCallback(async () => {
     if (!token) return;
@@ -49,10 +54,17 @@ export function MessagesWithChannels({ userRole, onNavigate, setCurrentConversat
   useEffect(() => {
     loadThreads();
   }, [loadThreads]);
+  useRealtimeRefetch('messages', loadThreads);
 
   const openThread = (thread: Thread) => {
     if (!thread.peer) return;
     setCurrentConversationId(thread.peer.id);
+    onNavigate('message-thread');
+  };
+
+  const openChatWith = (userId: string) => {
+    setShowNew(false);
+    setCurrentConversationId(userId);
     onNavigate('message-thread');
   };
 
@@ -79,12 +91,29 @@ export function MessagesWithChannels({ userRole, onNavigate, setCurrentConversat
         <div className="flex items-center justify-between">
           <h1 className="text-white text-xl">{t('messages')}</h1>
           <div className="flex items-center gap-1">
-            <button onClick={loadThreads} className="p-2 hover:bg-[#1A1A6E] rounded-lg transition-colors" aria-label={t('refresh')}>
-              <RefreshCw className={`w-5 h-5 text-white ${loading ? 'animate-spin' : ''}`} />
+            <button
+              onClick={() => setShowNew((v) => !v)}
+              className="inline-flex items-center gap-1.5 px-3 py-2 bg-yellow-500 text-[#0E0E55] rounded-lg hover:bg-yellow-400 transition-colors text-sm font-medium"
+            >
+              <SquarePen className="w-4 h-4" />
+              {t('newChat')}
             </button>
             <HamburgerMenu userRole={userRole} onNavigate={onNavigate} />
           </div>
         </div>
+
+        {/* New-chat: pick a connection (shared ConnectionPicker) */}
+        {showNew && (
+          <div className="mt-3 bg-white rounded-2xl border border-gray-200 overflow-hidden">
+            <div className="flex items-center justify-between px-3 py-2.5 border-b border-gray-100">
+              <span className="text-[#0E0E55] text-sm font-medium">{t('startConversation')}</span>
+              <button onClick={() => setShowNew(false)} className="p-1 text-gray-400 hover:text-gray-600" aria-label={t('cancel')}>
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <ConnectionPicker token={token} onSelect={(u) => openChatWith(u.id)} />
+          </div>
+        )}
       </div>
 
       {/* Thread list */}

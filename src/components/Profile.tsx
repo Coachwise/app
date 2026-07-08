@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { CheckCircle2, UserPlus, Clock, Check, X, ArrowLeft, ArrowRight, MessageCircle, Package, Users } from 'lucide-react';
+import { CheckCircle2, UserPlus, Clock, Check, X, ArrowLeft, ArrowRight, MessageCircle, Package, Users, Globe, Instagram } from 'lucide-react';
 import type { UserRole } from '../App';
 import { useLanguage } from '../contexts/LanguageContext';
 import { HamburgerMenu } from './HamburgerMenu';
@@ -12,6 +12,8 @@ import * as ConnectionsAPI from '../api/connections';
 import * as PackagesAPI from '../api/packages';
 import * as AchievementsAPI from '../api/achievements';
 import type { User, CoachPackage, UserAchievements } from '../api/types';
+import { PurchaseSheet } from './PurchaseSheet';
+import { formatMoney } from '../lib/money';
 import { toast } from 'sonner';
 
 interface ProfileProps {
@@ -21,12 +23,13 @@ interface ProfileProps {
   onMessage?: (peerId: string) => void;
   viewingUserId?: string | null;
   onViewProfile?: (userId: string) => void;
+  onPackagePurchased?: () => void;
   isPro?: boolean;
 }
 
-export function Profile({ userRole, onNavigate, onBack, onMessage, viewingUserId = null, isPro = false }: ProfileProps) {
-  const { user, tokens } = useAuth();
-  const { t, isRTL } = useLanguage();
+export function Profile({ userRole, onNavigate, onBack, onMessage, viewingUserId = null, onPackagePurchased, isPro = false }: ProfileProps) {
+  const { user, tokens, refreshUser } = useAuth();
+  const { t, isRTL, language } = useLanguage();
 
   // Determine if viewing own profile
   const isOwnProfile = viewingUserId === null;
@@ -42,6 +45,7 @@ export function Profile({ userRole, onNavigate, onBack, onMessage, viewingUserId
   const [coachPackages, setCoachPackages] = useState<CoachPackage[]>([]);
   const [subscribedPackageIds, setSubscribedPackageIds] = useState<Set<string>>(new Set());
   const [subscribingId, setSubscribingId] = useState<string | null>(null);
+  const [purchasePkg, setPurchasePkg] = useState<CoachPackage | null>(null);
   const [achievements, setAchievements] = useState<UserAchievements | null>(null);
 
   useEffect(() => {
@@ -215,7 +219,11 @@ export function Profile({ userRole, onNavigate, onBack, onMessage, viewingUserId
   }, [isOwnProfile, user, viewedUser]);
 
   const avatarUrl = isOwnProfile ? (user?.avatar?.url ?? null) : (viewedUser?.avatar?.url ?? null);
-  const jobTitle = isOwnProfile ? user?.job_title : viewedUser?.job_title;
+  const profileData = isOwnProfile ? user : viewedUser;
+  const jobTitle = profileData?.job_title;
+  const bio = profileData?.bio;
+  const website = profileData?.website;
+  const instagram = profileData?.instagram;
 
   // Connection action button for other users' profiles.
   const connectionButton = connStatus === 'connected' ? (
@@ -313,6 +321,23 @@ export function Profile({ userRole, onNavigate, onBack, onMessage, viewingUserId
             </div>
             {displayHandle && <p className="text-gray-600">{displayHandle}</p>}
             {jobTitle && <p className="text-gray-700 mt-2">{jobTitle}</p>}
+            {bio && <p className="text-gray-700 mt-2 text-sm whitespace-pre-line">{bio}</p>}
+            {(website || instagram) && (
+              <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2 text-sm">
+                {website && (
+                  <a href={/^https?:\/\//.test(website) ? website : `https://${website}`} target="_blank" rel="noreferrer" className="text-yellow-600 hover:underline inline-flex items-center gap-1" dir="ltr">
+                    <Globe className="w-4 h-4" />
+                    {website.replace(/^https?:\/\//, '')}
+                  </a>
+                )}
+                {instagram && (
+                  <a href={`https://instagram.com/${instagram}`} target="_blank" rel="noreferrer" className="text-yellow-600 hover:underline inline-flex items-center gap-1" dir="ltr">
+                    <Instagram className="w-4 h-4" />
+                    @{instagram}
+                  </a>
+                )}
+              </div>
+            )}
           </div>
 
           {isOwnProfile ? (
@@ -360,21 +385,14 @@ export function Profile({ userRole, onNavigate, onBack, onMessage, viewingUserId
                       </div>
 
                       {/* Price */}
-                      {(pkg.price_monthly != null || pkg.price_annual != null || pkg.price_one_time != null) && (
+                      {pkg.price_monthly != null && (
                         <div className="mt-3 flex items-baseline gap-1">
-                          {pkg.price_monthly != null ? (
-                            <>
-                              <span className="text-2xl font-semibold text-[#0E0E55] tabular-nums">{pkg.price_monthly.toLocaleString()}</span>
-                              <span className="text-gray-500 text-sm">{t('perMoShort')}</span>
-                            </>
-                          ) : pkg.price_annual != null ? (
-                            <>
-                              <span className="text-2xl font-semibold text-[#0E0E55] tabular-nums">{pkg.price_annual.toLocaleString()}</span>
-                              <span className="text-gray-500 text-sm">{t('perYrShort')}</span>
-                            </>
-                          ) : (
-                            <span className="text-2xl font-semibold text-[#0E0E55] tabular-nums">{pkg.price_one_time!.toLocaleString()}</span>
-                          )}
+                          <span className="text-2xl font-semibold text-[#0E0E55] tabular-nums" dir="ltr">
+                            {formatMoney(pkg.price_monthly, pkg.currency, language)}
+                          </span>
+                          <span className="text-gray-500 text-sm">
+                            {pkg.billing_type === 'ONE_TIME' ? t('oneTimeShort') : t('perMoShort')}
+                          </span>
                         </div>
                       )}
 
@@ -390,8 +408,8 @@ export function Profile({ userRole, onNavigate, onBack, onMessage, viewingUserId
 
                       {/* Action */}
                       <button
-                        onClick={() => !isSubscribed && !blocked && subscribe(pkg.id)}
-                        disabled={isSubscribed || blocked || subscribingId === pkg.id}
+                        onClick={() => !isSubscribed && !blocked && setPurchasePkg(pkg)}
+                        disabled={isSubscribed || blocked}
                         className={`mt-4 w-full py-2.5 rounded-xl text-sm font-medium transition-colors flex items-center justify-center gap-2 ${
                           isSubscribed
                             ? 'bg-green-50 text-green-700 cursor-default'
@@ -402,10 +420,10 @@ export function Profile({ userRole, onNavigate, onBack, onMessage, viewingUserId
                       >
                         {isSubscribed ? (
                           <><CheckCircle2 className="w-4 h-4" />{t('subscribed')}</>
-                        ) : subscribingId === pkg.id ? (
-                          t('saving')
                         ) : blocked ? (
                           t('alreadyHavePackage')
+                        ) : pkg.billing_type === 'ONE_TIME' ? (
+                          t('buyNow')
                         ) : (
                           t('subscribe')
                         )}
@@ -446,12 +464,18 @@ export function Profile({ userRole, onNavigate, onBack, onMessage, viewingUserId
         />
       )}
 
-      {/* Activity (real feed/records not built yet) */}
-      <div className="p-4">
-        <div className="bg-white rounded-lg p-8 text-center shadow-md border border-gray-200">
-          <p className="text-gray-600">{t('noPublicActivity')}</p>
-        </div>
-      </div>
+      <PurchaseSheet
+        open={purchasePkg != null}
+        onClose={() => setPurchasePkg(null)}
+        kind="PACKAGE"
+        pkg={purchasePkg ?? undefined}
+        onSuccess={async () => {
+          if (purchasePkg) setSubscribedPackageIds((prev) => new Set(prev).add(purchasePkg.id));
+          toast.success(t('purchaseSuccess'));
+          await refreshUser(); // package grants Pro — reflect it in the client
+          onPackagePurchased?.();
+        }}
+      />
     </div>
   );
 }

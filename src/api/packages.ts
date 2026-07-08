@@ -2,7 +2,9 @@ import { request } from "./client";
 import type {
   CoachClient,
   CoachPackage,
+  Order,
   PackagePayload,
+  PackagePrice,
   PackageSubscription,
   PlanAssignPayload,
 } from "./types";
@@ -50,6 +52,33 @@ export function assignPackage(token: string, id: string, body: PlanAssignPayload
 // Athlete subscribes themselves to an active package (becomes the coach's client).
 export function subscribePackage(token: string, id: string) {
   return request<unknown>(`/packages/${id}/subscribe`, { method: "POST", token });
+}
+
+// Athlete buys the package (pays): currency + provider, plus months for
+// subscription packages (ignored for one-time).
+export function purchasePackage(
+  token: string,
+  id: string,
+  body: { currency: string; provider: string; months?: number },
+) {
+  return request<Order>(`/packages/${id}/purchase`, { method: "POST", token, body });
+}
+
+// Per-currency prices for a package (coach package builder).
+export function listPackagePrices(token: string, id: string) {
+  return request<PackagePrice[]>(`/packages/${id}/prices`, { token });
+}
+
+export function setPackagePrice(token: string, id: string, currency: string, amount: number) {
+  return request<PackagePrice[]>(`/packages/${id}/prices`, {
+    method: "PUT",
+    token,
+    body: { currency, amount },
+  });
+}
+
+export function deletePackagePrice(token: string, id: string, currency: string) {
+  return request<void>(`/packages/${id}/prices/${currency}`, { method: "DELETE", token });
 }
 
 // Coach removes a client's subscription to a package (also unassigns its plans).

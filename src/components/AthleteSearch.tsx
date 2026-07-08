@@ -6,6 +6,7 @@ import { UserAvatar } from './UserAvatar';
 import type { UserRole } from '../App';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
+import { useRealtimeRefetch } from '../contexts/RealtimeContext';
 import * as UsersAPI from '../api/users';
 import * as ConnectionsAPI from '../api/connections';
 import type { User } from '../api/types';
@@ -133,6 +134,7 @@ export function AthleteSearch({ userRole, onNavigate, onViewProfile, activeTab: 
   useEffect(() => {
     loadRequests();
   }, [loadRequests]);
+  useRealtimeRefetch('connections', loadRequests);
 
   useEffect(() => {
     if (activeTab === 'network') loadConnections();

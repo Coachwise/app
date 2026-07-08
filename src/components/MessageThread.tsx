@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { ArrowLeft, ArrowRight, Send, RefreshCw } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Send } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
+import { useRealtimeRefetch } from '../contexts/RealtimeContext';
 import { UserAvatar } from './UserAvatar';
 import * as MessagesAPI from '../api/messages';
 import * as UsersAPI from '../api/users';
@@ -53,6 +54,8 @@ export function MessageThread({ conversationId, onBack, onViewProfile }: Message
     UsersAPI.getUser(token, peerId).then(setPeer).catch(() => setPeer(null));
     loadMessages();
   }, [token, peerId, loadMessages]);
+  // Live-refresh the open chat when a new message arrives.
+  useRealtimeRefetch('messages', loadMessages);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -102,9 +105,6 @@ export function MessageThread({ conversationId, onBack, onViewProfile }: Message
             <p className="text-white truncate">{peerName(peer) || '…'}</p>
             {peer && <p className="text-gray-300 text-xs truncate">@{peer.username}</p>}
           </div>
-        </button>
-        <button onClick={loadMessages} className="p-2 rounded-lg hover:bg-[#1A1A6E] transition-colors" aria-label={t('refresh')}>
-          <RefreshCw className={`w-5 h-5 text-white ${loading ? 'animate-spin' : ''}`} />
         </button>
       </div>
 

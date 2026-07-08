@@ -1,11 +1,14 @@
 import { useCallback, useEffect, useState } from 'react';
 import { ArrowLeft, Users, Calendar, TrendingUp, DollarSign, Package, CheckCircle, Plus, Trash2, Lock, Globe, UserPlus, Search, ClipboardList, Send, Award, LineChart, Pencil, Dumbbell } from 'lucide-react';
 import { HamburgerMenu } from './HamburgerMenu';
+import { ConnectionPicker } from './ConnectionPicker';
 import type { UserRole } from '../App';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
 import { ConnectionsAPI, PackagesAPI, PlansAPI, TestsAPI, AchievementsAPI } from '../api';
-import type { CoachClient, CoachPackage, Plan, User, Test, CoachAssignment } from '../api/types';
+import * as WalletAPI from '../api/wallet';
+import { formatMoney } from '../lib/money';
+import type { CoachClient, CoachPackage, Plan, User, Test, CoachAssignment, WalletBalance } from '../api/types';
 import type { ConnectionRequest } from '../api/connections';
 import { toast } from 'sonner';
 
@@ -45,6 +48,14 @@ export function CoachDashboard({ onBack, onNavigate, userRole = 'coach', isPro =
   const [localSection, setLocalSection] = useState<Section>('clients');
   const activeSection: Section = (section as Section) ?? localSection;
   const setActiveSection = (s: Section) => { setLocalSection(s); onSectionChange?.(s); };
+
+  // Coach earnings balance, loaded when the analytics tab is open.
+  useEffect(() => {
+    if (activeSection !== 'analytics' || !token) return;
+    WalletAPI.getWallet(token).then(setWallet).catch(() => setWallet(null));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeSection, token]);
+  const [wallet, setWallet] = useState<WalletBalance | null>(null);
   const [clients, setClients] = useState<CoachClient[]>([]);
   const [pending, setPending] = useState<ConnectionRequest[]>([]);
   const [myPlans, setMyPlans] = useState<Plan[]>([]);
@@ -763,29 +774,11 @@ export function CoachDashboard({ onBack, onNavigate, userRole = 'coach', isPro =
                         </button>
                       </div>
 
-                      {/* Assign-to-client picker */}
+                      {/* Assign-to-client picker (shared ConnectionPicker) */}
                       {reqPickerTest === test.id && (
-                        <div className="mt-3 bg-gray-50 rounded-xl border border-gray-200 p-2">
-                          <p className="text-gray-500 text-xs px-2 py-1">{t('assignToWhom')}</p>
-                          {connections.length === 0 ? (
-                            <p className="text-gray-400 text-xs px-2 py-2">{t('noConnectionsToEnroll')}</p>
-                          ) : (
-                            <div className="max-h-56 overflow-y-auto">
-                              {connections.map((conn) => (
-                                <button
-                                  key={conn.id}
-                                  onClick={() => assignTestTo(test.id, conn)}
-                                  className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-white transition-colors text-start"
-                                >
-                                  <Avatar user={conn} />
-                                  <div className="min-w-0">
-                                    <div className="text-[#0E0E55] text-sm truncate">{displayName(conn)}</div>
-                                    <div className="text-gray-500 text-xs truncate">@{conn.username}</div>
-                                  </div>
-                                </button>
-                              ))}
-                            </div>
-                          )}
+                        <div className="mt-3 bg-gray-50 rounded-xl border border-gray-200 overflow-hidden">
+                          <p className="text-gray-500 text-xs px-3 pt-2">{t('assignToWhom')}</p>
+                          <ConnectionPicker connections={connections} onSelect={(u) => assignTestTo(test.id, u)} />
                         </div>
                       )}
                     </div>
@@ -862,11 +855,24 @@ export function CoachDashboard({ onBack, onNavigate, userRole = 'coach', isPro =
               <div className="text-4xl text-[#0E0E55]">{myPlans.length}</div>
             </div>
             <div className="bg-white rounded-lg p-5 shadow-md border border-gray-200 col-span-2">
-              <div className="flex items-center gap-2 mb-2">
-                <DollarSign className="w-5 h-5 text-yellow-600" />
-                <span className="text-gray-600 text-sm">{t('revenue')}</span>
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <DollarSign className="w-5 h-5 text-yellow-600" />
+                  <span className="text-gray-600 text-sm">{t('earnings')}</span>
+                </div>
+                <button onClick={() => onNavigate?.('wallet')} className="text-yellow-600 text-sm hover:text-yellow-700">
+                  {t('wallet')} →
+                </button>
               </div>
-              <p className="text-gray-500 text-sm">{t('revenueComingSoon')}</p>
+              <div className="text-3xl text-[#0E0E55] mb-1" dir="ltr">
+                {wallet ? formatMoney(wallet.available, wallet.currency, language) : '—'}
+              </div>
+              <div className="text-gray-500 text-sm">{t('availableBalance')}</div>
+              {wallet && wallet.pending > 0 && (
+                <div className="text-gray-400 text-xs mt-1" dir="ltr">
+                  + {formatMoney(wallet.pending, wallet.currency, language)} {t('pendingBalance')}
+                </div>
+              )}
             </div>
           </div>
         )}

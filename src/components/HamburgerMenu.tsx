@@ -1,10 +1,12 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Menu, X, Bell, Shield, LogOut, Settings, Users, DollarSign, Globe, User, Crown, Coins, ClipboardList } from 'lucide-react';
 import type { UserRole } from '../App';
 import { useLanguage } from '../contexts/LanguageContext';
 import type { Language } from '../translations';
 import { ENTBalanceWidget } from './ENTBalanceWidget';
 import { useAuth } from '../contexts/AuthContext';
+import { useRealtimeRefetch } from '../contexts/RealtimeContext';
+import { NotificationsAPI } from '../api';
 import { FEATURES } from '../config';
 
 interface HamburgerMenuProps {
@@ -24,10 +26,23 @@ export function HamburgerMenu({
   userUsername,
   isPro
 }: HamburgerMenuProps) {
-  const { user, logout } = useAuth();
+  const { user, logout, tokens } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { t, language, setLanguage, isRTL } = useLanguage();
   const [showLanguageSelector, setShowLanguageSelector] = useState(false);
+  const [unread, setUnread] = useState(0);
+
+  // Unread count for the bell badge. Fetched on mount and refreshed live by the
+  // realtime "notifications" refetch signal — no polling.
+  const fetchUnread = useCallback(() => {
+    const token = tokens?.access_token;
+    if (!token) return;
+    NotificationsAPI.unreadCount(token).then((r) => setUnread(r.count)).catch(() => {});
+  }, [tokens?.access_token]);
+  useEffect(() => { fetchUnread(); }, [fetchUnread]);
+  useRealtimeRefetch('notifications', fetchUnread);
+
+  const openNotifications = () => { onNavigate('notifications'); setIsMenuOpen(false); };
 
   const displayName = useMemo(() => {
     if (userName && userName.trim()) return userName.trim();
@@ -224,12 +239,31 @@ export function HamburgerMenu({
               )}
 
               {/* General actions for all users */}
-              <button className="w-full flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg transition-colors text-left">
+              <button
+                onClick={openNotifications}
+                className="w-full flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg transition-colors text-left"
+              >
                 <Bell className="w-5 h-5 text-gray-600" />
-                <span className="text-[#0E0E55]">{t('notifications')}</span>
+                <span className="text-[#0E0E55] flex-1">{t('notifications')}</span>
+                {unread > 0 && (
+                  <span className="min-w-[20px] h-5 px-1.5 flex items-center justify-center bg-yellow-500 text-[#0E0E55] text-xs font-bold rounded-full tabular-nums">
+                    {unread > 99 ? '99+' : unread}
+                  </span>
+                )}
               </button>
 
-              <button 
+              <button
+                onClick={() => {
+                  onNavigate('wallet');
+                  setIsMenuOpen(false);
+                }}
+                className="w-full flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg transition-colors text-left"
+              >
+                <DollarSign className="w-5 h-5 text-gray-600" />
+                <span className="text-[#0E0E55]">{t('wallet')}</span>
+              </button>
+
+              <button
                 onClick={() => {
                   onNavigate('privacy-settings');
                   setIsMenuOpen(false);
@@ -299,13 +333,27 @@ export function HamburgerMenu({
         </div>
       </div>
 
-      {/* Hamburger Button */}
-      <button 
-        onClick={() => setIsMenuOpen(true)}
-        className="p-2 hover:bg-[#1A1A6E] rounded-lg transition-colors"
-      >
-        <Menu className="w-6 h-6 text-white" />
-      </button>
+      {/* Bell + Hamburger triggers */}
+      <div className="flex items-center gap-1">
+        <button
+          onClick={openNotifications}
+          aria-label={t('notifications')}
+          className="relative p-2 hover:bg-[#1A1A6E] rounded-lg transition-colors"
+        >
+          <Bell className="w-6 h-6 text-white" />
+          {unread > 0 && (
+            <span className="absolute top-1 right-1 min-w-[16px] h-4 px-1 flex items-center justify-center bg-yellow-500 text-[#0E0E55] text-[10px] font-bold rounded-full tabular-nums">
+              {unread > 9 ? '9+' : unread}
+            </span>
+          )}
+        </button>
+        <button
+          onClick={() => setIsMenuOpen(true)}
+          className="p-2 hover:bg-[#1A1A6E] rounded-lg transition-colors"
+        >
+          <Menu className="w-6 h-6 text-white" />
+        </button>
+      </div>
     </>
   );
 }

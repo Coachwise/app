@@ -13,8 +13,9 @@ interface ExercisesProps {
 const nsToSeconds = (value?: number | null) => Math.max(0, Math.round((value ?? 0) / 1e9));
 
 export function Exercises({ onBack }: ExercisesProps) {
-  const { tokens } = useAuth();
+  const { tokens, user } = useAuth();
   const { t } = useLanguage();
+  const isCoach = Boolean(user?.is_coach); // only coaches create/edit exercises
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -100,13 +101,17 @@ export function Exercises({ onBack }: ExercisesProps) {
             <Dumbbell className="w-5 h-5" />
             {t('exercisesLabel')}
           </h2>
-          <button
-            onClick={() => setCreating(true)}
-            className="px-4 py-2 bg-yellow-500 text-[#0E0E55] rounded-lg hover:bg-yellow-400 transition-colors flex items-center gap-2"
-          >
-            <Plus className="w-4 h-4" />
-            <span>{t('newLabel')}</span>
-          </button>
+          {isCoach ? (
+            <button
+              onClick={() => setCreating(true)}
+              className="px-4 py-2 bg-yellow-500 text-[#0E0E55] rounded-lg hover:bg-yellow-400 transition-colors flex items-center gap-2"
+            >
+              <Plus className="w-4 h-4" />
+              <span>{t('newLabel')}</span>
+            </button>
+          ) : (
+            <span className="w-10" />
+          )}
         </div>
       </div>
 
@@ -154,7 +159,7 @@ export function Exercises({ onBack }: ExercisesProps) {
           )}
           {!loading && exercises.length === 0 && (
             <div className="bg-white border border-dashed border-gray-300 rounded-lg p-6 text-center text-gray-600">
-              {t('noExercisesTryCreate')}
+              {isCoach ? t('noExercisesTryCreate') : t('noExercisesYet')}
             </div>
           )}
           {!loading &&
@@ -198,22 +203,24 @@ export function Exercises({ onBack }: ExercisesProps) {
                       ))}
                     </div>
                   </div>
-                  <div className="flex-shrink-0 flex gap-2">
-                    <button
-                      onClick={() => setEditing(exercise)}
-                      className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200"
-                      aria-label={t('editExercise')}
-                    >
-                      <Edit3 className="w-4 h-4 text-gray-700" />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(exercise.id)}
-                      className="p-2 rounded-lg bg-red-50 hover:bg-red-100"
-                      aria-label={t('removeExerciseTitle')}
-                    >
-                      <Trash2 className="w-4 h-4 text-red-600" />
-                    </button>
-                  </div>
+                  {isCoach && (
+                    <div className="flex-shrink-0 flex gap-2">
+                      <button
+                        onClick={() => setEditing(exercise)}
+                        className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200"
+                        aria-label={t('editExercise')}
+                      >
+                        <Edit3 className="w-4 h-4 text-gray-700" />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(exercise.id)}
+                        className="p-2 rounded-lg bg-red-50 hover:bg-red-100"
+                        aria-label={t('removeExerciseTitle')}
+                      >
+                        <Trash2 className="w-4 h-4 text-red-600" />
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             ))}

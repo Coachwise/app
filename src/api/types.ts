@@ -15,6 +15,9 @@ export interface User {
   first_name?: string | null;
   last_name?: string | null;
   phone?: string | null;
+  website?: string | null;
+  instagram?: string | null;
+  birthday?: string | null;
   avatar_id?: UUID | null;
   avatar?: {
     url?: string | null;
@@ -40,6 +43,10 @@ export interface UserUpdate {
   bio?: string;
   phone?: string;
   username?: string;
+  website?: string;
+  instagram?: string;
+  birthday?: string;
+  avatar_id?: string;
 }
 
 export interface Media {
@@ -139,6 +146,8 @@ export interface CoachPackage {
   coach_id: UUID;
   name: string;
   description?: string | null;
+  billing_type: 'SUBSCRIPTION' | 'ONE_TIME';
+  currency: string;
   price_monthly?: number | null;
   price_annual?: number | null;
   price_one_time?: number | null;
@@ -153,6 +162,130 @@ export interface CoachPackage {
   plans: PackagePlanRef[];
   created_at: string;
   updated_at: string;
+}
+
+// --- Payments / wallet ---
+
+export interface Currency {
+  code: string;
+  name: string;
+  symbol: string;
+  decimals: number;
+  enabled: boolean;
+}
+
+export interface PaymentProvider {
+  name: string;
+  title: string;
+  currencies: string[];
+  // True when paying opens a hosted gateway page — the client uses the top-up
+  // redirect flow (open in a new tab, wait for the realtime "wallet" signal).
+  redirect?: boolean;
+  // Client-served logo path (e.g. "/sep.png"), if the gateway has one.
+  logo?: string;
+}
+
+export interface DurationTier {
+  months: number;
+  discount_percent: number;
+}
+
+// A fully-computed price breakdown from the server (never compute money on FE).
+export interface Quote {
+  kind: 'PRO' | 'PACKAGE';
+  currency: string;
+  months: number;
+  unit_amount: number;
+  subtotal: number;
+  discount_percent: number;
+  discount_amount: number;
+  total: number;
+  fee_percent: number;
+  fee_amount: number;
+  coach_net: number;
+  one_time: boolean;
+  pro_months: number;
+  pro_included: boolean;
+  pro_amount: number;
+}
+
+// A currency a package sells in, plus the providers that handle it.
+export interface PurchaseOption {
+  currency: string;
+  amount: number;
+  providers: PaymentProvider[];
+}
+
+export interface PackagePrice {
+  currency: string;
+  amount: number;
+}
+
+export interface WalletBalance {
+  wallet_id: UUID;
+  currency: string;
+  available: number;
+  pending: number;
+}
+
+export type WalletTxType = 'TOPUP' | 'PURCHASE' | 'SALE' | 'FEE' | 'PAYOUT' | 'REFUND';
+
+export interface WalletTransaction {
+  id: UUID;
+  wallet_id: UUID;
+  currency: string;
+  amount: number;
+  type: WalletTxType;
+  available_at: string;
+  ref_type?: string | null;
+  ref_id?: UUID | null;
+  description?: string | null;
+  created_at: string;
+}
+
+export interface Order {
+  id: UUID;
+  buyer_id: UUID;
+  kind: 'PRO' | 'PACKAGE';
+  currency: string;
+  coach_id?: UUID | null;
+  package_id?: UUID | null;
+  duration_months: number;
+  total: number;
+  status: string;
+  created_at: string;
+}
+
+export interface Payout {
+  id: UUID;
+  coach_id: UUID;
+  amount: number;
+  currency: string;
+  status: 'REQUESTED' | 'APPROVED' | 'PAID' | 'REJECTED';
+  note?: string | null;
+  created_at: string;
+}
+
+// A coach's payout destination for one currency. Method is currency-driven:
+// IRR → CARD (card_number); other currencies → STRIPE/BANK once wired.
+export interface PayoutAccount {
+  id: UUID;
+  user_id: UUID;
+  currency: string;
+  method: 'CARD' | 'BANK' | 'STRIPE';
+  account_holder?: string | null;
+  card_number?: string | null;
+  iban?: string | null;
+  bank_name?: string | null;
+  swift?: string | null;
+  status: 'UNVERIFIED' | 'VERIFIED';
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PayoutAccountResponse {
+  currency: string;
+  account: PayoutAccount | null;
 }
 
 // An athlete's enrollment in a coach's package.
@@ -291,6 +424,31 @@ export interface PersonalRecord {
 export interface AchievementLayout {
   order: string[];
   hidden: string[];
+}
+
+export type NotificationType =
+  | 'CONNECTION_REQUEST'
+  | 'CONNECTION_ACCEPTED'
+  | 'ASSESSMENT_ASSIGNED'
+  | 'ASSESSMENT_SUBMITTED'
+  | 'BADGE_GRANTED'
+  | 'PACKAGE_SUBSCRIBED'
+  | 'PACKAGE_ASSIGNED'
+  | 'PACKAGE_REMOVED'
+  | 'PLAN_ASSIGNED'
+  | 'PLAN_REMOVED';
+
+export interface Notification {
+  id: UUID;
+  user_id: UUID;
+  actor_id?: UUID | null;
+  type: NotificationType | string;
+  entity_type?: string | null;
+  entity_id?: UUID | null;
+  data: Record<string, string>;
+  read: boolean;
+  created_at: string;
+  actor?: User | null;
 }
 
 export interface UserAchievements {

@@ -1,6 +1,10 @@
+const apiURL = import.meta.env.VITE_API_URL || "http://localhost:8080";
+
 export const config = {
   env: import.meta.env.VITE_ENV || "development",
-  apiURL: import.meta.env.VITE_API_URL || "http://localhost:8080",
+  apiURL,
+  // WebSocket base for the realtime refetch-signal socket (http→ws, https→wss).
+  wsURL: apiURL.replace(/^http/, "ws"),
 };
 
 /**

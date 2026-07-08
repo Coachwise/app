@@ -1,5 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Auth } from './components/Auth';
+import { Onboarding } from './components/Onboarding';
+import { Wallet } from './components/Wallet';
+import { ProSubscription } from './components/ProSubscription';
+import { ClaimENT } from './components/ClaimENT';
 import { SportSelection } from './components/SportSelection';
 import { WorkoutLogging } from './components/WorkoutLogging';
 import { Feed } from './components/Feed';
@@ -17,6 +21,7 @@ import { TestBuilder } from './components/TestBuilder';
 import { AthleteTests } from './components/AthleteTests';
 import { RunAssessment } from './components/RunAssessment';
 import { AssessmentHistory } from './components/AssessmentHistory';
+import { Notifications } from './components/Notifications';
 import { WorkoutsHome } from './components/WorkoutsHome';
 import { WorkoutSession } from './components/WorkoutSession';
 import { AthleteSearch } from './components/AthleteSearch';
@@ -38,10 +43,13 @@ const DEFAULT_VIEW: ViewType = FEATURES.feed ? 'feed' : 'workouts-home';
 export type SportType = 'fitness' | 'climbing';
 export type UserRole = 'athlete' | 'coach';
 export type UserTier = 'free' | 'pro';
-export type ViewType = 'sport-selection' | 'logging' | 'feed' | 'profile' | 'coach-dashboard' | 'post-creation' | 'exercise-builder' | 'plan-builder' | 'coach-application' | 'coach-marketplace' | 'tier-builder' | 'tier-comparison' | 'test-builder' | 'athlete-tests' | 'assessment-run' | 'assessment-history' | 'workouts-home' | 'workout-session' | 'athlete-search' | 'athletes-coaches' | 'messages' | 'message-thread' | 'channel-view' | 'privacy-settings' | 'profile-settings';
+export type ViewType = 'sport-selection' | 'logging' | 'feed' | 'profile' | 'coach-dashboard' | 'post-creation' | 'exercise-builder' | 'plan-builder' | 'coach-application' | 'coach-marketplace' | 'tier-builder' | 'tier-comparison' | 'test-builder' | 'athlete-tests' | 'assessment-run' | 'assessment-history' | 'workouts-home' | 'workout-session' | 'athlete-search' | 'athletes-coaches' | 'messages' | 'message-thread' | 'channel-view' | 'privacy-settings' | 'profile-settings' | 'notifications' | 'wallet';
 
 export default function App() {
-  const { isAuthenticated, user, tokens } = useAuth();
+  const { isAuthenticated, user, tokens, refreshUser } = useAuth();
+  // A freshly signed-up (typically phone) account has no name yet — gate the app
+  // behind a one-time profile step until they've set one.
+  const needsOnboarding = Boolean(user && !user.first_name);
   const [currentView, setCurrentView] = useState<ViewType>(DEFAULT_VIEW);
   const [selectedSport, setSelectedSport] = useState<SportType>('fitness');
   const [userRole, setUserRole] = useState<UserRole>('athlete');
@@ -64,6 +72,7 @@ export default function App() {
   const [historyClientName, setHistoryClientName] = useState<string | null>(null);
   const [historyReturnView, setHistoryReturnView] = useState<ViewType>('athlete-tests'); // where assessment history returns
   const [coachSection, setCoachSection] = useState('clients'); // coach dashboard active tab (persists across navigation)
+  const [notifReturnView, setNotifReturnView] = useState<ViewType>(DEFAULT_VIEW); // where notifications returns on back
   const [activeScheduleId, setActiveScheduleId] = useState<string | null>(null); // Track active schedule
   const [workoutsRefreshTrigger, setWorkoutsRefreshTrigger] = useState(0); // Trigger refresh after workout
 
@@ -82,6 +91,7 @@ export default function App() {
     }
   }, []);
 
+  const landedRef = useRef(false);
   useEffect(() => {
     if (user) {
       const coach = Boolean(user.is_coach);
@@ -90,6 +100,12 @@ export default function App() {
       const pro = Boolean(user.pro) || coach;
       setIsPro(pro);
       setUserTier(pro ? 'pro' : 'free');
+      // Landing (once): coaches start on their dashboard, athletes on trainings
+      // (the DEFAULT_VIEW). Skip if a view is already set (e.g. session restore).
+      if (!landedRef.current) {
+        landedRef.current = true;
+        if (coach) setCurrentView((prev) => (prev === DEFAULT_VIEW ? 'coach-dashboard' : prev));
+      }
     }
   }, [user]);
 
@@ -124,6 +140,11 @@ export default function App() {
   const handleNavigate = (view: string) => {
     if (view === 'profile') {
       setViewingUserId(null);
+    }
+    // Remember where we opened notifications from, so "back" returns there.
+    if (view === 'notifications') {
+      setCurrentView((prev) => { if (prev !== 'notifications') setNotifReturnView(prev); return 'notifications'; });
+      return;
     }
     // If navigating to workouts while a session is active, resume it
     if (view === 'workouts-home' && localStorage.getItem(SESSION_KEY)) {
@@ -219,6 +240,7 @@ export default function App() {
           }}
           viewingUserId={viewingUserId}
           onViewProfile={handleViewProfile}
+          onPackagePurchased={() => { setDiscoveryTab('network'); setCurrentView('athlete-search'); }}
           isPro={isPro}
         />;
       case 'coach-dashboard':
@@ -277,6 +299,12 @@ export default function App() {
           clientName={historyClientName || undefined}
           onBack={() => setCurrentView(historyReturnView)}
           onRun={historyAthleteId ? undefined : () => setCurrentView('assessment-run')}
+        />;
+      case 'notifications':
+        return <Notifications
+          onBack={() => setCurrentView(notifReturnView)}
+          onNavigate={handleNavigate}
+          onViewProfile={handleViewProfile}
         />;
       case 'post-creation':
         return <PostCreation onCancel={() => setCurrentView(DEFAULT_VIEW)} onPost={handlePostCreated} />;
@@ -368,6 +396,8 @@ export default function App() {
         return <ProfileSettings userRole={userRole} onBack={() => setCurrentView('profile')} />;
       case 'pro-subscription':
         return <ProSubscription onBack={() => setCurrentView('profile')} />;
+      case 'wallet':
+        return <Wallet onBack={() => setCurrentView(userRole === 'coach' ? 'coach-dashboard' : 'profile')} />;
       case 'claim-ent':
         return <ClaimENT 
           onBack={() => setCurrentView('profile')} 
@@ -384,6 +414,8 @@ export default function App() {
     <LanguageProvider>
       {!isAuthenticated ? (
         <Auth onLogin={handleLogin} />
+      ) : needsOnboarding ? (
+        <Onboarding onDone={refreshUser} />
       ) : (
         <>
           <div className="min-h-screen bg-gray-100 flex flex-col max-w-md mx-auto">
