@@ -26,11 +26,11 @@ export function PrivacySettings({ onBack }: PrivacySettingsProps) {
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
       {/* Header */}
-      <div className="bg-[#0E0E55] px-4 py-4 sticky top-0 z-10">
+      <div className="bg-navy px-4 py-4 sticky top-0 z-10">
         <div className="flex items-center gap-3">
           <button 
             onClick={onBack}
-            className="p-2 -ml-2 hover:bg-[#1A1A6E] rounded-lg transition-colors"
+            className="p-2 -ml-2 hover:bg-navy-light rounded-lg transition-colors"
           >
             <ArrowLeft className="w-6 h-6 text-white" />
           </button>
@@ -45,7 +45,7 @@ export function PrivacySettings({ onBack }: PrivacySettingsProps) {
         {/* Account Privacy Section */}
         <div className="bg-white rounded-lg shadow-sm">
           <div className="p-4 border-b border-gray-200">
-            <h2 className="text-[#0E0E55] flex items-center gap-2">
+            <h2 className="text-navy flex items-center gap-2">
               <Lock className="w-5 h-5" />
               {t('accountPrivacy')}
             </h2>
@@ -173,7 +173,7 @@ export function PrivacySettings({ onBack }: PrivacySettingsProps) {
         {/* Interactions Section */}
         <div className="bg-white rounded-lg shadow-sm">
           <div className="p-4 border-b border-gray-200">
-            <h2 className="text-[#0E0E55] flex items-center gap-2">
+            <h2 className="text-navy flex items-center gap-2">
               <Users className="w-5 h-5" />
               {t('interactions')}
             </h2>
@@ -256,7 +256,7 @@ export function PrivacySettings({ onBack }: PrivacySettingsProps) {
         {/* Security Section */}
         <div className="bg-white rounded-lg shadow-sm">
           <div className="p-4 border-b border-gray-200">
-            <h2 className="text-[#0E0E55] flex items-center gap-2">
+            <h2 className="text-navy flex items-center gap-2">
               <Shield className="w-5 h-5" />
               {t('security')}
             </h2>
@@ -266,7 +266,7 @@ export function PrivacySettings({ onBack }: PrivacySettingsProps) {
             {/* Change Password */}
             <button className="w-full flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition-colors">
               <div className="flex items-center gap-3">
-                <Lock className="w-5 h-5 text-[#0E0E55]" />
+                <Lock className="w-5 h-5 text-navy" />
                 <div className="text-left">
                   <p className="text-gray-900">{t('changePassword')}</p>
                   <p className="text-sm text-gray-600">{t('changePasswordDesc')}</p>
@@ -279,7 +279,7 @@ export function PrivacySettings({ onBack }: PrivacySettingsProps) {
             <div className="pt-4 border-t border-gray-200">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3 flex-1">
-                  <Shield className="w-5 h-5 text-[#0E0E55]" />
+                  <Shield className="w-5 h-5 text-navy" />
                   <div>
                     <label className="block text-gray-900">
                       {t('twoFactorAuth')}
@@ -307,7 +307,7 @@ export function PrivacySettings({ onBack }: PrivacySettingsProps) {
             {/* Login Activity */}
             <button className="w-full flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition-colors border-t border-gray-200 pt-4">
               <div className="flex items-center gap-3">
-                <Eye className="w-5 h-5 text-[#0E0E55]" />
+                <Eye className="w-5 h-5 text-navy" />
                 <div className="text-left">
                   <p className="text-gray-900">{t('loginActivity')}</p>
                   <p className="text-sm text-gray-600">{t('loginActivityDesc')}</p>
@@ -324,7 +324,7 @@ export function PrivacySettings({ onBack }: PrivacySettingsProps) {
             onClick={() => setShowBlockedUsers(!showBlockedUsers)}
             className="w-full p-4 border-b border-gray-200 flex items-center justify-between"
           >
-            <h2 className="text-[#0E0E55] flex items-center gap-2">
+            <h2 className="text-navy flex items-center gap-2">
               <UserX className="w-5 h-5" />
               {t('blockedUsers', { count: blockedUsers.length })}
             </h2>
@@ -350,7 +350,7 @@ export function PrivacySettings({ onBack }: PrivacySettingsProps) {
                           <p className="text-sm text-gray-600">{user.username}</p>
                         </div>
                       </div>
-                      <button className="px-4 py-2 bg-[#0E0E55] text-white rounded-lg hover:bg-[#1A1A6E] transition-colors text-sm">
+                      <button className="px-4 py-2 bg-navy text-white rounded-lg hover:bg-navy-light transition-colors text-sm">
                         {t('unblock')}
                       </button>
                     </div>
@@ -364,7 +364,7 @@ export function PrivacySettings({ onBack }: PrivacySettingsProps) {
         {/* Data & Account Section */}
         <div className="bg-white rounded-lg shadow-sm">
           <div className="p-4 border-b border-gray-200">
-            <h2 className="text-[#0E0E55] flex items-center gap-2">
+            <h2 className="text-navy flex items-center gap-2">
               <Globe className="w-5 h-5" />
               {t('dataAccount')}
             </h2>

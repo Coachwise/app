@@ -93,9 +93,9 @@ export function CoachApplication({ onCancel, onSubmit }: CoachApplicationProps) 
     const pending = application.status === 'PENDING';
     return (
       <div className="min-h-screen bg-gray-100">
-        <div className="bg-[#0E0E55] px-4 py-4 sticky top-0 z-10">
+        <div className="bg-navy px-4 py-4 sticky top-0 z-10">
           <div className="flex items-center justify-between">
-            <button onClick={onCancel} className="p-2 -ml-2 hover:bg-[#1A1A6E] rounded-lg transition-colors">
+            <button onClick={onCancel} className="p-2 -ml-2 hover:bg-navy-light rounded-lg transition-colors">
               <ArrowLeft className="w-6 h-6 text-white" />
             </button>
             <h2 className="text-white">{t('becomeACoach')}</h2>
@@ -107,11 +107,11 @@ export function CoachApplication({ onCancel, onSubmit }: CoachApplicationProps) 
             <div className={`w-14 h-14 rounded-full mx-auto mb-4 flex items-center justify-center ${pending ? 'bg-yellow-100' : 'bg-green-100'}`}>
               {pending ? <Clock className="w-7 h-7 text-yellow-600" /> : <CheckCircle2 className="w-7 h-7 text-green-600" />}
             </div>
-            <h3 className="text-[#0E0E55] text-lg mb-2">{pending ? t('applicationPending') : t('applicationApproved')}</h3>
+            <h3 className="text-navy text-lg mb-2">{pending ? t('applicationPending') : t('applicationApproved')}</h3>
             <p className="text-gray-600 text-sm mb-4">{pending ? t('applicationPendingDesc') : t('applicationApprovedDesc')}</p>
             <div className="bg-gray-50 rounded-lg p-3 text-sm">
               <span className="text-gray-500">{t('submissionId')}: </span>
-              <span className="text-[#0E0E55] font-mono break-all">{application.id}</span>
+              <span className="text-navy font-mono break-all">{application.id}</span>
             </div>
           </div>
         </div>
@@ -122,9 +122,9 @@ export function CoachApplication({ onCancel, onSubmit }: CoachApplicationProps) 
   return (
     <div className="min-h-screen bg-gray-100">
       {/* Header */}
-      <div className="bg-[#0E0E55] px-4 py-4 sticky top-0 z-10">
+      <div className="bg-navy px-4 py-4 sticky top-0 z-10">
         <div className="flex items-center justify-between">
-          <button onClick={onCancel} className="p-2 -ml-2 hover:bg-[#1A1A6E] rounded-lg transition-colors">
+          <button onClick={onCancel} className="p-2 -ml-2 hover:bg-navy-light rounded-lg transition-colors">
             <ArrowLeft className="w-6 h-6 text-white" />
           </button>
           <h2 className="text-white">{t('becomeACoach')}</h2>
@@ -297,7 +297,7 @@ export function CoachApplication({ onCancel, onSubmit }: CoachApplicationProps) 
             <button
               onClick={handleSubmit}
               disabled={submitting}
-              className="w-full py-3 rounded-lg bg-yellow-500 text-[#0E0E55] font-medium hover:bg-yellow-400 transition-colors disabled:opacity-60"
+              className="w-full py-3 rounded-lg bg-yellow-500 text-navy font-medium hover:bg-yellow-400 transition-colors disabled:opacity-60"
             >
               {submitting ? t('submitting') : (application?.status === 'REJECTED' ? t('reapply') : t('submitApplication'))}
             </button>

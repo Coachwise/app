@@ -477,7 +477,7 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, onViewPlan, userRol
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
-      <div className="bg-[#0E0E55] px-4 pt-6 pb-8 rounded-b-[2rem] shadow-xl">
+      <div className="bg-navy px-4 pt-6 pb-8 rounded-b-[2rem] shadow-xl">
         <div className="flex items-center justify-between mb-4">
           <div>
             <h1 className="text-white text-2xl font-bold">{t('workouts')}</h1>
@@ -489,7 +489,7 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, onViewPlan, userRol
         <div className="flex items-center justify-between text-xs text-gray-300 mb-2">
           <button
             onClick={() => shiftWindow(-3)}
-            className="p-2 rounded-lg bg-[#1A1A6E] hover:bg-[#1A1A6E]/80 text-white"
+            className="p-2 rounded-lg bg-navy-light hover:bg-navy-light/80 text-white"
             aria-label={t('previousDays')}
           >
             {isRTL ? <ArrowRight className="w-4 h-4" /> : <ArrowLeft className="w-4 h-4" />}
@@ -502,14 +502,14 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, onViewPlan, userRol
                 setCenterDate(today);
                 setSelectedDate(today);
               }}
-              className="px-3 py-1 rounded-lg bg-yellow-500 hover:bg-yellow-400 text-[#0E0E55] text-xs font-bold transition-colors"
+              className="px-3 py-1 rounded-lg bg-yellow-500 hover:bg-yellow-400 text-navy text-xs font-bold transition-colors"
             >
               {t('today')}
             </button>
           </div>
           <button
             onClick={() => shiftWindow(3)}
-            className="p-2 rounded-lg bg-[#1A1A6E] hover:bg-[#1A1A6E]/80 text-white"
+            className="p-2 rounded-lg bg-navy-light hover:bg-navy-light/80 text-white"
             aria-label={t('nextDays')}
           >
             {isRTL ? <ArrowLeft className="w-4 h-4" /> : <ArrowRight className="w-4 h-4" />}
@@ -517,7 +517,7 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, onViewPlan, userRol
         </div>
 
         <div
-          className="flex items-center gap-2 overflow-x-auto p-2 bg-[#1A1A6E] rounded-2xl select-none"
+          className="flex items-center gap-2 overflow-x-auto p-2 bg-navy-light rounded-2xl select-none"
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
           onMouseDown={handleMouseDown}
@@ -540,7 +540,7 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, onViewPlan, userRol
             // - Otherwise default dark background
             let buttonClasses = 'flex flex-col items-center justify-center w-12 h-16 rounded-xl transition-all ';
             if (isToday) {
-              buttonClasses += 'bg-yellow-500 text-[#0E0E55] shadow-lg font-bold';
+              buttonClasses += 'bg-yellow-500 text-navy shadow-lg font-bold';
             } else if (selected) {
               buttonClasses += 'text-white bg-[#141457] border-2 border-yellow-500 scale-105';
             } else if (isScheduling && !isPast) {
@@ -562,7 +562,7 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, onViewPlan, userRol
                   {date.toLocaleDateString(dateLocale, { day: 'numeric' })}
                 </span>
                 {hasData ? (
-                  <div className={`w-1.5 h-1.5 rounded-full mt-1 ${isToday ? 'bg-[#0E0E55]' : isPast ? 'bg-green-500' : 'bg-yellow-500'}`} />
+                  <div className={`w-1.5 h-1.5 rounded-full mt-1 ${isToday ? 'bg-navy' : isPast ? 'bg-green-500' : 'bg-yellow-500'}`} />
                 ) : null}
               </button>
             );
@@ -644,7 +644,7 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, onViewPlan, userRol
                       </div>
                     </div>
 
-                    <h2 className="text-xl text-[#0E0E55] font-bold mb-3">{workout.name}</h2>
+                    <h2 className="text-xl text-navy font-bold mb-3">{workout.name}</h2>
                     {workout.coachName && <p className="text-sm text-gray-500 mb-3">{t('byCoach', { coach: workout.coachName })}</p>}
 
                     {/* Past date: Show daily analytics and session metrics */}
@@ -665,11 +665,11 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, onViewPlan, userRol
                             <div className="grid grid-cols-3 gap-3 mb-4 mt-4">
                               <div className="flex items-center gap-2">
                                 <div className="bg-gray-100 p-1.5 rounded-lg">
-                                  <Dumbbell className="w-4 h-4 text-[#0E0E55]" />
+                                  <Dumbbell className="w-4 h-4 text-navy" />
                                 </div>
                                 <div>
                                   <p className="text-[10px] text-gray-500 uppercase">{t('exercisesLabel')}</p>
-                                  <p className="font-bold text-sm text-[#0E0E55]">{workout.exercises}</p>
+                                  <p className="font-bold text-sm text-navy">{workout.exercises}</p>
                                 </div>
                               </div>
 
@@ -786,11 +786,11 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, onViewPlan, userRol
                       <div className="grid grid-cols-3 gap-3 mb-4 mt-4">
                         <div className="flex items-center gap-2">
                           <div className="bg-gray-100 p-1.5 rounded-lg">
-                            <Dumbbell className="w-4 h-4 text-[#0E0E55]" />
+                            <Dumbbell className="w-4 h-4 text-navy" />
                           </div>
                           <div>
                             <p className="text-[10px] text-gray-500 uppercase">{t('exercisesLabel')}</p>
-                            <p className="font-bold text-sm text-[#0E0E55]">{workout.exercises}</p>
+                            <p className="font-bold text-sm text-navy">{workout.exercises}</p>
                           </div>
                         </div>
 
@@ -875,10 +875,10 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, onViewPlan, userRol
                           <button
                             onClick={() => handleStartScheduledWorkout(workout.instanceId, workout.id)}
                             disabled={!canStartToday || scheduleLoading}
-                            className={`flex-1 py-3 rounded-xl font-bold transition-all flex items-center justify-center gap-2 shadow-lg shadow-[#0E0E55]/10 text-sm ${
+                            className={`flex-1 py-3 rounded-xl font-bold transition-all flex items-center justify-center gap-2 shadow-lg shadow-navy/10 text-sm ${
                               !canStartToday || scheduleLoading
                                 ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                                : 'bg-[#0E0E55] text-white hover:bg-[#1A1A6E]'
+                                : 'bg-navy text-white hover:bg-navy-light'
                             }`}
                             title={!canStartToday ? t('onlyStartTodayTitle') : undefined}
                           >
@@ -896,7 +896,7 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, onViewPlan, userRol
           {canStartToday && (
             <button
               onClick={() => onStartSession()}
-              className="w-full mt-3 px-6 py-3 bg-white text-[#0E0E55] border-2 border-[#0E0E55]/10 rounded-xl font-bold hover:bg-gray-50 transition-colors"
+              className="w-full mt-3 px-6 py-3 bg-white text-navy border-2 border-navy/10 rounded-xl font-bold hover:bg-gray-50 transition-colors"
             >
               {t('startFreestyle')}
             </button>
@@ -912,18 +912,18 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, onViewPlan, userRol
 
              {selectedDate < normalizeDate(new Date()) ? (
                <>
-                 <h3 className="text-lg font-bold text-[#0E0E55] mb-2">{t('noActivity')}</h3>
+                 <h3 className="text-lg font-bold text-navy mb-2">{t('noActivity')}</h3>
                  <p className="text-gray-500">{t('noWorkoutsLogged', { date: selectedDate.toLocaleDateString(dateLocale, { weekday: 'long', month: 'short', day: 'numeric' }) })}</p>
                </>
              ) : (
                <>
-                 <h3 className="text-lg font-bold text-[#0E0E55] mb-2">{t('restDay')}</h3>
+                 <h3 className="text-lg font-bold text-navy mb-2">{t('restDay')}</h3>
                  <p className="text-gray-500 mb-6">{t('noWorkoutsScheduled', { day: selectedDate.toLocaleDateString(dateLocale, { weekday: 'long' }) })}</p>
 
                  <div className="grid grid-cols-1 gap-3">
                    <button
                      onClick={() => setIsScheduling(true)}
-                     className="w-full px-6 py-3 bg-yellow-500 text-[#0E0E55] rounded-xl font-bold hover:bg-yellow-400 transition-colors shadow-md flex items-center justify-center gap-2"
+                     className="w-full px-6 py-3 bg-yellow-500 text-navy rounded-xl font-bold hover:bg-yellow-400 transition-colors shadow-md flex items-center justify-center gap-2"
                    >
                      <Plus className="w-5 h-5" />
                      {t('scheduleWorkout')}
@@ -932,7 +932,7 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, onViewPlan, userRol
                    {dateKey(selectedDate) === dateKey(new Date()) && (
                      <button
                         onClick={() => onStartSession()}
-                        className="w-full px-6 py-3 bg-white text-[#0E0E55] border-2 border-[#0E0E55]/10 rounded-xl font-bold hover:bg-gray-50 transition-colors"
+                        className="w-full px-6 py-3 bg-white text-navy border-2 border-navy/10 rounded-xl font-bold hover:bg-gray-50 transition-colors"
                       >
                         {t('startFreestyle')}
                      </button>
@@ -947,7 +947,7 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, onViewPlan, userRol
           <div className="fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center p-4">
             <div className="bg-white w-full max-w-md rounded-3xl p-6 shadow-2xl animate-in slide-in-from-bottom-20">
               <div className="flex items-center justify-between mb-6">
-                <h3 className="text-xl font-bold text-[#0E0E55]">{t('selectAPlan')}</h3>
+                <h3 className="text-xl font-bold text-navy">{t('selectAPlan')}</h3>
                 <button 
                   onClick={() => setIsScheduling(false)}
                   className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors"
@@ -972,7 +972,7 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, onViewPlan, userRol
                   >
                     <div className="flex items-start justify-between">
                       <div>
-                        <h4 className="font-bold text-[#0E0E55] group-hover:text-yellow-600 transition-colors">{plan.name}</h4>
+                        <h4 className="font-bold text-navy group-hover:text-yellow-600 transition-colors">{plan.name}</h4>
                         <div className="flex items-center gap-2 mt-1">
                           {plan.source === 'assigned' ? (
                             <span className="text-xs text-blue-600 bg-blue-50 px-2 py-0.5 rounded">
@@ -990,7 +990,7 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, onViewPlan, userRol
                         </div>
                       </div>
                       <div className="h-8 w-8 rounded-full bg-gray-50 flex items-center justify-center group-hover:bg-yellow-500 transition-colors">
-                        <Plus className="w-4 h-4 text-gray-400 group-hover:text-[#0E0E55]" />
+                        <Plus className="w-4 h-4 text-gray-400 group-hover:text-navy" />
                       </div>
                     </div>
                   </button>
@@ -1001,7 +1001,7 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, onViewPlan, userRol
         )}
 
         <div>
-          <h3 className="text-[#0E0E55] font-bold text-lg mb-3">{t('quickActions')}</h3>
+          <h3 className="text-navy font-bold text-lg mb-3">{t('quickActions')}</h3>
           <div className="grid grid-cols-2 gap-3">
             <button 
               onClick={onCreatePlan}
@@ -1010,7 +1010,7 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, onViewPlan, userRol
               <div className="w-10 h-10 bg-blue-50 rounded-full flex items-center justify-center mb-3 group-hover:bg-blue-100 transition-colors">
                 <Plus className="w-5 h-5 text-blue-600" />
               </div>
-              <h4 className="font-bold text-[#0E0E55]">{t('createPlan')}</h4>
+              <h4 className="font-bold text-navy">{t('createPlan')}</h4>
               <p className="text-xs text-gray-500 mt-1">{t('buildCustomRoutine')}</p>
             </button>
 
@@ -1021,7 +1021,7 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, onViewPlan, userRol
               <div className="w-10 h-10 bg-purple-50 rounded-full flex items-center justify-center mb-3 group-hover:bg-purple-100 transition-colors">
                 <Calendar className="w-5 h-5 text-purple-600" />
               </div>
-              <h4 className="font-bold text-[#0E0E55]">{t('findPlans')}</h4>
+              <h4 className="font-bold text-navy">{t('findPlans')}</h4>
               <p className="text-xs text-gray-500 mt-1">{t('browseCoachLibrary')}</p>
             </button>
           </div>
@@ -1029,7 +1029,7 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, onViewPlan, userRol
 
         <div>
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-[#0E0E55] font-bold text-lg">{t('yourLibrary')}</h3>
+            <h3 className="text-navy font-bold text-lg">{t('yourLibrary')}</h3>
             <button className="text-yellow-600 text-sm font-medium">{t('viewAll')}</button>
           </div>
           {planError && (
@@ -1059,7 +1059,7 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, onViewPlan, userRol
                     )}
                   </div>
                   <div className="min-w-0">
-                    <h4 className="font-bold text-[#0E0E55]">{plan.name}</h4>
+                    <h4 className="font-bold text-navy">{plan.name}</h4>
                     <div className="flex items-center gap-2 text-xs mt-0.5">
                       {plan.source === 'assigned' ? (
                         <span className="text-blue-600 font-medium">{plan.coachName ? t('assignedByCoach', { coach: plan.coachName }) : t('assignedPlan')}</span>
@@ -1079,7 +1079,7 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, onViewPlan, userRol
                 </button>
                 <button
                   onClick={() => handleScheduleWorkout(plan.id)}
-                  className="p-2 hover:bg-gray-100 rounded-full text-gray-400 hover:text-[#0E0E55] transition-colors flex-shrink-0"
+                  className="p-2 hover:bg-gray-100 rounded-full text-gray-400 hover:text-navy transition-colors flex-shrink-0"
                   title={t('addToSchedule')}
                 >
                   <Plus className="w-5 h-5" />

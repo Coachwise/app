@@ -106,10 +106,10 @@ export function ProfileSettings({ onBack }: ProfileSettingsProps) {
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
       {/* Header */}
-      <div className="bg-[#0E0E55] px-4 py-4 sticky top-0 z-10">
+      <div className="bg-navy px-4 py-4 sticky top-0 z-10">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <button onClick={onBack} className="p-2 -ml-2 hover:bg-[#1A1A6E] rounded-lg transition-colors">
+            <button onClick={onBack} className="p-2 -ml-2 hover:bg-navy-light rounded-lg transition-colors">
               <ArrowLeft className="w-6 h-6 text-white" />
             </button>
             <div className="flex items-center gap-2">
@@ -120,7 +120,7 @@ export function ProfileSettings({ onBack }: ProfileSettingsProps) {
           <button
             onClick={handleSave}
             disabled={saving}
-            className="flex items-center gap-2 px-4 py-2 bg-yellow-500 text-[#0E0E55] rounded-lg hover:bg-yellow-400 transition-colors disabled:opacity-60"
+            className="flex items-center gap-2 px-4 py-2 bg-yellow-500 text-navy rounded-lg hover:bg-yellow-400 transition-colors disabled:opacity-60"
           >
             <Save className="w-4 h-4" />
             <span className="text-sm">{saving ? t('saving') : t('save')}</span>
@@ -139,14 +139,14 @@ export function ProfileSettings({ onBack }: ProfileSettingsProps) {
                 className="w-28 h-28 rounded-full border-4 border-white object-cover shadow"
               />
             ) : (
-              <div className="w-28 h-28 rounded-full border-4 border-white bg-[#0E0E55]/10 flex items-center justify-center text-[#0E0E55] font-bold text-xl shadow">
+              <div className="w-28 h-28 rounded-full border-4 border-white bg-navy/10 flex items-center justify-center text-navy font-bold text-xl shadow">
                 {initials}
               </div>
             )}
             <button
               onClick={() => fileInputRef.current?.click()}
               disabled={uploadingImage}
-              className="absolute bottom-0 right-0 p-2 bg-[#0E0E55] text-white rounded-full hover:bg-[#1A1A6E] transition-colors border-2 border-white disabled:opacity-60"
+              className="absolute bottom-0 right-0 p-2 bg-navy text-white rounded-full hover:bg-navy-light transition-colors border-2 border-white disabled:opacity-60"
             >
               <Camera className="w-4 h-4" />
             </button>
@@ -161,7 +161,7 @@ export function ProfileSettings({ onBack }: ProfileSettingsProps) {
           {/* Basic Information */}
           <div className="bg-white rounded-lg shadow-sm">
             <div className="p-4 border-b border-gray-200">
-              <h2 className="text-[#0E0E55]">{t('basicInformation')}</h2>
+              <h2 className="text-navy">{t('basicInformation')}</h2>
             </div>
             <div className="p-4 space-y-4">
               <Field label={t('firstName')}>
@@ -195,7 +195,7 @@ export function ProfileSettings({ onBack }: ProfileSettingsProps) {
           {/* Contact */}
           <div className="bg-white rounded-lg shadow-sm">
             <div className="p-4 border-b border-gray-200">
-              <h2 className="text-[#0E0E55]">{t('contactInformation')}</h2>
+              <h2 className="text-navy">{t('contactInformation')}</h2>
             </div>
             <div className="p-4 space-y-4">
               <Field label={t('email')} icon={<Mail className="w-4 h-4" />}>
@@ -210,7 +210,7 @@ export function ProfileSettings({ onBack }: ProfileSettingsProps) {
           {/* Social Links */}
           <div className="bg-white rounded-lg shadow-sm">
             <div className="p-4 border-b border-gray-200">
-              <h2 className="text-[#0E0E55]">{t('socialLinks')}</h2>
+              <h2 className="text-navy">{t('socialLinks')}</h2>
             </div>
             <div className="p-4 space-y-4">
               <Field label={t('website')} icon={<Globe className="w-4 h-4" />}>
@@ -225,7 +225,7 @@ export function ProfileSettings({ onBack }: ProfileSettingsProps) {
           <button
             onClick={handleSave}
             disabled={saving}
-            className="w-full py-3 bg-[#0E0E55] text-white rounded-lg hover:bg-[#1A1A6E] transition-colors disabled:opacity-60"
+            className="w-full py-3 bg-navy text-white rounded-lg hover:bg-navy-light transition-colors disabled:opacity-60"
           >
             {saving ? t('saving') : t('saveChanges')}
           </button>

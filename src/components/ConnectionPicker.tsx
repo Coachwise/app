@@ -51,7 +51,7 @@ export function ConnectionPicker({ onSelect, connections: provided, token, searc
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder={t('searchConnections')}
-              className="w-full ps-9 pe-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent text-sm text-[#0E0E55]"
+              className="w-full ps-9 pe-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent text-sm text-navy"
             />
           </div>
         </div>
@@ -68,7 +68,7 @@ export function ConnectionPicker({ onSelect, connections: provided, token, searc
             >
               <UserAvatar url={conn.avatar?.url} alt={displayName(conn)} sizeClass="w-10 h-10" iconClass="w-5 h-5" />
               <div className="min-w-0">
-                <div className="text-[#0E0E55] text-sm truncate">{displayName(conn)}</div>
+                <div className="text-navy text-sm truncate">{displayName(conn)}</div>
                 <div className="text-gray-400 text-xs truncate">@{conn.username}</div>
               </div>
             </button>

@@ -164,11 +164,11 @@ export function SubscriptionTierBuilder({ onCancel, onSave, token, packageId }: 
   return (
     <div className="min-h-screen bg-gray-100">
       {/* Header + progress */}
-      <div className="bg-[#0E0E55] px-4 py-4 sticky top-0 z-10">
+      <div className="bg-navy px-4 py-4 sticky top-0 z-10">
         <div className="flex items-center justify-between mb-3">
           <button
             onClick={() => (step === 1 ? onCancel() : setStep(step - 1))}
-            className="p-2 -ml-2 hover:bg-[#1A1A6E] rounded-lg transition-colors"
+            className="p-2 -ml-2 hover:bg-navy-light rounded-lg transition-colors"
           >
             <ArrowLeft className="w-6 h-6 text-white" />
           </button>
@@ -177,7 +177,7 @@ export function SubscriptionTierBuilder({ onCancel, onSave, token, packageId }: 
             <button
               onClick={() => canAdvance(step) && setStep(step + 1)}
               disabled={!canAdvance(step)}
-              className="px-4 py-2 bg-yellow-500 text-[#0E0E55] rounded-lg hover:bg-yellow-400 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+              className="px-4 py-2 bg-yellow-500 text-navy rounded-lg hover:bg-yellow-400 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
             >
               {t('next')}
             </button>
@@ -185,7 +185,7 @@ export function SubscriptionTierBuilder({ onCancel, onSave, token, packageId }: 
             <button
               onClick={handleSave}
               disabled={!isFormValid() || saving}
-              className="px-4 py-2 bg-yellow-500 text-[#0E0E55] rounded-lg hover:bg-yellow-400 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+              className="px-4 py-2 bg-yellow-500 text-navy rounded-lg hover:bg-yellow-400 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
             >
               {saving ? t('saving') : t('save')}
             </button>
@@ -197,7 +197,7 @@ export function SubscriptionTierBuilder({ onCancel, onSave, token, packageId }: 
             <div
               key={s}
               className={`h-1.5 flex-1 rounded-full transition-colors ${
-                s <= step ? 'bg-yellow-500' : 'bg-[#1A1A6E]'
+                s <= step ? 'bg-yellow-500' : 'bg-navy-light'
               }`}
             />
           ))}
@@ -262,7 +262,7 @@ export function SubscriptionTierBuilder({ onCancel, onSave, token, packageId }: 
                       }`}
                     >
                       <div>
-                        <div className="text-[#0E0E55] text-sm">{plan.name}</div>
+                        <div className="text-navy text-sm">{plan.name}</div>
                         {plan.exercise_count != null && (
                           <div className="text-gray-500 text-xs">
                             {t('exercises')}: {plan.exercise_count}
@@ -274,7 +274,7 @@ export function SubscriptionTierBuilder({ onCancel, onSave, token, packageId }: 
                           checked ? 'bg-yellow-500 border-yellow-500' : 'border-gray-300'
                         }`}
                       >
-                        {checked && <Check className="w-4 h-4 text-[#0E0E55]" />}
+                        {checked && <Check className="w-4 h-4 text-navy" />}
                       </span>
                     </button>
                   );

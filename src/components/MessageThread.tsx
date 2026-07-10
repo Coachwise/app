@@ -92,8 +92,8 @@ export function MessageThread({ conversationId, onBack, onViewProfile }: Message
   return (
     <div className="fixed inset-0 z-50 bg-gray-100 max-w-md mx-auto flex flex-col">
       {/* Header */}
-      <div className="bg-[#0E0E55] px-3 py-3 flex items-center gap-2">
-        <button onClick={onBack} className="p-2 rounded-lg hover:bg-[#1A1A6E] transition-colors" aria-label={t('back')}>
+      <div className="bg-navy px-3 py-3 flex items-center gap-2">
+        <button onClick={onBack} className="p-2 rounded-lg hover:bg-navy-light transition-colors" aria-label={t('back')}>
           <BackIcon className="w-6 h-6 text-white" />
         </button>
         <button
@@ -122,12 +122,12 @@ export function MessageThread({ conversationId, onBack, onViewProfile }: Message
                 <div
                   className={`max-w-[78%] px-3 py-2 rounded-2xl ${
                     mine
-                      ? 'bg-yellow-500 text-[#0E0E55] rounded-br-sm'
+                      ? 'bg-yellow-500 text-navy rounded-br-sm'
                       : 'bg-white text-gray-800 border border-gray-200 rounded-bl-sm'
                   }`}
                 >
                   <p className="whitespace-pre-wrap break-words">{m.body}</p>
-                  <div className={`text-[10px] mt-1 ${mine ? 'text-[#0E0E55]/60' : 'text-gray-400'} text-end`}>
+                  <div className={`text-[10px] mt-1 ${mine ? 'text-navy/60' : 'text-gray-400'} text-end`}>
                     {fmtTime(m.created_at)}
                   </div>
                 </div>
@@ -151,12 +151,12 @@ export function MessageThread({ conversationId, onBack, onViewProfile }: Message
             }
           }}
           placeholder={t('typeMessage')}
-          className="flex-1 bg-gray-100 rounded-full px-4 py-2.5 text-[#0E0E55] focus:outline-none focus:ring-2 focus:ring-yellow-500"
+          className="flex-1 bg-gray-100 rounded-full px-4 py-2.5 text-navy focus:outline-none focus:ring-2 focus:ring-yellow-500"
         />
         <button
           onClick={handleSend}
           disabled={!text.trim() || sending}
-          className="p-2.5 rounded-full bg-yellow-500 text-[#0E0E55] hover:bg-yellow-400 transition-colors disabled:opacity-50"
+          className="p-2.5 rounded-full bg-yellow-500 text-navy hover:bg-yellow-400 transition-colors disabled:opacity-50"
           aria-label={t('send')}
         >
           <Send className={`w-5 h-5 ${isRTL ? 'rotate-180' : ''}`} />

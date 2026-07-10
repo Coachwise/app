@@ -64,20 +64,20 @@ export function AthleteTests({
         </div>
       )}
       <div className="min-w-0">
-        <h4 className="text-[#0E0E55] font-medium truncate">{p.name}</h4>
+        <h4 className="text-navy font-medium truncate">{p.name}</h4>
         <p className="text-gray-400 text-xs mt-0.5">{t('exercisesCountShort', { count: String(p.item_count) })}</p>
       </div>
       <div className="flex gap-2 mt-3">
         <button
           onClick={() => onRunProtocol(p.id)}
-          className="flex-1 py-2 bg-[#0E0E55] text-white rounded-lg hover:bg-[#1A1A6E] transition-colors text-sm flex items-center justify-center gap-1.5"
+          className="flex-1 py-2 bg-navy text-white rounded-lg hover:bg-navy-light transition-colors text-sm flex items-center justify-center gap-1.5"
         >
           <Play className="w-4 h-4" />
           {t('runNow')}
         </button>
         <button
           onClick={() => onViewHistory(p.id)}
-          className="px-4 py-2 border-2 border-gray-200 text-[#0E0E55] rounded-lg hover:bg-gray-50 transition-colors text-sm flex items-center gap-1.5"
+          className="px-4 py-2 border-2 border-gray-200 text-navy rounded-lg hover:bg-gray-50 transition-colors text-sm flex items-center gap-1.5"
         >
           <LineChart className="w-4 h-4" />
           {t('history')}
@@ -85,7 +85,7 @@ export function AthleteTests({
         {editable && (
           <button
             onClick={() => onEditProtocol(p.id)}
-            className="px-3 py-2 border-2 border-gray-200 text-[#0E0E55] rounded-lg hover:bg-gray-50 transition-colors text-sm"
+            className="px-3 py-2 border-2 border-gray-200 text-navy rounded-lg hover:bg-gray-50 transition-colors text-sm"
             aria-label={t('edit')}
           >
             <Pencil className="w-4 h-4" />
@@ -97,16 +97,16 @@ export function AthleteTests({
 
   return (
     <div className="min-h-screen bg-gray-100">
-      <div className="bg-[#0E0E55] px-4 py-4 sticky top-0 z-10">
+      <div className="bg-navy px-4 py-4 sticky top-0 z-10">
         <div className="flex items-center justify-between">
-          <button onClick={onBack} className="p-2 -ml-2 hover:bg-[#1A1A6E] rounded-lg transition-colors">
+          <button onClick={onBack} className="p-2 -ml-2 hover:bg-navy-light rounded-lg transition-colors">
             <ArrowLeft className="w-6 h-6 text-white" />
           </button>
           <h1 className="text-white text-xl">{t('myAssessments')}</h1>
           <div className="flex items-center gap-1">
             <button
               onClick={onNewProtocol}
-              className="inline-flex items-center gap-1 px-3 py-2 bg-yellow-500 text-[#0E0E55] rounded-lg hover:bg-yellow-400 transition-colors text-sm font-medium"
+              className="inline-flex items-center gap-1 px-3 py-2 bg-yellow-500 text-navy rounded-lg hover:bg-yellow-400 transition-colors text-sm font-medium"
             >
               <Plus className="w-4 h-4" />
               {t('newProtocolShort')}
@@ -122,7 +122,7 @@ export function AthleteTests({
         {/* Assigned by a coach — run + history, identical to personal protocols */}
         {!loading && assigned.length > 0 && (
           <div>
-            <h3 className="text-[#0E0E55] font-medium mb-3 flex items-center gap-2">
+            <h3 className="text-navy font-medium mb-3 flex items-center gap-2">
               <Send className="w-5 h-5 text-yellow-500" />
               {t('fromYourCoach')}
             </h3>
@@ -133,7 +133,7 @@ export function AthleteTests({
         {/* My protocols */}
         {!loading && (
           <div>
-            <h3 className="text-[#0E0E55] font-medium mb-3 flex items-center gap-2">
+            <h3 className="text-navy font-medium mb-3 flex items-center gap-2">
               <Dumbbell className="w-5 h-5 text-yellow-500" />
               {t('myProtocols')}
             </h3>
@@ -144,7 +144,7 @@ export function AthleteTests({
                 <p className="text-gray-400 text-xs mt-1">{t('protocolsHint')}</p>
                 <button
                   onClick={onNewProtocol}
-                  className="mt-4 inline-flex items-center gap-1.5 px-4 py-2 bg-yellow-500 text-[#0E0E55] rounded-lg hover:bg-yellow-400 transition-colors text-sm font-medium"
+                  className="mt-4 inline-flex items-center gap-1.5 px-4 py-2 bg-yellow-500 text-navy rounded-lg hover:bg-yellow-400 transition-colors text-sm font-medium"
                 >
                   <Plus className="w-4 h-4" />
                   {t('newProtocol')}

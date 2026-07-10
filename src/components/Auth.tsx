@@ -72,7 +72,7 @@ export function Auth({ onLogin }: AuthProps) {
   const submitLabel = loading ? t('pleaseWait') : mode === 'phone' ? t('sendCode') : t('verifyContinue');
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0E0E55] to-[#1A1A6E] flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-navy to-navy-light flex flex-col">
       <div className={`absolute top-4 ${isRTL ? 'left-4' : 'right-4'} z-10`}>
         <button
           onClick={() => setShowLanguageSelector(!showLanguageSelector)}
@@ -86,7 +86,7 @@ export function Auth({ onLogin }: AuthProps) {
               <button
                 key={lng}
                 onClick={() => { setLanguage(lng); setShowLanguageSelector(false); }}
-                className={`w-full text-start px-3 py-2 rounded transition-colors ${language === lng ? 'bg-yellow-500 text-[#0E0E55]' : 'hover:bg-gray-100 text-[#0E0E55]'}`}
+                className={`w-full text-start px-3 py-2 rounded transition-colors ${language === lng ? 'bg-yellow-500 text-navy' : 'hover:bg-gray-100 text-navy'}`}
               >
                 {lng === 'en' ? t('english') : t('persian')}
               </button>
@@ -99,7 +99,7 @@ export function Auth({ onLogin }: AuthProps) {
         <div className="w-full max-w-md">
           <div className="text-center mb-8">
             <div className="inline-flex items-center justify-center w-16 h-16 bg-yellow-500 rounded-2xl mb-4">
-              <Dumbbell className="w-8 h-8 text-[#0E0E55]" />
+              <Dumbbell className="w-8 h-8 text-navy" />
             </div>
             <h1 className="text-white text-3xl mb-2">Coachwise</h1>
             <p className="text-white/80">{subtitle}</p>
@@ -110,7 +110,7 @@ export function Auth({ onLogin }: AuthProps) {
               <button
                 type="button"
                 onClick={() => { setMode('phone'); setError(null); }}
-                className="flex items-center gap-1.5 text-gray-500 hover:text-[#0E0E55] text-sm mb-4"
+                className="flex items-center gap-1.5 text-gray-500 hover:text-navy text-sm mb-4"
               >
                 <ArrowLeft className={`w-4 h-4 ${isRTL ? 'rotate-180' : ''}`} />
                 {t('back')}
@@ -123,12 +123,12 @@ export function Auth({ onLogin }: AuthProps) {
               {/* PHONE: country prefix + number */}
               {mode === 'phone' && (
                 <div>
-                  <label className="block text-[#0E0E55] text-sm mb-2">{t('phoneNumber')}</label>
+                  <label className="block text-navy text-sm mb-2">{t('phoneNumber')}</label>
                   <div className="flex gap-2" dir="ltr">
                     <button
                       type="button"
                       onClick={() => setShowCountries(true)}
-                      className="flex items-center gap-1 bg-gray-50 border border-gray-200 rounded-lg px-3 py-3 text-[#0E0E55] hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                      className="flex items-center gap-1 bg-gray-50 border border-gray-200 rounded-lg px-3 py-3 text-navy hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-yellow-500"
                     >
                       <span className="text-lg leading-none">{country.flag}</span>
                       <span className="text-sm tabular-nums">{country.dial}</span>
@@ -142,7 +142,7 @@ export function Auth({ onLogin }: AuthProps) {
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
                         placeholder={t('phonePlaceholder')}
-                        className="w-full bg-gray-50 border border-gray-200 rounded-lg py-3 pl-10 pr-4 text-[#0E0E55] tracking-wide focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                        className="w-full bg-gray-50 border border-gray-200 rounded-lg py-3 pl-10 pr-4 text-navy tracking-wide focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
                         required
                         autoFocus
                       />
@@ -155,7 +155,7 @@ export function Auth({ onLogin }: AuthProps) {
               {/* PHONE: enter code */}
               {mode === 'phone-code' && (
                 <div>
-                  <label className="block text-[#0E0E55] text-sm mb-2">{t('smsCode')}</label>
+                  <label className="block text-navy text-sm mb-2">{t('smsCode')}</label>
                   <div className="relative">
                     <KeyRound className={`absolute top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 ${isRTL ? 'right-3' : 'left-3'}`} />
                     <input
@@ -166,7 +166,7 @@ export function Auth({ onLogin }: AuthProps) {
                       onChange={(e) => setCode(e.target.value)}
                       placeholder="- - - - - -"
                       maxLength={6}
-                      className={`w-full bg-gray-50 border border-gray-200 rounded-lg py-3 ${isRTL ? 'pr-10 pl-4' : 'pl-10 pr-4'} text-[#0E0E55] text-center text-lg tracking-[0.5em] focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent`}
+                      className={`w-full bg-gray-50 border border-gray-200 rounded-lg py-3 ${isRTL ? 'pr-10 pl-4' : 'pl-10 pr-4'} text-navy text-center text-lg tracking-[0.5em] focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent`}
                       required
                       autoFocus
                     />
@@ -178,7 +178,7 @@ export function Auth({ onLogin }: AuthProps) {
                 </div>
               )}
 
-              <button type="submit" disabled={loading} className="w-full bg-yellow-500 text-[#0E0E55] py-3 rounded-lg hover:bg-yellow-400 transition-colors shadow-md disabled:opacity-50 font-medium">
+              <button type="submit" disabled={loading} className="w-full bg-yellow-500 text-navy py-3 rounded-lg hover:bg-yellow-400 transition-colors shadow-md disabled:opacity-50 font-medium">
                 {submitLabel}
               </button>
             </form>
@@ -200,7 +200,7 @@ export function Auth({ onLogin }: AuthProps) {
         renderItem={(c) => (
           <div className="flex items-center gap-3 px-4 py-3">
             <span className="text-xl leading-none">{c.flag}</span>
-            <span className="flex-1 text-[#0E0E55]">{c.name}</span>
+            <span className="flex-1 text-navy">{c.name}</span>
             <span className="text-gray-400 tabular-nums" dir="ltr">{c.dial}</span>
           </div>
         )}

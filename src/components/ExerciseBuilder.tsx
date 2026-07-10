@@ -145,16 +145,16 @@ export function ExerciseBuilder({ onCancel, onSaved, exercise }: ExerciseBuilder
 
   return (
     <div className="min-h-screen bg-gray-100">
-      <div className="bg-[#0E0E55] px-4 py-4 sticky top-0 z-10">
+      <div className="bg-navy px-4 py-4 sticky top-0 z-10">
         <div className="flex items-center justify-between">
-          <button onClick={onCancel} className="p-2 -ml-2 hover:bg-[#1A1A6E] rounded-lg transition-colors">
+          <button onClick={onCancel} className="p-2 -ml-2 hover:bg-navy-light rounded-lg transition-colors">
             <ArrowLeft className="w-6 h-6 text-white" />
           </button>
           <h2 className="text-white">{exercise ? t('editExercise') : t('newExercise')}</h2>
           <button
             onClick={handleSave}
             disabled={!canSave || saving}
-            className="px-4 py-2 bg-yellow-500 text-[#0E0E55] rounded-lg hover:bg-yellow-400 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+            className="px-4 py-2 bg-yellow-500 text-navy rounded-lg hover:bg-yellow-400 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
           >
             {saving && <Loader2 className="w-4 h-4 animate-spin" />}
             <span>{t('save')}</span>
@@ -280,7 +280,7 @@ export function ExerciseBuilder({ onCancel, onSaved, exercise }: ExerciseBuilder
             </div>
             <button
               onClick={addSet}
-              className="flex items-center gap-2 px-3 py-2 bg-yellow-500 text-[#0E0E55] rounded-lg hover:bg-yellow-400 transition-colors text-sm"
+              className="flex items-center gap-2 px-3 py-2 bg-yellow-500 text-navy rounded-lg hover:bg-yellow-400 transition-colors text-sm"
             >
               <Plus className="w-4 h-4" />
               {t('addSet')}
@@ -333,7 +333,7 @@ export function ExerciseBuilder({ onCancel, onSaved, exercise }: ExerciseBuilder
                       <button
                         onClick={() => updateSet(set.id, { type: 'reps' })}
                         className={`px-3 py-2 rounded-lg text-sm transition-colors ${
-                          set.type === 'reps' ? 'bg-yellow-500 text-[#0E0E55]' : 'bg-gray-100 text-gray-700'
+                          set.type === 'reps' ? 'bg-yellow-500 text-navy' : 'bg-gray-100 text-gray-700'
                         }`}
                       >
                         {t('repsLabel')}
@@ -341,7 +341,7 @@ export function ExerciseBuilder({ onCancel, onSaved, exercise }: ExerciseBuilder
                       <button
                         onClick={() => updateSet(set.id, { type: 'time' })}
                         className={`px-3 py-2 rounded-lg text-sm transition-colors ${
-                          set.type === 'time' ? 'bg-yellow-500 text-[#0E0E55]' : 'bg-gray-100 text-gray-700'
+                          set.type === 'time' ? 'bg-yellow-500 text-navy' : 'bg-gray-100 text-gray-700'
                         }`}
                       >
                         {t('timeLabel')}

@@ -307,19 +307,19 @@ export function WorkoutSession({ planId, scheduleId, onBack, onEndSession, isPro
 
   return (
     <div className="min-h-screen bg-gray-50 pb-24">
-      <div className="bg-[#0E0E55] px-4 pt-4 pb-6 sticky top-0 z-20 shadow-md">
+      <div className="bg-navy px-4 pt-4 pb-6 sticky top-0 z-20 shadow-md">
         {error && (
           <div className="bg-red-50 border border-red-200 text-red-800 text-sm rounded-lg p-3 mb-3">
             {error}
           </div>
         )}
         <div className="flex items-center justify-between mb-4">
-          <button onClick={onBack} className="p-2 -ml-2 hover:bg-[#1A1A6E] rounded-lg transition-colors">
+          <button onClick={onBack} className="p-2 -ml-2 hover:bg-navy-light rounded-lg transition-colors">
             <ArrowLeft className="w-6 h-6 text-white" />
           </button>
           <div className="flex flex-col items-center">
             <h2 className="text-white font-bold">{planId ? t('workoutSession') : t('freestyleWorkout')}</h2>
-            <div className="flex items-center gap-2 text-yellow-500 text-sm font-mono bg-[#1A1A6E] px-3 py-0.5 rounded-full mt-1">
+            <div className="flex items-center gap-2 text-yellow-500 text-sm font-mono bg-navy-light px-3 py-0.5 rounded-full mt-1">
               <Clock className="w-3 h-3" />
               {formatTime(sessionTime)}
             </div>
@@ -332,7 +332,7 @@ export function WorkoutSession({ planId, scheduleId, onBack, onEndSession, isPro
           </button>
         </div>
         
-        <div className="h-1 bg-[#1A1A6E] rounded-full overflow-hidden">
+        <div className="h-1 bg-navy-light rounded-full overflow-hidden">
           <div 
             className="h-full bg-yellow-500 transition-all duration-500"
             style={{ width: `${calculateProgress()}%` }}
@@ -346,11 +346,11 @@ export function WorkoutSession({ planId, scheduleId, onBack, onEndSession, isPro
             <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mb-4">
               <Plus className="w-8 h-8 text-yellow-600" />
             </div>
-            <h3 className="font-bold text-[#0E0E55] text-lg mb-1">{t('noExercisesYet')}</h3>
+            <h3 className="font-bold text-navy text-lg mb-1">{t('noExercisesYet')}</h3>
             <p className="text-gray-500 text-sm mb-6">{t('noExercisesDesc')}</p>
             <button
               onClick={openExercisePicker}
-              className="bg-[#0E0E55] text-white px-6 py-3 rounded-xl font-bold hover:bg-[#1A1A6E]"
+              className="bg-navy text-white px-6 py-3 rounded-xl font-bold hover:bg-navy-light"
             >
               {t('addExercise')}
             </button>
@@ -390,7 +390,7 @@ export function WorkoutSession({ planId, scheduleId, onBack, onEndSession, isPro
                   </div>
                 )}
                 <div className="text-left flex-1">
-                  <h3 className={`font-bold text-lg ${isFullyComplete ? 'text-green-700' : 'text-[#0E0E55]'}`}>
+                  <h3 className={`font-bold text-lg ${isFullyComplete ? 'text-green-700' : 'text-navy'}`}>
                     {exercise.name}
                   </h3>
                   <p className="text-sm text-gray-500">
@@ -419,25 +419,25 @@ export function WorkoutSession({ planId, scheduleId, onBack, onEndSession, isPro
                     >
                       <div className="flex flex-col items-center justify-center w-8">
                         <span className="text-xs font-bold text-gray-400">{t('setLabel')}</span>
-                        <span className="text-sm font-bold text-[#0E0E55]">{setIndex + 1}</span>
+                        <span className="text-sm font-bold text-navy">{setIndex + 1}</span>
                       </div>
 
                       <div className="flex-1 grid grid-cols-2 gap-3">
                         <div className="bg-gray-50 rounded-lg p-1.5 flex flex-col items-center border border-gray-200">
                            <span className="text-[10px] text-gray-500 font-bold mb-1">{t('kg')}</span>
                            <div className="flex items-center gap-2 w-full justify-between px-1">
-                             <button onClick={() => updateSet(exerciseIndex, setIndex, 'weight', -2.5)} className="text-gray-400 hover:text-[#0E0E55]"><Minus className="w-3 h-3" /></button>
-                             <span className="font-bold text-[#0E0E55]">{set.weight}</span>
-                             <button onClick={() => updateSet(exerciseIndex, setIndex, 'weight', 2.5)} className="text-gray-400 hover:text-[#0E0E55]"><Plus className="w-3 h-3" /></button>
+                             <button onClick={() => updateSet(exerciseIndex, setIndex, 'weight', -2.5)} className="text-gray-400 hover:text-navy"><Minus className="w-3 h-3" /></button>
+                             <span className="font-bold text-navy">{set.weight}</span>
+                             <button onClick={() => updateSet(exerciseIndex, setIndex, 'weight', 2.5)} className="text-gray-400 hover:text-navy"><Plus className="w-3 h-3" /></button>
                            </div>
                         </div>
 
                         <div className="bg-gray-50 rounded-lg p-1.5 flex flex-col items-center border border-gray-200">
                            <span className="text-[10px] text-gray-500 font-bold mb-1">{t('repsUpper')}</span>
                            <div className="flex items-center gap-2 w-full justify-between px-1">
-                             <button onClick={() => updateSet(exerciseIndex, setIndex, 'reps', -1)} className="text-gray-400 hover:text-[#0E0E55]"><Minus className="w-3 h-3" /></button>
-                             <span className="font-bold text-[#0E0E55]">{set.reps}</span>
-                             <button onClick={() => updateSet(exerciseIndex, setIndex, 'reps', 1)} className="text-gray-400 hover:text-[#0E0E55]"><Plus className="w-3 h-3" /></button>
+                             <button onClick={() => updateSet(exerciseIndex, setIndex, 'reps', -1)} className="text-gray-400 hover:text-navy"><Minus className="w-3 h-3" /></button>
+                             <span className="font-bold text-navy">{set.reps}</span>
+                             <button onClick={() => updateSet(exerciseIndex, setIndex, 'reps', 1)} className="text-gray-400 hover:text-navy"><Plus className="w-3 h-3" /></button>
                            </div>
                         </div>
                       </div>
@@ -481,8 +481,8 @@ export function WorkoutSession({ planId, scheduleId, onBack, onEndSession, isPro
       {/* Exercise picker overlay for freestyle */}
       {showExercisePicker && (
         <div className="fixed inset-0 bg-white z-40 flex flex-col">
-          <div className="bg-[#0E0E55] px-4 pt-4 pb-4 flex items-center gap-3">
-            <button onClick={() => setShowExercisePicker(false)} className="p-2 -ml-2 hover:bg-[#1A1A6E] rounded-lg">
+          <div className="bg-navy px-4 pt-4 pb-4 flex items-center gap-3">
+            <button onClick={() => setShowExercisePicker(false)} className="p-2 -ml-2 hover:bg-navy-light rounded-lg">
               <X className="w-6 h-6 text-white" />
             </button>
             <h2 className="text-white font-bold flex-1">{t('addExercise')}</h2>
@@ -527,7 +527,7 @@ export function WorkoutSession({ planId, scheduleId, onBack, onEndSession, isPro
                   </div>
                 )}
                 <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-[#0E0E55] truncate">{exercise.name}</p>
+                  <p className="font-semibold text-navy truncate">{exercise.name}</p>
                   <p className="text-xs text-gray-400 capitalize">{exercise.sport_type.toLowerCase()}</p>
                 </div>
                 <div className="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center flex-shrink-0">
@@ -551,12 +551,12 @@ export function WorkoutSession({ planId, scheduleId, onBack, onEndSession, isPro
             </button>
             <div>
                <p className="text-xs text-gray-500 font-bold">{t('sessionTimer')}</p>
-               <p className="text-xl font-mono text-[#0E0E55] font-bold">{formatTime(sessionTime)}</p>
+               <p className="text-xl font-mono text-navy font-bold">{formatTime(sessionTime)}</p>
             </div>
         </div>
         <button
           onClick={handleFinishWorkout}
-          className="bg-[#0E0E55] text-white px-6 py-3 rounded-xl font-bold hover:bg-[#1A1A6E] shadow-lg shadow-[#0E0E55]/20"
+          className="bg-navy text-white px-6 py-3 rounded-xl font-bold hover:bg-navy-light shadow-lg shadow-navy/20"
         >
           {t('finishWorkout')}
         </button>

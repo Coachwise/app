@@ -87,13 +87,13 @@ export function MessagesWithChannels({ userRole, onNavigate, setCurrentConversat
   return (
     <div className="min-h-screen bg-gray-100">
       {/* Header */}
-      <div className="bg-[#0E0E55] px-4 py-4 sticky top-0 z-10">
+      <div className="bg-navy px-4 py-4 sticky top-0 z-10">
         <div className="flex items-center justify-between">
           <h1 className="text-white text-xl">{t('messages')}</h1>
           <div className="flex items-center gap-1">
             <button
               onClick={() => setShowNew((v) => !v)}
-              className="inline-flex items-center gap-1.5 px-3 py-2 bg-yellow-500 text-[#0E0E55] rounded-lg hover:bg-yellow-400 transition-colors text-sm font-medium"
+              className="inline-flex items-center gap-1.5 px-3 py-2 bg-yellow-500 text-navy rounded-lg hover:bg-yellow-400 transition-colors text-sm font-medium"
             >
               <SquarePen className="w-4 h-4" />
               {t('newChat')}
@@ -106,7 +106,7 @@ export function MessagesWithChannels({ userRole, onNavigate, setCurrentConversat
         {showNew && (
           <div className="mt-3 bg-white rounded-2xl border border-gray-200 overflow-hidden">
             <div className="flex items-center justify-between px-3 py-2.5 border-b border-gray-100">
-              <span className="text-[#0E0E55] text-sm font-medium">{t('startConversation')}</span>
+              <span className="text-navy text-sm font-medium">{t('startConversation')}</span>
               <button onClick={() => setShowNew(false)} className="p-1 text-gray-400 hover:text-gray-600" aria-label={t('cancel')}>
                 <X className="w-4 h-4" />
               </button>
@@ -141,11 +141,11 @@ export function MessagesWithChannels({ userRole, onNavigate, setCurrentConversat
                 />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between gap-2">
-                    <span className="text-[#0E0E55] truncate">{thread.peer ? peerName(thread.peer) : ''}</span>
+                    <span className="text-navy truncate">{thread.peer ? peerName(thread.peer) : ''}</span>
                     <span className="text-gray-400 text-xs flex-shrink-0">{fmtTime(thread.last_at)}</span>
                   </div>
                   <div className="flex items-center justify-between gap-2 mt-0.5">
-                    <span className={`truncate text-sm ${thread.unread_count > 0 ? 'text-[#0E0E55] font-medium' : 'text-gray-500'}`}>
+                    <span className={`truncate text-sm ${thread.unread_count > 0 ? 'text-navy font-medium' : 'text-gray-500'}`}>
                       {thread.last_message}
                     </span>
                     {thread.unread_count > 0 && (

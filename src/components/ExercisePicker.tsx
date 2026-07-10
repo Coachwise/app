@@ -68,12 +68,12 @@ export function ExercisePicker<T extends PickedExercise>({
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
       <div className="px-4 py-3.5 border-b border-gray-100 flex items-center justify-between">
-        <h3 className="text-[#0E0E55] font-medium">
+        <h3 className="text-navy font-medium">
           {title || t('testExercises')} <span className="text-gray-400">({items.length})</span>
         </h3>
         <button
           onClick={() => setPicking(!picking)}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-yellow-500 text-[#0E0E55] hover:bg-yellow-400 transition-colors"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-yellow-500 text-navy hover:bg-yellow-400 transition-colors"
         >
           <Plus className="w-4 h-4" />
           {t('addExercise')}
@@ -91,7 +91,7 @@ export function ExercisePicker<T extends PickedExercise>({
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder={t('searchExercises')}
-                className="w-full ps-10 pe-3 py-2 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent text-sm text-[#0E0E55]"
+                className="w-full ps-10 pe-3 py-2 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent text-sm text-navy"
               />
             </div>
           </div>
@@ -103,7 +103,7 @@ export function ExercisePicker<T extends PickedExercise>({
                 <button
                   key={ex.id}
                   onClick={() => add(ex)}
-                  className="w-full text-start px-4 py-2.5 hover:bg-yellow-50 transition-colors text-sm text-[#0E0E55]"
+                  className="w-full text-start px-4 py-2.5 hover:bg-yellow-50 transition-colors text-sm text-navy"
                 >
                   {ex.name}
                 </button>
@@ -120,7 +120,7 @@ export function ExercisePicker<T extends PickedExercise>({
           {items.map((it, idx) => (
             <div key={it.exercise_id} className="p-4">
               <div className="flex items-center justify-between gap-2 mb-2">
-                <span className="text-[#0E0E55] text-sm truncate">{it.exercise_name}</span>
+                <span className="text-navy text-sm truncate">{it.exercise_name}</span>
                 <button
                   onClick={() => onRemove(idx)}
                   className="p-2 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors shrink-0"

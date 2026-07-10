@@ -113,16 +113,16 @@ export function TrophyCase({ data, isOwner, token, onLayoutSaved }: TrophyCasePr
       >
         {item.kind === 'record' ? (
           <>
-            <span className="w-11 h-11 rounded-xl bg-[#0E0E55] flex items-center justify-center shrink-0">
+            <span className="w-11 h-11 rounded-xl bg-navy flex items-center justify-center shrink-0">
               <Medal className="w-5 h-5 text-yellow-400" />
             </span>
             <div className="flex-1 min-w-0">
-              <div className="text-[#0E0E55] font-medium truncate">{item.record.exercise_name}</div>
+              <div className="text-navy font-medium truncate">{item.record.exercise_name}</div>
               <div className="text-[11px] text-gray-400">{t('recordLabel')}</div>
             </div>
             {!editing && (
               <div className="text-end shrink-0">
-                <div className="text-lg font-semibold text-[#0E0E55] tabular-nums leading-none">
+                <div className="text-lg font-semibold text-navy tabular-nums leading-none">
                   {recordPrimary(item.record, t)}
                 </div>
                 {recordSecondary(item.record, t) && (
@@ -137,7 +137,7 @@ export function TrophyCase({ data, isOwner, token, onLayoutSaved }: TrophyCasePr
               <Award className="w-5 h-5 text-yellow-600" />
             </span>
             <div className="flex-1 min-w-0">
-              <div className="text-[#0E0E55] font-medium truncate">{item.badge.title}</div>
+              <div className="text-navy font-medium truncate">{item.badge.title}</div>
               {item.badge.description ? (
                 <p className="text-xs text-gray-500 truncate">{item.badge.description}</p>
               ) : (
@@ -152,7 +152,7 @@ export function TrophyCase({ data, isOwner, token, onLayoutSaved }: TrophyCasePr
             <button
               onClick={() => move(index, -1)}
               disabled={index === 0}
-              className="p-1.5 rounded-lg text-gray-400 hover:text-[#0E0E55] hover:bg-gray-100 disabled:opacity-30 transition-colors"
+              className="p-1.5 rounded-lg text-gray-400 hover:text-navy hover:bg-gray-100 disabled:opacity-30 transition-colors"
               aria-label={t('moveUp')}
             >
               <ChevronUp className="w-4 h-4" />
@@ -160,7 +160,7 @@ export function TrophyCase({ data, isOwner, token, onLayoutSaved }: TrophyCasePr
             <button
               onClick={() => move(index, 1)}
               disabled={index === list.length - 1}
-              className="p-1.5 rounded-lg text-gray-400 hover:text-[#0E0E55] hover:bg-gray-100 disabled:opacity-30 transition-colors"
+              className="p-1.5 rounded-lg text-gray-400 hover:text-navy hover:bg-gray-100 disabled:opacity-30 transition-colors"
               aria-label={t('moveDown')}
             >
               <ChevronDown className="w-4 h-4" />
@@ -168,7 +168,7 @@ export function TrophyCase({ data, isOwner, token, onLayoutSaved }: TrophyCasePr
             <button
               onClick={() => toggleHidden(item.key)}
               className={`p-1.5 rounded-lg transition-colors ${
-                isHidden ? 'text-gray-400 hover:bg-gray-100' : 'text-[#0E0E55] hover:bg-yellow-50'
+                isHidden ? 'text-gray-400 hover:bg-gray-100' : 'text-navy hover:bg-yellow-50'
               }`}
               aria-label={isHidden ? t('show') : t('hide')}
             >
@@ -183,14 +183,14 @@ export function TrophyCase({ data, isOwner, token, onLayoutSaved }: TrophyCasePr
   return (
     <div className="p-4">
       <div className="flex items-center justify-between mb-3">
-        <h3 className="text-[#0E0E55] font-medium flex items-center gap-2">
+        <h3 className="text-navy font-medium flex items-center gap-2">
           <Trophy className="w-5 h-5 text-yellow-500" />
           {t('achievementsTitle')}
         </h3>
         {isOwner && list.length > 0 && !editing && (
           <button
             onClick={startEdit}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm text-[#0E0E55] border border-gray-200 hover:bg-gray-50 transition-colors"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm text-navy border border-gray-200 hover:bg-gray-50 transition-colors"
           >
             <SlidersHorizontal className="w-4 h-4" />
             {t('arrange')}
@@ -214,7 +214,7 @@ export function TrophyCase({ data, isOwner, token, onLayoutSaved }: TrophyCasePr
           <button
             onClick={save}
             disabled={saving}
-            className="flex-1 py-2.5 rounded-xl text-sm font-medium bg-yellow-500 text-[#0E0E55] hover:bg-yellow-400 disabled:bg-gray-300 transition-colors flex items-center justify-center gap-1.5"
+            className="flex-1 py-2.5 rounded-xl text-sm font-medium bg-yellow-500 text-navy hover:bg-yellow-400 disabled:bg-gray-300 transition-colors flex items-center justify-center gap-1.5"
           >
             <Check className="w-4 h-4" />
             {saving ? t('saving') : t('saveOrder')}

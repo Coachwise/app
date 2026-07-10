@@ -10,7 +10,7 @@ export function SportSelection({ onSelectSport }: SportSelectionProps) {
   const { t } = useLanguage();
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center p-6">
-      <h1 className="mb-2 text-[#0E0E55]">{t('selectSportType')}</h1>
+      <h1 className="mb-2 text-navy">{t('selectSportType')}</h1>
       <p className="text-gray-600 mb-8 text-center">{t('chooseWhatToLog')}</p>
       
       <div className="w-full max-w-sm space-y-4">
@@ -22,7 +22,7 @@ export function SportSelection({ onSelectSport }: SportSelectionProps) {
             <Dumbbell className="w-8 h-8 text-yellow-600" />
           </div>
           <div className="text-center">
-            <h3 className="text-[#0E0E55] mb-1">{t('strengthTraining')}</h3>
+            <h3 className="text-navy mb-1">{t('strengthTraining')}</h3>
             <p className="text-gray-600 text-sm">{t('strengthTrainingDesc')}</p>
           </div>
         </button>
@@ -35,7 +35,7 @@ export function SportSelection({ onSelectSport }: SportSelectionProps) {
             <Mountain className="w-8 h-8 text-yellow-600" />
           </div>
           <div className="text-center">
-            <h3 className="text-[#0E0E55] mb-1">{t('sportClimbing')}</h3>
+            <h3 className="text-navy mb-1">{t('sportClimbing')}</h3>
             <p className="text-gray-600 text-sm">{t('climbingDesc')}</p>
           </div>
         </button>

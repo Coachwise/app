@@ -103,11 +103,11 @@ export function CoachMarketplace({ onBack, onViewProfile }: CoachMarketplaceProp
   return (
     <div className="min-h-screen bg-gray-100">
       {/* Header */}
-      <div className="bg-[#0E0E55] px-4 py-6 sticky top-0 z-10">
+      <div className="bg-navy px-4 py-6 sticky top-0 z-10">
         <div className="flex items-center gap-3 mb-4">
           <button 
             onClick={onBack}
-            className="p-2 -ml-2 hover:bg-[#1A1A6E] rounded-lg transition-colors"
+            className="p-2 -ml-2 hover:bg-navy-light rounded-lg transition-colors"
           >
             <ArrowLeft className="w-6 h-6 text-white" />
           </button>
@@ -134,7 +134,7 @@ export function CoachMarketplace({ onBack, onViewProfile }: CoachMarketplaceProp
               onClick={() => setSelectedSpecialty(specialty.key)}
               className={`px-4 py-2 rounded-full whitespace-nowrap transition-colors ${
                 selectedSpecialty === specialty.key
-                  ? 'bg-yellow-500 text-[#0E0E55]'
+                  ? 'bg-yellow-500 text-navy'
                   : 'bg-white/10 text-white border border-white/20 hover:bg-white/20'
               }`}
             >
@@ -170,7 +170,7 @@ export function CoachMarketplace({ onBack, onViewProfile }: CoachMarketplaceProp
                   onClick={() => onViewProfile?.(coach.id)}
                   className="cursor-pointer hover:opacity-80 transition-opacity"
                 >
-                  <h3 className="text-[#0E0E55] mb-1">{coach.name}</h3>
+                  <h3 className="text-navy mb-1">{coach.name}</h3>
                   <p className="text-gray-600 text-sm">{coach.specialty}</p>
                 </div>
                 <div className="text-right">
@@ -192,9 +192,9 @@ export function CoachMarketplace({ onBack, onViewProfile }: CoachMarketplaceProp
               <div className="flex items-center justify-between pt-4 border-t border-gray-200">
                 <div>
                   <span className="text-gray-600 text-sm">{t('from')} </span>
-                  <span className="text-[#0E0E55]">${coach.priceFrom}/{t('month')}</span>
+                  <span className="text-navy">${coach.priceFrom}/{t('month')}</span>
                 </div>
-                <button className="px-6 py-2 bg-yellow-500 text-[#0E0E55] rounded-lg hover:bg-yellow-400 transition-colors" onClick={() => onViewProfile?.(coach.id)}>
+                <button className="px-6 py-2 bg-yellow-500 text-navy rounded-lg hover:bg-yellow-400 transition-colors" onClick={() => onViewProfile?.(coach.id)}>
                   {t('viewProfile')}
                 </button>
               </div>

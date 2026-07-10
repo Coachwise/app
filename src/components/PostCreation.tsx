@@ -39,16 +39,16 @@ export function PostCreation({ onCancel, onPost }: PostCreationProps) {
   return (
     <div className="min-h-screen bg-gray-100">
       {/* Header */}
-      <div className="bg-[#0E0E55] px-4 py-4 sticky top-0 z-10">
+      <div className="bg-navy px-4 py-4 sticky top-0 z-10">
         <div className="flex items-center justify-between">
-          <button onClick={onCancel} className="p-2 -ml-2 hover:bg-[#1A1A6E] rounded-lg transition-colors">
+          <button onClick={onCancel} className="p-2 -ml-2 hover:bg-navy-light rounded-lg transition-colors">
             <ArrowLeft className="w-6 h-6 text-white" />
           </button>
           <h2 className="text-white">{t('createPost')}</h2>
           <button
             onClick={handlePost}
             disabled={!content.trim()}
-            className="px-4 py-2 bg-yellow-500 text-[#0E0E55] rounded-lg hover:bg-yellow-400 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+            className="px-4 py-2 bg-yellow-500 text-navy rounded-lg hover:bg-yellow-400 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
           >
             {t('post')}
           </button>
@@ -62,7 +62,7 @@ export function PostCreation({ onCancel, onPost }: PostCreationProps) {
             value={content}
             onChange={(e) => setContent(e.target.value)}
             placeholder={t('shareProgressPlaceholder')}
-            className="w-full h-32 p-3 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent text-[#0E0E55]"
+            className="w-full h-32 p-3 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent text-navy"
           />
 
           {/* Media Preview */}
@@ -76,7 +76,7 @@ export function PostCreation({ onCancel, onPost }: PostCreationProps) {
               {mediaType === 'video' && (
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div className="w-12 h-12 bg-white/90 rounded-full flex items-center justify-center">
-                    <Video className="w-6 h-6 text-[#0E0E55]" />
+                    <Video className="w-6 h-6 text-navy" />
                   </div>
                 </div>
               )}
@@ -95,7 +95,7 @@ export function PostCreation({ onCancel, onPost }: PostCreationProps) {
 
         {/* Media & Tags */}
         <div className="bg-white rounded-lg p-4 shadow-md border border-gray-200">
-          <h3 className="text-[#0E0E55] mb-3">{t('addToYourPost')}</h3>
+          <h3 className="text-navy mb-3">{t('addToYourPost')}</h3>
           <div className="space-y-3">
             <button 
               onClick={() => handleMediaSelect('image')}
@@ -109,7 +109,7 @@ export function PostCreation({ onCancel, onPost }: PostCreationProps) {
               }`}
             >
               <Image className="w-5 h-5 text-yellow-600" />
-              <span className="text-[#0E0E55]">{t('addPhoto')}</span>
+              <span className="text-navy">{t('addPhoto')}</span>
             </button>
             <button 
               onClick={() => handleMediaSelect('video')}
@@ -123,22 +123,22 @@ export function PostCreation({ onCancel, onPost }: PostCreationProps) {
               }`}
             >
               <Video className="w-5 h-5 text-yellow-600" />
-              <span className="text-[#0E0E55]">{t('addVideo')}</span>
+              <span className="text-navy">{t('addVideo')}</span>
             </button>
             <button className="w-full flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors border-2 border-transparent">
               <TrendingUp className="w-5 h-5 text-yellow-600" />
-              <span className="text-[#0E0E55]">{t('tagAsPR')}</span>
+              <span className="text-navy">{t('tagAsPR')}</span>
             </button>
             <button className="w-full flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors border-2 border-transparent">
               <Tag className="w-5 h-5 text-yellow-600" />
-              <span className="text-[#0E0E55]">{t('addTags')}</span>
+              <span className="text-navy">{t('addTags')}</span>
             </button>
           </div>
         </div>
 
         {/* Privacy Settings */}
         <div className="bg-white rounded-lg p-4 shadow-md border border-gray-200">
-          <h3 className="text-[#0E0E55] mb-3">{t('whoCanSee')}</h3>
+          <h3 className="text-navy mb-3">{t('whoCanSee')}</h3>
           <div className="space-y-3">
             <button
               onClick={() => setPrivacy('public')}
@@ -150,7 +150,7 @@ export function PostCreation({ onCancel, onPost }: PostCreationProps) {
             >
               <Globe className={`w-5 h-5 ${privacy === 'public' ? 'text-yellow-600' : 'text-gray-600'}`} />
               <div className="text-left">
-                <div className={`${privacy === 'public' ? 'text-[#0E0E55]' : 'text-gray-900'}`}>{t('publicLabel')}</div>
+                <div className={`${privacy === 'public' ? 'text-navy' : 'text-gray-900'}`}>{t('publicLabel')}</div>
                 <div className="text-gray-600 text-sm">{t('anyoneCanSee')}</div>
               </div>
             </button>
@@ -164,7 +164,7 @@ export function PostCreation({ onCancel, onPost }: PostCreationProps) {
             >
               <Users className={`w-5 h-5 ${privacy === 'followers' ? 'text-yellow-600' : 'text-gray-600'}`} />
               <div className="text-left">
-                <div className={`${privacy === 'followers' ? 'text-[#0E0E55]' : 'text-gray-900'}`}>{t('followersOnly')}</div>
+                <div className={`${privacy === 'followers' ? 'text-navy' : 'text-gray-900'}`}>{t('followersOnly')}</div>
                 <div className="text-gray-600 text-sm">{t('onlyFollowersSee')}</div>
               </div>
             </button>
@@ -180,7 +180,7 @@ export function PostCreation({ onCancel, onPost }: PostCreationProps) {
                 className="w-5 h-5 text-yellow-600 rounded border-gray-300 focus:ring-yellow-500"
               />
               <div>
-                <div className="text-[#0E0E55]">{t('addContentWarning')}</div>
+                <div className="text-navy">{t('addContentWarning')}</div>
                 <div className="text-gray-600 text-sm">{t('forSensitiveContent')}</div>
               </div>
             </label>

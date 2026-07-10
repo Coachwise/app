@@ -75,16 +75,16 @@ export function RunAssessment({ token, protocolId, onCancel, onSaved }: RunAsses
 
   return (
     <div className="min-h-screen bg-gray-100">
-      <div className="bg-[#0E0E55] px-4 py-4 sticky top-0 z-10">
+      <div className="bg-navy px-4 py-4 sticky top-0 z-10">
         <div className="flex items-center justify-between">
-          <button onClick={onCancel} className="p-2 -ml-2 hover:bg-[#1A1A6E] rounded-lg transition-colors">
+          <button onClick={onCancel} className="p-2 -ml-2 hover:bg-navy-light rounded-lg transition-colors">
             <ArrowLeft className="w-6 h-6 text-white" />
           </button>
           <h2 className="text-white truncate px-2">{protocol?.name || t('newRun')}</h2>
           <button
             onClick={save}
             disabled={saving || loading}
-            className="px-4 py-2 bg-yellow-500 text-[#0E0E55] rounded-lg hover:bg-yellow-400 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+            className="px-4 py-2 bg-yellow-500 text-navy rounded-lg hover:bg-yellow-400 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
           >
             {saving ? t('saving') : t('save')}
           </button>
@@ -108,7 +108,7 @@ export function RunAssessment({ token, protocolId, onCancel, onSaved }: RunAsses
                   const fields = METRIC_FIELDS.filter((f) => it[f.track]);
                   return (
                     <div key={it.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
-                      <div className="text-[#0E0E55] font-medium mb-2.5">{it.exercise_name}</div>
+                      <div className="text-navy font-medium mb-2.5">{it.exercise_name}</div>
                       <div className="flex gap-2">
                         {fields.map((f) => (
                           <div key={f.field} className="flex-1">
@@ -118,7 +118,7 @@ export function RunAssessment({ token, protocolId, onCancel, onSaved }: RunAsses
                               value={values[`${it.id}:${f.field}`] ?? ''}
                               onChange={(e) => setValues({ ...values, [`${it.id}:${f.field}`]: e.target.value })}
                               placeholder={t(f.unitKey)}
-                              className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent text-[#0E0E55] text-center"
+                              className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent text-navy text-center"
                             />
                             <div className="text-[10px] text-gray-400 text-center mt-0.5">{t(f.unitKey)}</div>
                           </div>

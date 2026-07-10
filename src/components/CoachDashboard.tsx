@@ -276,9 +276,9 @@ export function CoachDashboard({ onBack, onNavigate, userRole = 'coach', isPro =
   return (
     <div className="min-h-screen bg-gray-100">
       {/* Header */}
-      <div className="bg-[#0E0E55] px-4 py-4 sticky top-0 z-10">
+      <div className="bg-navy px-4 py-4 sticky top-0 z-10">
         <div className="flex items-center justify-between mb-4">
-          <button onClick={onBack} className="p-2 -ml-2 hover:bg-[#1A1A6E] rounded-lg transition-colors">
+          <button onClick={onBack} className="p-2 -ml-2 hover:bg-navy-light rounded-lg transition-colors">
             <ArrowLeft className="w-6 h-6 text-white" />
           </button>
           <h1 className="text-white text-xl">{t('coachDashboard')}</h1>
@@ -297,7 +297,7 @@ export function CoachDashboard({ onBack, onNavigate, userRole = 'coach', isPro =
               onClick={() => setActiveSection(key)}
               className={`flex-1 py-2 rounded-lg transition-all text-xs flex flex-col items-center justify-center gap-1 ${
                 activeSection === key
-                  ? 'bg-yellow-500 text-[#0E0E55] font-medium shadow-sm'
+                  ? 'bg-yellow-500 text-navy font-medium shadow-sm'
                   : 'text-gray-300 hover:text-white'
               }`}
             >
@@ -316,7 +316,7 @@ export function CoachDashboard({ onBack, onNavigate, userRole = 'coach', isPro =
           <>
             {/* Stats */}
             <div className="grid grid-cols-2 gap-3">
-              <div className="bg-[#0E0E55] rounded-2xl p-4">
+              <div className="bg-navy rounded-2xl p-4">
                 <div className="flex items-center gap-2 mb-3">
                   <span className="w-8 h-8 rounded-lg bg-yellow-500/20 flex items-center justify-center shrink-0">
                     <Users className="w-4 h-4 text-yellow-400" />
@@ -332,7 +332,7 @@ export function CoachDashboard({ onBack, onNavigate, userRole = 'coach', isPro =
                   </span>
                   <span className="text-gray-500 text-xs">{t('packages')}</span>
                 </div>
-                <div className="text-3xl font-semibold text-[#0E0E55] tabular-nums">{packages.length}</div>
+                <div className="text-3xl font-semibold text-navy tabular-nums">{packages.length}</div>
               </div>
             </div>
 
@@ -341,10 +341,10 @@ export function CoachDashboard({ onBack, onNavigate, userRole = 'coach', isPro =
               <div className="bg-white rounded-2xl border border-yellow-300 shadow-sm overflow-hidden">
                 <div className="px-4 py-3.5 border-b border-yellow-100 flex items-center justify-between bg-yellow-50">
                   <div>
-                    <h3 className="text-[#0E0E55] font-medium">{t('pendingClients')}</h3>
+                    <h3 className="text-navy font-medium">{t('pendingClients')}</h3>
                     <p className="text-gray-600 text-xs mt-0.5">{t('newConnectionRequests')}</p>
                   </div>
-                  <span className="w-7 h-7 flex items-center justify-center bg-yellow-500 text-[#0E0E55] rounded-full text-sm font-semibold tabular-nums">
+                  <span className="w-7 h-7 flex items-center justify-center bg-yellow-500 text-navy rounded-full text-sm font-semibold tabular-nums">
                     {pending.length}
                   </span>
                 </div>
@@ -354,14 +354,14 @@ export function CoachDashboard({ onBack, onNavigate, userRole = 'coach', isPro =
                       <div className="flex items-center gap-4 mb-4">
                         <Avatar user={req.user} />
                         <div className="flex-1">
-                          <h4 className="text-[#0E0E55] mb-1">{displayName(req.user)}</h4>
+                          <h4 className="text-navy mb-1">{displayName(req.user)}</h4>
                           <p className="text-gray-500 text-xs">@{req.user.username}</p>
                         </div>
                       </div>
                       <div className="flex gap-2">
                         <button
                           onClick={() => acceptPending(req.id)}
-                          className="flex-1 py-2 bg-yellow-500 text-[#0E0E55] rounded-lg hover:bg-yellow-400 transition-colors text-sm flex items-center justify-center gap-2"
+                          className="flex-1 py-2 bg-yellow-500 text-navy rounded-lg hover:bg-yellow-400 transition-colors text-sm flex items-center justify-center gap-2"
                         >
                           <CheckCircle className="w-4 h-4" />
                           <span>{t('accept')}</span>
@@ -382,13 +382,13 @@ export function CoachDashboard({ onBack, onNavigate, userRole = 'coach', isPro =
             {/* Clients list */}
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
               <div className="px-4 py-3.5 border-b border-gray-100 flex items-center justify-between">
-                <h3 className="text-[#0E0E55] font-medium">{t('yourClients')}</h3>
+                <h3 className="text-navy font-medium">{t('yourClients')}</h3>
                 <button
                   onClick={() => { setShowConnPicker(!showConnPicker); setAssignConn(null); }}
                   className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
                     showConnPicker
                       ? 'text-gray-500 hover:bg-gray-100'
-                      : 'bg-yellow-500 text-[#0E0E55] hover:bg-yellow-400'
+                      : 'bg-yellow-500 text-navy hover:bg-yellow-400'
                   }`}
                 >
                   {showConnPicker ? (
@@ -410,7 +410,7 @@ export function CoachDashboard({ onBack, onNavigate, userRole = 'coach', isPro =
                       <p className="text-gray-500 text-sm mb-3">{t('noPackagesYet')}</p>
                       <button
                         onClick={() => onCreatePackage?.()}
-                        className="px-3 py-1.5 bg-yellow-500 text-[#0E0E55] rounded-lg hover:bg-yellow-400 transition-colors text-sm inline-flex items-center gap-1.5"
+                        className="px-3 py-1.5 bg-yellow-500 text-navy rounded-lg hover:bg-yellow-400 transition-colors text-sm inline-flex items-center gap-1.5"
                       >
                         <Plus className="w-4 h-4" />
                         {t('createPackage')}
@@ -429,7 +429,7 @@ export function CoachDashboard({ onBack, onNavigate, userRole = 'coach', isPro =
                             value={connSearch}
                             onChange={(e) => setConnSearch(e.target.value)}
                             placeholder={t('searchConnections')}
-                            className="w-full ps-10 pe-3 py-2 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent text-sm text-[#0E0E55]"
+                            className="w-full ps-10 pe-3 py-2 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent text-sm text-navy"
                           />
                         </div>
                       </div>
@@ -442,12 +442,12 @@ export function CoachDashboard({ onBack, onNavigate, userRole = 'coach', isPro =
                               <div className="flex items-center gap-3">
                                 <Avatar user={conn} />
                                 <div className="flex-1 min-w-0">
-                                  <div className="text-[#0E0E55] text-sm truncate">{displayName(conn)}</div>
+                                  <div className="text-navy text-sm truncate">{displayName(conn)}</div>
                                   <div className="text-gray-500 text-xs truncate">@{conn.username}</div>
                                 </div>
                                 <button
                                   onClick={() => setAssignConn(assignConn === conn.id ? null : conn.id)}
-                                  className="px-3 py-1.5 bg-yellow-500 text-[#0E0E55] rounded-lg hover:bg-yellow-400 transition-colors text-sm whitespace-nowrap"
+                                  className="px-3 py-1.5 bg-yellow-500 text-navy rounded-lg hover:bg-yellow-400 transition-colors text-sm whitespace-nowrap"
                                 >
                                   {assignConn === conn.id ? t('cancel') : t('assignPackage')}
                                 </button>
@@ -461,7 +461,7 @@ export function CoachDashboard({ onBack, onNavigate, userRole = 'coach', isPro =
                                       onClick={() => assignPackageToClient(pkg.id, conn.id)}
                                       className="w-full text-start p-3 bg-white rounded-lg hover:bg-yellow-50 border border-gray-200 hover:border-yellow-500 transition-colors"
                                     >
-                                      <div className="text-[#0E0E55] text-sm">{pkg.name}</div>
+                                      <div className="text-navy text-sm">{pkg.name}</div>
                                       <div className="text-gray-500 text-xs">
                                         {t('plansIncludedCount', { count: String(pkg.plan_count) })}
                                       </div>
@@ -489,7 +489,7 @@ export function CoachDashboard({ onBack, onNavigate, userRole = 'coach', isPro =
                         <div className="flex items-center gap-3">
                           <Avatar user={client} />
                           <div className="flex-1 min-w-0">
-                            <h4 className="text-[#0E0E55] font-medium truncate">{displayName(client)}</h4>
+                            <h4 className="text-navy font-medium truncate">{displayName(client)}</h4>
                             <p className="text-gray-400 text-xs truncate">@{client.username}</p>
                           </div>
                           <span className="text-xs text-gray-500 bg-gray-100 rounded-full px-2.5 py-1 whitespace-nowrap">
@@ -503,7 +503,7 @@ export function CoachDashboard({ onBack, onNavigate, userRole = 'coach', isPro =
                             {t('clientPackageLabel')}
                           </div>
                           {pkg ? (
-                            <div className="flex items-center gap-3 bg-[#0E0E55] text-white rounded-xl px-4 py-3">
+                            <div className="flex items-center gap-3 bg-navy text-white rounded-xl px-4 py-3">
                               <Package className="w-5 h-5 text-yellow-400 shrink-0" />
                               <span className="flex-1 text-sm truncate">{pkg.package_name}</span>
                               <button
@@ -518,7 +518,7 @@ export function CoachDashboard({ onBack, onNavigate, userRole = 'coach', isPro =
                               <button
                                 onClick={() => { setPkgPickerClient(pkgPickerClient === client.id ? null : client.id); setSelectedClient(null); }}
                                 disabled={packages.length === 0}
-                                className="w-full flex items-center justify-center gap-2 border-2 border-dashed border-gray-300 text-[#0E0E55] rounded-xl py-3 text-sm hover:border-yellow-500 hover:bg-yellow-50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                                className="w-full flex items-center justify-center gap-2 border-2 border-dashed border-gray-300 text-navy rounded-xl py-3 text-sm hover:border-yellow-500 hover:bg-yellow-50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                               >
                                 <Package className="w-4 h-4" />
                                 {pkgPickerClient === client.id ? t('cancel') : t('assignPackage')}
@@ -534,7 +534,7 @@ export function CoachDashboard({ onBack, onNavigate, userRole = 'coach', isPro =
                                       onClick={() => assignPackageToClient(p.id, client.id)}
                                       className="w-full text-start p-3 bg-gray-50 rounded-xl border border-gray-200 hover:border-yellow-500 hover:bg-yellow-50 transition-colors"
                                     >
-                                      <div className="text-[#0E0E55] text-sm">{p.name}</div>
+                                      <div className="text-navy text-sm">{p.name}</div>
                                       <div className="text-gray-500 text-xs">{t('plansIncludedCount', { count: String(p.plan_count) })}</div>
                                     </button>
                                   ))}
@@ -565,8 +565,8 @@ export function CoachDashboard({ onBack, onNavigate, userRole = 'coach', isPro =
                             <div className="space-y-2">
                               {client.assigned_plans.map((ap) => (
                                 <div key={ap.plan_id} className="flex items-center gap-2 bg-gray-50 rounded-xl px-3 py-2.5">
-                                  <span className="flex-1 min-w-0 text-[#0E0E55] text-sm truncate">{ap.plan_name}</span>
-                                  <span className={`text-[10px] px-2 py-0.5 rounded-full whitespace-nowrap ${ap.package_id ? 'bg-[#0E0E55]/10 text-[#0E0E55]' : 'bg-yellow-100 text-yellow-700'}`}>
+                                  <span className="flex-1 min-w-0 text-navy text-sm truncate">{ap.plan_name}</span>
+                                  <span className={`text-[10px] px-2 py-0.5 rounded-full whitespace-nowrap ${ap.package_id ? 'bg-navy/10 text-navy' : 'bg-yellow-100 text-yellow-700'}`}>
                                     {ap.package_id ? t('fromPackageBadge') : t('manualBadge')}
                                   </span>
                                   <button
@@ -594,7 +594,7 @@ export function CoachDashboard({ onBack, onNavigate, userRole = 'coach', isPro =
                                       onClick={() => assignPlanToClient(plan.id, client.id)}
                                       className="w-full text-start p-3 bg-white rounded-lg border border-gray-200 hover:border-yellow-500 hover:bg-yellow-50 transition-colors"
                                     >
-                                      <div className="text-[#0E0E55] text-sm">{plan.name}</div>
+                                      <div className="text-navy text-sm">{plan.name}</div>
                                       {plan.exercise_count != null && (
                                         <div className="text-gray-500 text-xs">{t('exercises')}: {plan.exercise_count}</div>
                                       )}
@@ -619,10 +619,10 @@ export function CoachDashboard({ onBack, onNavigate, userRole = 'coach', isPro =
           <>
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
               <div className="px-4 py-3.5 border-b border-gray-100 flex items-center justify-between">
-                <h3 className="text-[#0E0E55] font-medium">{t('yourPlans')}</h3>
+                <h3 className="text-navy font-medium">{t('yourPlans')}</h3>
                 <button
                   onClick={() => (onCreatePlan ? onCreatePlan() : onNavigate?.('plan-builder'))}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-yellow-500 text-[#0E0E55] hover:bg-yellow-400 transition-colors"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-yellow-500 text-navy hover:bg-yellow-400 transition-colors"
                 >
                   <Plus className="w-4 h-4" />
                   {t('create')}
@@ -635,7 +635,7 @@ export function CoachDashboard({ onBack, onNavigate, userRole = 'coach', isPro =
                   {myPlans.map((plan) => (
                     <div key={plan.id} className="p-4 hover:bg-gray-50 transition-colors">
                       <div className="flex items-center gap-3 mb-1">
-                        <h4 className="text-[#0E0E55]">{plan.name}</h4>
+                        <h4 className="text-navy">{plan.name}</h4>
                         {plan.public ? (
                           <Globe className="w-4 h-4 text-yellow-600" />
                         ) : (
@@ -658,10 +658,10 @@ export function CoachDashboard({ onBack, onNavigate, userRole = 'coach', isPro =
           <>
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
               <div className="px-4 py-3.5 border-b border-gray-100 flex items-center justify-between">
-                <h3 className="text-[#0E0E55] font-medium">{t('yourPackages')}</h3>
+                <h3 className="text-navy font-medium">{t('yourPackages')}</h3>
                 <button
                   onClick={() => onCreatePackage?.()}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-yellow-500 text-[#0E0E55] hover:bg-yellow-400 transition-colors"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-yellow-500 text-navy hover:bg-yellow-400 transition-colors"
                 >
                   <Plus className="w-4 h-4" />
                   {t('create')}
@@ -676,7 +676,7 @@ export function CoachDashboard({ onBack, onNavigate, userRole = 'coach', isPro =
                       <div className="flex items-start justify-between mb-2">
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-1">
-                            <h4 className="text-[#0E0E55]">{pkg.name}</h4>
+                            <h4 className="text-navy">{pkg.name}</h4>
                             {pkg.popular && (
                               <span className="px-2 py-0.5 bg-yellow-100 text-yellow-700 rounded text-xs">
                                 {t('popular')}
@@ -697,7 +697,7 @@ export function CoachDashboard({ onBack, onNavigate, userRole = 'coach', isPro =
                       <div className="flex gap-2 mt-3">
                         <button
                           onClick={() => onEditPackage?.(pkg.id)}
-                          className="flex-1 py-2 bg-[#0E0E55] text-white rounded-lg hover:bg-[#1A1A6E] transition-colors text-sm"
+                          className="flex-1 py-2 bg-navy text-white rounded-lg hover:bg-navy-light transition-colors text-sm"
                         >
                           {t('editPlan')}
                         </button>
@@ -722,13 +722,13 @@ export function CoachDashboard({ onBack, onNavigate, userRole = 'coach', isPro =
             {/* My protocols */}
             <div>
               <div className="flex items-center justify-between mb-3">
-                <h3 className="text-[#0E0E55] font-medium flex items-center gap-2">
+                <h3 className="text-navy font-medium flex items-center gap-2">
                   <Dumbbell className="w-5 h-5 text-yellow-500" />
                   {t('myProtocols')}
                 </h3>
                 <button
                   onClick={() => onCreateTest?.()}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-yellow-500 text-[#0E0E55] hover:bg-yellow-400 transition-colors"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-yellow-500 text-navy hover:bg-yellow-400 transition-colors"
                 >
                   <Plus className="w-4 h-4" />
                   {t('create')}
@@ -745,7 +745,7 @@ export function CoachDashboard({ onBack, onNavigate, userRole = 'coach', isPro =
                   {tests.map((test) => (
                     <div key={test.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
                       <div className="min-w-0">
-                        <h4 className="text-[#0E0E55] font-medium truncate">{test.name}</h4>
+                        <h4 className="text-navy font-medium truncate">{test.name}</h4>
                         <p className="text-gray-400 text-xs mt-0.5">
                           {t('exercisesCountShort', { count: String(test.item_count) })}
                         </p>
@@ -753,14 +753,14 @@ export function CoachDashboard({ onBack, onNavigate, userRole = 'coach', isPro =
                       <div className="flex gap-2 mt-3">
                         <button
                           onClick={() => setReqPickerTest(reqPickerTest === test.id ? null : test.id)}
-                          className="flex-1 py-2 bg-[#0E0E55] text-white rounded-lg hover:bg-[#1A1A6E] transition-colors text-sm flex items-center justify-center gap-1.5"
+                          className="flex-1 py-2 bg-navy text-white rounded-lg hover:bg-navy-light transition-colors text-sm flex items-center justify-center gap-1.5"
                         >
                           <Send className="w-4 h-4" />
                           {reqPickerTest === test.id ? t('cancel') : t('assignToClient')}
                         </button>
                         <button
                           onClick={() => onEditTest?.(test.id)}
-                          className="px-3 py-2 border-2 border-gray-200 text-[#0E0E55] rounded-lg hover:bg-gray-50 transition-colors text-sm"
+                          className="px-3 py-2 border-2 border-gray-200 text-navy rounded-lg hover:bg-gray-50 transition-colors text-sm"
                           aria-label={t('edit')}
                         >
                           <Pencil className="w-4 h-4" />
@@ -790,7 +790,7 @@ export function CoachDashboard({ onBack, onNavigate, userRole = 'coach', isPro =
             {/* Client assessments — mirrors the athlete view, per client */}
             {assignments.length > 0 && (
               <div>
-                <h3 className="text-[#0E0E55] font-medium mb-3 flex items-center gap-2">
+                <h3 className="text-navy font-medium mb-3 flex items-center gap-2">
                   <Users className="w-5 h-5 text-yellow-500" />
                   {t('clientAssessments')}
                 </h3>
@@ -800,11 +800,11 @@ export function CoachDashboard({ onBack, onNavigate, userRole = 'coach', isPro =
                       <div className="flex items-center gap-3 mb-3 pb-3 border-b border-gray-100">
                         <Avatar user={a.athlete} />
                         <div className="flex-1 min-w-0">
-                          <div className="text-[#0E0E55] text-sm font-medium truncate">{displayName(a.athlete)}</div>
+                          <div className="text-navy text-sm font-medium truncate">{displayName(a.athlete)}</div>
                           <div className="text-gray-400 text-xs truncate">{a.test_name}</div>
                         </div>
                         <div className="text-end shrink-0">
-                          <div className="text-[#0E0E55] text-base font-semibold tabular-nums leading-none">{a.runs_count}</div>
+                          <div className="text-navy text-base font-semibold tabular-nums leading-none">{a.runs_count}</div>
                           <div className="text-gray-400 text-[10px] mt-0.5">{t('runsLabel')}</div>
                         </div>
                       </div>
@@ -822,7 +822,7 @@ export function CoachDashboard({ onBack, onNavigate, userRole = 'coach', isPro =
                           </button>
                           <button
                             onClick={() => onViewClientHistory?.(a.test_id, a.athlete_id, displayName(a.athlete))}
-                            className="px-4 py-2 bg-[#0E0E55] text-white rounded-lg hover:bg-[#1A1A6E] transition-colors text-sm flex items-center gap-1.5"
+                            className="px-4 py-2 bg-navy text-white rounded-lg hover:bg-navy-light transition-colors text-sm flex items-center gap-1.5"
                           >
                             <LineChart className="w-4 h-4" />
                             {t('history')}
@@ -845,14 +845,14 @@ export function CoachDashboard({ onBack, onNavigate, userRole = 'coach', isPro =
                 <Users className="w-5 h-5 text-yellow-600" />
                 <span className="text-gray-600 text-sm">{t('activeClients')}</span>
               </div>
-              <div className="text-4xl text-[#0E0E55]">{clients.length}</div>
+              <div className="text-4xl text-navy">{clients.length}</div>
             </div>
             <div className="bg-white rounded-lg p-5 shadow-md border border-gray-200">
               <div className="flex items-center gap-2 mb-2">
                 <Calendar className="w-5 h-5 text-yellow-600" />
                 <span className="text-gray-600 text-sm">{t('totalPlans')}</span>
               </div>
-              <div className="text-4xl text-[#0E0E55]">{myPlans.length}</div>
+              <div className="text-4xl text-navy">{myPlans.length}</div>
             </div>
             <div className="bg-white rounded-lg p-5 shadow-md border border-gray-200 col-span-2">
               <div className="flex items-center justify-between mb-3">
@@ -864,7 +864,7 @@ export function CoachDashboard({ onBack, onNavigate, userRole = 'coach', isPro =
                   {t('wallet')} →
                 </button>
               </div>
-              <div className="text-3xl text-[#0E0E55] mb-1" dir="ltr">
+              <div className="text-3xl text-navy mb-1" dir="ltr">
                 {wallet ? formatMoney(wallet.available, wallet.currency, language) : '—'}
               </div>
               <div className="text-gray-500 text-sm">{t('availableBalance')}</div>
@@ -886,7 +886,7 @@ function Avatar({ user }: { user: { avatar?: { url?: string | null }; username: 
     return <img src={user.avatar.url} alt={user.username} className="w-14 h-14 rounded-full object-cover flex-shrink-0" />;
   }
   return (
-    <div className="w-14 h-14 rounded-full bg-[#1A1A6E] text-white flex items-center justify-center flex-shrink-0 uppercase">
+    <div className="w-14 h-14 rounded-full bg-navy-light text-white flex items-center justify-center flex-shrink-0 uppercase">
       {user.username.slice(0, 2)}
     </div>
   );

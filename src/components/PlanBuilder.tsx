@@ -255,9 +255,9 @@ export function PlanBuilder({ onCancel, onSave, planId }: PlanBuilderProps) {
   return (
     <div className="min-h-screen bg-gray-100">
       {/* Header */}
-      <div className="bg-[#0E0E55] px-4 py-4 sticky top-0 z-10">
+      <div className="bg-navy px-4 py-4 sticky top-0 z-10">
         <div className="flex items-center justify-between">
-          <button onClick={onCancel} className="p-2 -ml-2 hover:bg-[#1A1A6E] rounded-lg transition-colors">
+          <button onClick={onCancel} className="p-2 -ml-2 hover:bg-navy-light rounded-lg transition-colors">
             <ArrowLeft className="w-6 h-6 text-white" />
           </button>
           <h2 className="text-white">{planId ? (isOwner ? t('editPlan') : t('viewPlan')) : t('createPlan')}</h2>
@@ -267,7 +267,7 @@ export function PlanBuilder({ onCancel, onSave, planId }: PlanBuilderProps) {
             <button
               onClick={handleSave}
               disabled={!planName.trim() || exercises.length === 0 || saving}
-              className="px-4 py-2 bg-yellow-500 text-[#0E0E55] rounded-lg hover:bg-yellow-400 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+              className="px-4 py-2 bg-yellow-500 text-navy rounded-lg hover:bg-yellow-400 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
             >
               {saving ? t('saving') : t('save')}
             </button>
@@ -342,7 +342,7 @@ export function PlanBuilder({ onCancel, onSave, planId }: PlanBuilderProps) {
                 </button>
                 <button
                   onClick={() => setShowExerciseBuilder(true)}
-                  className="px-3 py-2 bg-yellow-500 text-[#0E0E55] rounded-lg hover:bg-yellow-400 flex items-center gap-2 text-sm font-medium"
+                  className="px-3 py-2 bg-yellow-500 text-navy rounded-lg hover:bg-yellow-400 flex items-center gap-2 text-sm font-medium"
                 >
                   <Plus className="w-4 h-4" />
                   {t('newLabel')}
@@ -357,7 +357,7 @@ export function PlanBuilder({ onCancel, onSave, planId }: PlanBuilderProps) {
                     onClick={() => setSportTypeFilter(type)}
                     className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                       sportTypeFilter === type
-                        ? 'bg-[#0E0E55] text-white'
+                        ? 'bg-navy text-white'
                         : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                     }`}
                   >
@@ -414,7 +414,7 @@ export function PlanBuilder({ onCancel, onSave, planId }: PlanBuilderProps) {
                           className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
                             alreadyAdded
                               ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                              : 'bg-[#0E0E55] text-white hover:bg-[#1A1A6E]'
+                              : 'bg-navy text-white hover:bg-navy-light'
                           }`}
                         >
                           {alreadyAdded ? t('added') : t('add')}

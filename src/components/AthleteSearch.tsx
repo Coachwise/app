@@ -208,7 +208,7 @@ export function AthleteSearch({ userRole, onNavigate, onViewProfile, activeTab: 
     }
     if (status === 'pending_outgoing') {
       return (
-        <button onClick={() => handleCancel(user)} disabled={busy} className={`${base} bg-gray-200 text-[#0E0E55] hover:bg-gray-300`}>
+        <button onClick={() => handleCancel(user)} disabled={busy} className={`${base} bg-gray-200 text-navy hover:bg-gray-300`}>
           <Clock className="w-4 h-4" />
           <span className="hidden sm:inline">{t('requested')}</span>
         </button>
@@ -216,14 +216,14 @@ export function AthleteSearch({ userRole, onNavigate, onViewProfile, activeTab: 
     }
     if (status === 'pending_incoming') {
       return (
-        <button onClick={() => setActiveTab('requests')} className={`${base} bg-[#0E0E55] text-white hover:bg-[#1A1A6E]`}>
+        <button onClick={() => setActiveTab('requests')} className={`${base} bg-navy text-white hover:bg-navy-light`}>
           <Check className="w-4 h-4" />
           <span className="hidden sm:inline">{t('respond')}</span>
         </button>
       );
     }
     return (
-      <button onClick={() => handleConnect(user)} disabled={busy} className={`${base} bg-yellow-500 text-[#0E0E55] hover:bg-yellow-400`}>
+      <button onClick={() => handleConnect(user)} disabled={busy} className={`${base} bg-yellow-500 text-navy hover:bg-yellow-400`}>
         <UserPlus className="w-4 h-4" />
         <span className="hidden sm:inline">{t('connect')}</span>
       </button>
@@ -237,7 +237,7 @@ export function AthleteSearch({ userRole, onNavigate, onViewProfile, activeTab: 
         <div className="flex-1 min-w-0">
           <div onClick={() => onViewProfile(user.id)} className="cursor-pointer hover:opacity-80 transition-opacity">
             <div className="flex items-center gap-2 mb-1">
-              <span className="text-[#0E0E55] truncate">{displayName(user)}</span>
+              <span className="text-navy truncate">{displayName(user)}</span>
               {user.is_coach && <CheckCircle2 className="w-4 h-4 text-yellow-500 flex-shrink-0" />}
             </div>
             <p className="text-gray-600 text-sm">@{user.username}</p>
@@ -250,13 +250,13 @@ export function AthleteSearch({ userRole, onNavigate, onViewProfile, activeTab: 
 
   const tabClass = (tab: Tab) =>
     `flex-1 py-2 px-3 text-sm rounded-lg transition-colors inline-flex items-center justify-center gap-1.5 ${
-      activeTab === tab ? 'bg-yellow-500 text-[#0E0E55]' : 'bg-white/10 text-white'
+      activeTab === tab ? 'bg-yellow-500 text-navy' : 'bg-white/10 text-white'
     }`;
 
   return (
     <div className="min-h-screen bg-gray-100">
       {/* Header */}
-      <div className="bg-[#0E0E55] px-4 py-4 sticky top-0 z-10">
+      <div className="bg-navy px-4 py-4 sticky top-0 z-10">
         <div className="flex items-center justify-between mb-4">
           <h1 className="text-white text-xl">{t('discover')}</h1>
           <HamburgerMenu userRole={userRole} onNavigate={onNavigate} />
@@ -273,7 +273,7 @@ export function AthleteSearch({ userRole, onNavigate, onViewProfile, activeTab: 
           <button onClick={() => setActiveTab('requests')} className={`${tabClass('requests')} relative`}>
             <span>{t('requests')}</span>
             {requestCount > 0 && (
-              <span className="absolute -top-2 -right-2 min-w-[20px] h-5 px-1.5 rounded-full bg-red-500 text-white text-[11px] font-semibold leading-none inline-flex items-center justify-center ring-2 ring-[#0E0E55]">
+              <span className="absolute -top-2 -right-2 min-w-[20px] h-5 px-1.5 rounded-full bg-red-500 text-white text-[11px] font-semibold leading-none inline-flex items-center justify-center ring-2 ring-navy">
                 {requestCount.toLocaleString(language === 'fa' ? 'fa-IR' : 'en-US')}
               </span>
             )}
@@ -290,13 +290,13 @@ export function AthleteSearch({ userRole, onNavigate, onViewProfile, activeTab: 
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder={t('searchPlaceholder')}
-                className={`w-full bg-white border-0 rounded-lg py-3 ${isRTL ? 'pr-10 pl-4' : 'pl-10 pr-4'} text-[#0E0E55] focus:outline-none focus:ring-2 focus:ring-yellow-500`}
+                className={`w-full bg-white border-0 rounded-lg py-3 ${isRTL ? 'pr-10 pl-4' : 'pl-10 pr-4'} text-navy focus:outline-none focus:ring-2 focus:ring-yellow-500`}
               />
             </div>
             <button
               onClick={() => setFilterCoachesOnly(!filterCoachesOnly)}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
-                filterCoachesOnly ? 'bg-yellow-500 text-[#0E0E55]' : 'bg-white/10 text-white border border-white/20'
+                filterCoachesOnly ? 'bg-yellow-500 text-navy' : 'bg-white/10 text-white border border-white/20'
               }`}
             >
               <CheckCircle2 className="w-4 h-4" />
@@ -310,7 +310,7 @@ export function AthleteSearch({ userRole, onNavigate, onViewProfile, activeTab: 
         {/* DISCOVER */}
         {activeTab === 'discover' && (
           <>
-            <h2 className="text-[#0E0E55]">
+            <h2 className="text-navy">
               {searchQuery.trim() === '' ? t('allAthletes') : `${results.length} ${t('athletes')}`}
             </h2>
             {error && (
@@ -335,7 +335,7 @@ export function AthleteSearch({ userRole, onNavigate, onViewProfile, activeTab: 
         {/* MY NETWORK */}
         {activeTab === 'network' && (
           <>
-            <h2 className="text-[#0E0E55]">{t('myNetwork')}</h2>
+            <h2 className="text-navy">{t('myNetwork')}</h2>
             {networkLoading ? (
               <div className="text-center py-10 text-gray-500 text-sm">{t('searching')}</div>
             ) : connections.length === 0 ? (
@@ -364,7 +364,7 @@ export function AthleteSearch({ userRole, onNavigate, onViewProfile, activeTab: 
         {/* REQUESTS */}
         {activeTab === 'requests' && (
           <>
-            <h2 className="text-[#0E0E55]">{t('connectionRequests')}</h2>
+            <h2 className="text-navy">{t('connectionRequests')}</h2>
             {requestsLoading ? (
               <div className="text-center py-10 text-gray-500 text-sm">{t('searching')}</div>
             ) : requests.length === 0 ? (
@@ -383,7 +383,7 @@ export function AthleteSearch({ userRole, onNavigate, onViewProfile, activeTab: 
                           <button
                             onClick={() => handleAccept(req)}
                             disabled={pendingIds.has(req.id)}
-                            className="p-2 rounded-lg bg-yellow-500 text-[#0E0E55] hover:bg-yellow-400 transition-colors disabled:opacity-60"
+                            className="p-2 rounded-lg bg-yellow-500 text-navy hover:bg-yellow-400 transition-colors disabled:opacity-60"
                             aria-label={t('accept')}
                           >
                             <Check className="w-5 h-5" />
@@ -391,7 +391,7 @@ export function AthleteSearch({ userRole, onNavigate, onViewProfile, activeTab: 
                           <button
                             onClick={() => handleReject(req)}
                             disabled={pendingIds.has(req.id)}
-                            className="p-2 rounded-lg bg-gray-200 text-[#0E0E55] hover:bg-gray-300 transition-colors disabled:opacity-60"
+                            className="p-2 rounded-lg bg-gray-200 text-navy hover:bg-gray-300 transition-colors disabled:opacity-60"
                             aria-label={t('reject')}
                           >
                             <X className="w-5 h-5" />

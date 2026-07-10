@@ -49,8 +49,8 @@ function Sparkline({ values }: { values: number[] }) {
   const [lx, ly] = pt(values[values.length - 1], values.length - 1);
   return (
     <svg viewBox={`0 0 ${w} ${h}`} className="w-full h-11" preserveAspectRatio="none">
-      <polyline points={line} fill="none" stroke="#eab308" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" />
-      <circle cx={lx} cy={ly} r={3.5} fill="#0E0E55" />
+      <polyline points={line} fill="none" style={{ stroke: 'var(--brand-yellow)' }} strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" />
+      <circle cx={lx} cy={ly} r={3.5} style={{ fill: 'var(--brand-navy)' }} />
     </svg>
   );
 }
@@ -104,9 +104,9 @@ export function AssessmentHistory({ token, protocolId, onBack, onRun, athleteId,
 
   return (
     <div className="min-h-screen bg-gray-100">
-      <div className="bg-[#0E0E55] px-4 py-4 sticky top-0 z-10">
+      <div className="bg-navy px-4 py-4 sticky top-0 z-10">
         <div className="flex items-center justify-between">
-          <button onClick={onBack} className="p-2 -ml-2 hover:bg-[#1A1A6E] rounded-lg transition-colors">
+          <button onClick={onBack} className="p-2 -ml-2 hover:bg-navy-light rounded-lg transition-colors">
             <ArrowLeft className="w-6 h-6 text-white" />
           </button>
           <div className="min-w-0 text-center px-2">
@@ -116,7 +116,7 @@ export function AssessmentHistory({ token, protocolId, onBack, onRun, athleteId,
           {onRun ? (
             <button
               onClick={onRun}
-              className="inline-flex items-center gap-1 px-3 py-2 bg-yellow-500 text-[#0E0E55] rounded-lg hover:bg-yellow-400 transition-colors text-sm font-medium"
+              className="inline-flex items-center gap-1 px-3 py-2 bg-yellow-500 text-navy rounded-lg hover:bg-yellow-400 transition-colors text-sm font-medium"
             >
               <Plus className="w-4 h-4" />
               {t('runNow')}
@@ -137,7 +137,7 @@ export function AssessmentHistory({ token, protocolId, onBack, onRun, athleteId,
             {onRun && (
               <button
                 onClick={onRun}
-                className="mt-4 inline-flex items-center gap-1.5 px-4 py-2 bg-yellow-500 text-[#0E0E55] rounded-lg hover:bg-yellow-400 transition-colors text-sm font-medium"
+                className="mt-4 inline-flex items-center gap-1.5 px-4 py-2 bg-yellow-500 text-navy rounded-lg hover:bg-yellow-400 transition-colors text-sm font-medium"
               >
                 <Plus className="w-4 h-4" />
                 {t('recordFirstRun')}
@@ -149,7 +149,7 @@ export function AssessmentHistory({ token, protocolId, onBack, onRun, athleteId,
         {/* Progress per exercise */}
         {!loading && runs.length > 0 && (
           <div>
-            <h3 className="text-[#0E0E55] font-medium mb-3 flex items-center gap-2">
+            <h3 className="text-navy font-medium mb-3 flex items-center gap-2">
               <TrendingUp className="w-5 h-5 text-yellow-500" />
               {t('progress')}
             </h3>
@@ -165,11 +165,11 @@ export function AssessmentHistory({ token, protocolId, onBack, onRun, athleteId,
                   <div key={item.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
                     <div className="flex items-start justify-between gap-2 mb-1">
                       <div className="min-w-0">
-                        <div className="text-[#0E0E55] font-medium truncate">{item.exercise_name}</div>
+                        <div className="text-navy font-medium truncate">{item.exercise_name}</div>
                         <div className="text-[11px] text-gray-400">{t('latest')}</div>
                       </div>
                       <div className="text-end shrink-0">
-                        <div className="text-xl font-semibold text-[#0E0E55] tabular-nums leading-none">
+                        <div className="text-xl font-semibold text-navy tabular-nums leading-none">
                           {fmtVal(latest, metric.unitKey)}
                         </div>
                         {points.length > 1 && (
@@ -194,19 +194,19 @@ export function AssessmentHistory({ token, protocolId, onBack, onRun, athleteId,
         {/* Every recorded run */}
         {!loading && runs.length > 0 && (
           <div>
-            <h3 className="text-[#0E0E55] font-medium mb-3 flex items-center gap-2">
+            <h3 className="text-navy font-medium mb-3 flex items-center gap-2">
               <History className="w-5 h-5 text-yellow-500" />
               {t('runHistory')}
             </h3>
             <div className="space-y-3">
               {runs.map((run) => (
                 <div key={run.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
-                  <div className="text-[#0E0E55] text-sm font-medium mb-2">{fmtDate(run)}</div>
+                  <div className="text-navy text-sm font-medium mb-2">{fmtDate(run)}</div>
                   <div className="space-y-1.5">
                     {run.records.map((r, i) => (
                       <div key={i} className="flex items-center justify-between gap-2 text-sm">
                         <span className="text-gray-600 truncate">{r.exercise_name}</span>
-                        <span className="text-[#0E0E55] tabular-nums shrink-0">
+                        <span className="text-navy tabular-nums shrink-0">
                           {[
                             r.weight != null ? `${r.weight} ${t('unitKg')}` : null,
                             r.reps != null ? `${r.reps} ${t('unitReps')}` : null,

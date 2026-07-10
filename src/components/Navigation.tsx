@@ -52,7 +52,10 @@ export function Navigation({ currentView, onNavigate, userRole }: NavigationProp
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-[#0E0E55] max-w-md mx-auto">
+    <nav
+      className="fixed bottom-0 left-0 right-0 bg-navy max-w-md mx-auto"
+      style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+    >
       <div className="flex items-center justify-around px-4 py-3">
         {navItems.map((item) => {
           const Icon = item.icon;
@@ -75,7 +78,7 @@ export function Navigation({ currentView, onNavigate, userRole }: NavigationProp
               <span className="relative">
                 <Icon className="w-6 h-6" />
                 {showDot && (
-                  <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-red-500 rounded-full border border-[#0E0E55]" />
+                  <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-red-500 rounded-full border border-navy" />
                 )}
               </span>
               <span className="text-xs">{item.label}</span>

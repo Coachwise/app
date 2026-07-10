@@ -25,7 +25,7 @@ export function ProBadge({ size = 'md', className = '' }: ProBadgeProps) {
       className={`${sizeClasses[size]} bg-yellow-500 rounded-full flex items-center justify-center ${className}`}
       title={t('proUser')}
     >
-      <Crown className={`${iconSizes[size]} text-[#0E0E55]`} />
+      <Crown className={`${iconSizes[size]} text-navy`} />
     </div>
   );
 }

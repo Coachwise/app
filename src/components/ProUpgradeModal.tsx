@@ -37,7 +37,7 @@ export function ProUpgradeModal({ isOpen, onClose, onUpgrade, feature }: ProUpgr
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl overflow-hidden">
         {/* Header */}
-        <div className="bg-gradient-to-r from-[#0E0E55] to-[#1A1A6E] px-6 py-5 relative">
+        <div className="bg-gradient-to-r from-navy to-navy-light px-6 py-5 relative">
           <button
             onClick={onClose}
             className="absolute top-4 right-4 p-2 hover:bg-white/10 rounded-lg transition-colors"
@@ -46,7 +46,7 @@ export function ProUpgradeModal({ isOpen, onClose, onUpgrade, feature }: ProUpgr
           </button>
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 bg-yellow-500 rounded-full flex items-center justify-center">
-              <Crown className="w-6 h-6 text-[#0E0E55]" />
+              <Crown className="w-6 h-6 text-navy" />
             </div>
             <div>
               <h2 className="text-white text-xl">{getTitle()}</h2>
@@ -61,7 +61,7 @@ export function ProUpgradeModal({ isOpen, onClose, onUpgrade, feature }: ProUpgr
 
           {/* Features List */}
           <div className="bg-yellow-50 rounded-lg p-4 mb-6 border border-yellow-200">
-            <h3 className="text-[#0E0E55] mb-3 flex items-center gap-2">
+            <h3 className="text-navy mb-3 flex items-center gap-2">
               <Crown className="w-4 h-4 text-yellow-600" />
               <span>{t('proFeaturesInclude')}</span>
             </h3>
@@ -87,16 +87,16 @@ export function ProUpgradeModal({ isOpen, onClose, onUpgrade, feature }: ProUpgr
 
           {/* How to Upgrade */}
           <div className="mb-6">
-            <h4 className="text-[#0E0E55] mb-3">{t('howToUpgrade')}</h4>
+            <h4 className="text-navy mb-3">{t('howToUpgrade')}</h4>
             <div className="space-y-2">
               <div className="flex items-start gap-3 text-sm">
-                <div className="w-6 h-6 bg-yellow-500 text-[#0E0E55] rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                <div className="w-6 h-6 bg-yellow-500 text-navy rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
                   1
                 </div>
                 <span className="text-gray-700">{t('upgradeOption1')}</span>
               </div>
               <div className="flex items-start gap-3 text-sm">
-                <div className="w-6 h-6 bg-yellow-500 text-[#0E0E55] rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                <div className="w-6 h-6 bg-yellow-500 text-navy rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
                   2
                 </div>
                 <span className="text-gray-700">{t('upgradeOption2')}</span>
@@ -115,7 +115,7 @@ export function ProUpgradeModal({ isOpen, onClose, onUpgrade, feature }: ProUpgr
           <div className="flex flex-col gap-3">
             <button
               onClick={onUpgrade}
-              className="w-full bg-yellow-500 text-[#0E0E55] py-3 rounded-lg hover:bg-yellow-400 transition-colors flex items-center justify-center gap-2"
+              className="w-full bg-yellow-500 text-navy py-3 rounded-lg hover:bg-yellow-400 transition-colors flex items-center justify-center gap-2"
             >
               <Crown className="w-5 h-5" />
               <span>{t('subscribeToCoach')}</span>

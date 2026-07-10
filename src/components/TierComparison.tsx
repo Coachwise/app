@@ -134,9 +134,9 @@ export function TierComparison({ onCancel, coachName }: TierComparisonProps) {
   return (
     <div className="min-h-screen bg-gray-100">
       {/* Header */}
-      <div className="bg-[#0E0E55] px-4 py-4 sticky top-0 z-10">
+      <div className="bg-navy px-4 py-4 sticky top-0 z-10">
         <div className="flex items-center justify-between">
-          <button onClick={onCancel} className="p-2 -ml-2 hover:bg-[#1A1A6E] rounded-lg transition-colors">
+          <button onClick={onCancel} className="p-2 -ml-2 hover:bg-navy-light rounded-lg transition-colors">
             <ArrowLeft className="w-6 h-6 text-white" />
           </button>
           <h2 className="text-white">{t('chooseYourPlan')}</h2>
@@ -154,7 +154,7 @@ export function TierComparison({ onCancel, coachName }: TierComparisonProps) {
               className="w-12 h-12 rounded-full object-cover"
             />
             <div>
-              <h3 className="text-[#0E0E55]">{coachName}</h3>
+              <h3 className="text-navy">{coachName}</h3>
               <p className="text-gray-600 text-sm">{t('strengthAndClimbingCoach')}</p>
             </div>
           </div>
@@ -175,29 +175,29 @@ export function TierComparison({ onCancel, coachName }: TierComparisonProps) {
               key={tier.id}
               className={`rounded-lg shadow-lg p-5 transition-all border-2 ${
                 tier.popular
-                  ? 'bg-yellow-500 border-[#0E0E55]'
+                  ? 'bg-yellow-500 border-navy'
                   : 'bg-white border-gray-200'
               }`}
             >
               {tier.popular && (
-                <span className="inline-block px-3 py-1 bg-[#0E0E55] text-white rounded-lg text-xs mb-3">
+                <span className="inline-block px-3 py-1 bg-navy text-white rounded-lg text-xs mb-3">
                   ⭐ {t('mostPopular')}
                 </span>
               )}
               
-              <h3 className={tier.popular ? 'text-[#0E0E55]' : 'text-[#0E0E55]'}>{tier.name}</h3>
+              <h3 className={tier.popular ? 'text-navy' : 'text-navy'}>{tier.name}</h3>
               <div className="flex items-baseline gap-2 mb-4">
-                <span className={`text-4xl ${tier.popular ? 'text-[#0E0E55]' : 'text-[#0E0E55]'}`}>
+                <span className={`text-4xl ${tier.popular ? 'text-navy' : 'text-navy'}`}>
                   ${tier.pricing.monthly}
                 </span>
-                <span className={tier.popular ? 'text-[#0E0E55]/80' : 'text-gray-600'}>{t('perMonth')}</span>
+                <span className={tier.popular ? 'text-navy/80' : 'text-gray-600'}>{t('perMonth')}</span>
               </div>
               
               <ul className="space-y-3 mb-6">
                 {getFeaturesArray(tier).map((feature, index) => (
                   <li key={index} className="flex items-start gap-3">
-                    <Check className={`w-5 h-5 flex-shrink-0 mt-0.5 ${tier.popular ? 'text-[#0E0E55]' : 'text-yellow-600'}`} />
-                    <span className={tier.popular ? 'text-[#0E0E55]/90' : 'text-gray-700'}>{feature}</span>
+                    <Check className={`w-5 h-5 flex-shrink-0 mt-0.5 ${tier.popular ? 'text-navy' : 'text-yellow-600'}`} />
+                    <span className={tier.popular ? 'text-navy/90' : 'text-gray-700'}>{feature}</span>
                   </li>
                 ))}
               </ul>
@@ -206,8 +206,8 @@ export function TierComparison({ onCancel, coachName }: TierComparisonProps) {
                 onClick={() => handleSubscribe(tier.id)}
                 className={`w-full py-3 rounded-lg transition-colors ${
                   tier.popular
-                    ? 'bg-[#0E0E55] text-white hover:bg-[#1A1A6E]'
-                    : 'bg-yellow-500 text-[#0E0E55] hover:bg-yellow-400'
+                    ? 'bg-navy text-white hover:bg-navy-light'
+                    : 'bg-yellow-500 text-navy hover:bg-yellow-400'
                 }`}
               >
                 {t('choose')} {tier.name}

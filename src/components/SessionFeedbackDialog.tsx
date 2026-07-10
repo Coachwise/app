@@ -61,13 +61,13 @@ export function SessionFeedbackDialog({
       <div className="fixed inset-0 flex items-center justify-center p-4" style={{ zIndex: 9999 }}>
         <div className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
           {/* Header */}
-          <div className="flex items-center justify-between p-4 bg-[#0E0E55] rounded-t-lg">
+          <div className="flex items-center justify-between p-4 bg-navy rounded-t-lg">
             <h2 className="text-lg font-semibold text-white">
               {t('sessionFeedback')}
             </h2>
             <button
               onClick={onClose}
-              className="p-1 hover:bg-[#1A1A6E] rounded-lg transition-colors"
+              className="p-1 hover:bg-navy-light rounded-lg transition-colors"
               disabled={loading}
             >
               <X className="w-5 h-5 text-white" />
@@ -131,7 +131,7 @@ export function SessionFeedbackDialog({
             <button
               onClick={handleSubmit}
               disabled={loading}
-              className="flex-1 px-4 py-3 bg-yellow-500 text-[#0E0E55] rounded-lg hover:bg-yellow-400 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-bold"
+              className="flex-1 px-4 py-3 bg-yellow-500 text-navy rounded-lg hover:bg-yellow-400 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-bold"
             >
               {loading ? t('saving') : t('finishSession')}
             </button>

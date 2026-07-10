@@ -229,7 +229,7 @@ export function Profile({ userRole, onNavigate, onBack, onMessage, viewingUserId
   const connectionButton = connStatus === 'connected' ? (
     <button
       onClick={() => viewingUserId && onMessage?.(viewingUserId)}
-      className="w-full py-3 rounded-lg bg-[#0E0E55] text-white hover:bg-[#1A1A6E] transition-colors flex items-center justify-center gap-2"
+      className="w-full py-3 rounded-lg bg-navy text-white hover:bg-navy-light transition-colors flex items-center justify-center gap-2"
     >
       <MessageCircle className="w-5 h-5" />
       <span>{t('message')}</span>
@@ -238,7 +238,7 @@ export function Profile({ userRole, onNavigate, onBack, onMessage, viewingUserId
     <button
       onClick={handleCancelConnect}
       disabled={connBusy}
-      className="w-full py-3 rounded-lg bg-gray-200 text-[#0E0E55] hover:bg-gray-300 transition-colors flex items-center justify-center gap-2 disabled:opacity-60"
+      className="w-full py-3 rounded-lg bg-gray-200 text-navy hover:bg-gray-300 transition-colors flex items-center justify-center gap-2 disabled:opacity-60"
     >
       <Clock className="w-5 h-5" />
       <span>{t('requested')}</span>
@@ -248,7 +248,7 @@ export function Profile({ userRole, onNavigate, onBack, onMessage, viewingUserId
       <button
         onClick={handleAcceptIncoming}
         disabled={connBusy || !incomingReqId}
-        className="flex-1 py-3 rounded-lg bg-yellow-500 text-[#0E0E55] hover:bg-yellow-400 transition-colors flex items-center justify-center gap-2 disabled:opacity-60"
+        className="flex-1 py-3 rounded-lg bg-yellow-500 text-navy hover:bg-yellow-400 transition-colors flex items-center justify-center gap-2 disabled:opacity-60"
       >
         <Check className="w-5 h-5" />
         <span>{t('accept')}</span>
@@ -256,7 +256,7 @@ export function Profile({ userRole, onNavigate, onBack, onMessage, viewingUserId
       <button
         onClick={handleRejectIncoming}
         disabled={connBusy || !incomingReqId}
-        className="flex-1 py-3 rounded-lg bg-gray-200 text-[#0E0E55] hover:bg-gray-300 transition-colors flex items-center justify-center gap-2 disabled:opacity-60"
+        className="flex-1 py-3 rounded-lg bg-gray-200 text-navy hover:bg-gray-300 transition-colors flex items-center justify-center gap-2 disabled:opacity-60"
       >
         <X className="w-5 h-5" />
         <span>{t('reject')}</span>
@@ -266,7 +266,7 @@ export function Profile({ userRole, onNavigate, onBack, onMessage, viewingUserId
     <button
       onClick={handleConnect}
       disabled={connBusy}
-      className="w-full py-3 rounded-lg bg-yellow-500 text-[#0E0E55] hover:bg-yellow-400 transition-colors flex items-center justify-center gap-2 disabled:opacity-60"
+      className="w-full py-3 rounded-lg bg-yellow-500 text-navy hover:bg-yellow-400 transition-colors flex items-center justify-center gap-2 disabled:opacity-60"
     >
       <UserPlus className="w-5 h-5" />
       <span>{t('connect')}</span>
@@ -276,7 +276,7 @@ export function Profile({ userRole, onNavigate, onBack, onMessage, viewingUserId
   return (
     <div className="min-h-screen bg-gray-100">
       {/* Cover */}
-      <div className="relative h-32 bg-gradient-to-br from-[#0E0E55] to-[#1A1A6E]">
+      <div className="relative h-32 bg-gradient-to-br from-navy to-navy-light">
         {!isOwnProfile && (
           <button
             onClick={() => (onBack ? onBack() : onNavigate('athlete-search'))}
@@ -306,7 +306,7 @@ export function Profile({ userRole, onNavigate, onBack, onMessage, viewingUserId
             {proStatus && <ProBadge size="md" className="absolute top-0 right-0" />}
             {isCoachProfile && (
               <div className={`absolute bottom-0 ${isRTL ? 'left-0' : 'right-0'} bg-yellow-500 rounded-full p-1 border-2 border-white`}>
-                <CheckCircle2 className="w-5 h-5 text-[#0E0E55]" />
+                <CheckCircle2 className="w-5 h-5 text-navy" />
               </div>
             )}
           </div>
@@ -314,7 +314,7 @@ export function Profile({ userRole, onNavigate, onBack, onMessage, viewingUserId
           {/* Name & meta */}
           <div className="mb-4">
             <div className="flex items-center gap-2 mb-1">
-              <h2 className="text-[#0E0E55]">{displayName || (viewedLoading ? '…' : t('athlete'))}</h2>
+              <h2 className="text-navy">{displayName || (viewedLoading ? '…' : t('athlete'))}</h2>
               <span className={`px-2 py-0.5 rounded text-xs ${isCoachProfile ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 text-gray-600'}`}>
                 {isCoachProfile ? t('coach') : t('athlete')}
               </span>
@@ -343,7 +343,7 @@ export function Profile({ userRole, onNavigate, onBack, onMessage, viewingUserId
           {isOwnProfile ? (
             <button
               onClick={() => onNavigate?.('profile-settings')}
-              className="w-full bg-yellow-500 text-[#0E0E55] py-3 rounded-lg hover:bg-yellow-400 transition-colors"
+              className="w-full bg-yellow-500 text-navy py-3 rounded-lg hover:bg-yellow-400 transition-colors"
             >
               {t('editProfile')}
             </button>
@@ -356,7 +356,7 @@ export function Profile({ userRole, onNavigate, onBack, onMessage, viewingUserId
       {/* Coaching packages (when viewing a coach) */}
       {!isOwnProfile && isCoachProfile && (
         <div className="p-4">
-          <h3 className="text-[#0E0E55] font-medium mb-3">{t('coachPackagesTitle')}</h3>
+          <h3 className="text-navy font-medium mb-3">{t('coachPackagesTitle')}</h3>
           {coachPackages.length === 0 ? (
             <div className="bg-white rounded-2xl p-6 text-center border border-gray-100 shadow-sm">
               <p className="text-gray-500 text-sm">{t('noPackagesOffered')}</p>
@@ -370,12 +370,12 @@ export function Profile({ userRole, onNavigate, onBack, onMessage, viewingUserId
                   <div key={pkg.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
                     <div className="p-4">
                       <div className="flex items-start gap-3">
-                        <span className="w-10 h-10 rounded-xl bg-[#0E0E55] flex items-center justify-center shrink-0">
+                        <span className="w-10 h-10 rounded-xl bg-navy flex items-center justify-center shrink-0">
                           <Package className="w-5 h-5 text-yellow-400" />
                         </span>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
-                            <h4 className="text-[#0E0E55] font-medium truncate">{pkg.name}</h4>
+                            <h4 className="text-navy font-medium truncate">{pkg.name}</h4>
                             {pkg.popular && (
                               <span className="px-2 py-0.5 bg-yellow-100 text-yellow-700 rounded text-[10px]">{t('popular')}</span>
                             )}
@@ -387,7 +387,7 @@ export function Profile({ userRole, onNavigate, onBack, onMessage, viewingUserId
                       {/* Price */}
                       {pkg.price_monthly != null && (
                         <div className="mt-3 flex items-baseline gap-1">
-                          <span className="text-2xl font-semibold text-[#0E0E55] tabular-nums" dir="ltr">
+                          <span className="text-2xl font-semibold text-navy tabular-nums" dir="ltr">
                             {formatMoney(pkg.price_monthly, pkg.currency, language)}
                           </span>
                           <span className="text-gray-500 text-sm">
@@ -415,7 +415,7 @@ export function Profile({ userRole, onNavigate, onBack, onMessage, viewingUserId
                             ? 'bg-green-50 text-green-700 cursor-default'
                             : blocked
                               ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                              : 'bg-yellow-500 text-[#0E0E55] hover:bg-yellow-400'
+                              : 'bg-yellow-500 text-navy hover:bg-yellow-400'
                         }`}
                       >
                         {isSubscribed ? (
@@ -440,7 +440,7 @@ export function Profile({ userRole, onNavigate, onBack, onMessage, viewingUserId
       {/* Coach credential: active clients */}
       {isCoachProfile && achievements && (
         <div className="px-4 pt-4">
-          <div className="bg-gradient-to-br from-[#0E0E55] to-[#1A1A6E] rounded-2xl p-4 flex items-center gap-4">
+          <div className="bg-gradient-to-br from-navy to-navy-light rounded-2xl p-4 flex items-center gap-4">
             <span className="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center shrink-0">
               <Users className="w-6 h-6 text-yellow-400" />
             </span>

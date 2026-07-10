@@ -8,6 +8,7 @@ import * as WalletAPI from '../api/wallet';
 import * as PackagesAPI from '../api/packages';
 import { errorText } from '../api/errors';
 import { formatMoney, currencyLabel } from '../lib/money';
+import { openExternal } from '../lib/platform';
 import type { CoachPackage, DurationTier, PaymentProvider, Quote, WalletBalance } from '../api/types';
 
 interface PurchaseSheetProps {
@@ -158,8 +159,10 @@ export function PurchaseSheet({ open, onClose, kind, pkg, onSuccess }: PurchaseS
       if (shortfall > 0 && isRedirect) {
         const { redirect_url } = await WalletAPI.initiateTopup(token, { amount: shortfall, provider });
         setWaiting(true);
-        // Mobile app: swap window.open for Capacitor Browser.open.
-        window.open(redirect_url, '_blank');
+        // In-app browser on native, new tab on web. When it closes we re-check the
+        // wallet (the realtime "wallet" signal is the primary trigger; this is a
+        // fallback for when the socket message is missed).
+        await openExternal(redirect_url, () => { onWalletChanged(); });
         return;
       }
       await doPurchase();
@@ -207,8 +210,8 @@ export function PurchaseSheet({ open, onClose, kind, pkg, onSuccess }: PurchaseS
         dir={isRTL ? 'rtl' : 'ltr'}
       >
         <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 shrink-0">
-          <h3 className="text-[#0E0E55] font-medium">{title}</h3>
-          <button type="button" onClick={onClose} className="p-1 text-gray-400 hover:text-[#0E0E55]"><X className="w-5 h-5" /></button>
+          <h3 className="text-navy font-medium">{title}</h3>
+          <button type="button" onClick={onClose} className="p-1 text-gray-400 hover:text-navy"><X className="w-5 h-5" /></button>
         </div>
 
         <div className="flex-1 min-h-0 overflow-y-auto p-4 space-y-5">
@@ -219,7 +222,7 @@ export function PurchaseSheet({ open, onClose, kind, pkg, onSuccess }: PurchaseS
           ) : (
             <>
               {isOneTime && (
-                <div className="flex items-center gap-2 bg-yellow-50 border border-yellow-200 rounded-lg p-3 text-sm text-[#0E0E55]">
+                <div className="flex items-center gap-2 bg-yellow-50 border border-yellow-200 rounded-lg p-3 text-sm text-navy">
                   <ShieldCheck className="w-4 h-4 text-yellow-600 shrink-0" />
                   {t('oneTimeLifetimeHint')}
                 </div>
@@ -266,7 +269,7 @@ export function PurchaseSheet({ open, onClose, kind, pkg, onSuccess }: PurchaseS
                     >
                       <span className="flex items-center gap-2 min-w-0">
                         {p.logo && <img src={p.logo} alt="" className="w-6 h-6 object-contain shrink-0" />}
-                        <span className="text-[#0E0E55] text-sm truncate">{p.title}</span>
+                        <span className="text-navy text-sm truncate">{p.title}</span>
                       </span>
                       {p.name === provider && <Check className="w-4 h-4 text-yellow-600 shrink-0" />}
                     </button>
@@ -307,7 +310,7 @@ export function PurchaseSheet({ open, onClose, kind, pkg, onSuccess }: PurchaseS
           <div className="p-4 border-t border-gray-100 shrink-0">
             {waiting ? (
               <div className="space-y-3">
-                <div className="flex items-center gap-2 text-[#0E0E55] text-sm">
+                <div className="flex items-center gap-2 text-navy text-sm">
                   <Loader2 className="w-4 h-4 animate-spin text-yellow-600" />
                   {t('waitingForPayment')}
                 </div>
@@ -315,7 +318,7 @@ export function PurchaseSheet({ open, onClose, kind, pkg, onSuccess }: PurchaseS
                 <button
                   type="button"
                   onClick={onWalletChanged}
-                  className="w-full flex items-center justify-center gap-2 border border-gray-200 text-[#0E0E55] py-2.5 rounded-lg hover:bg-gray-50 text-sm font-medium"
+                  className="w-full flex items-center justify-center gap-2 border border-gray-200 text-navy py-2.5 rounded-lg hover:bg-gray-50 text-sm font-medium"
                 >
                   {t('checkPaymentStatus')}
                 </button>
@@ -325,7 +328,7 @@ export function PurchaseSheet({ open, onClose, kind, pkg, onSuccess }: PurchaseS
                 type="button"
                 onClick={confirm}
                 disabled={submitting || quoting || !quote || !provider}
-                className="w-full flex items-center justify-center gap-2 bg-yellow-500 text-[#0E0E55] py-3 rounded-lg hover:bg-yellow-400 transition-colors shadow-md disabled:opacity-50 font-medium"
+                className="w-full flex items-center justify-center gap-2 bg-yellow-500 text-navy py-3 rounded-lg hover:bg-yellow-400 transition-colors shadow-md disabled:opacity-50 font-medium"
               >
                 {submitting ? <Loader2 className="w-5 h-5 animate-spin" /> : isRedirect ? <ExternalLink className="w-5 h-5" /> : <WalletIcon className="w-5 h-5" />}
                 {quote ? t('payAmount', { amount: formatMoney(quote.total, quote.currency, language) }) : t('pleaseWait')}
@@ -341,7 +344,7 @@ export function PurchaseSheet({ open, onClose, kind, pkg, onSuccess }: PurchaseS
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <p className="text-[#0E0E55] text-sm mb-2">{label}</p>
+      <p className="text-navy text-sm mb-2">{label}</p>
       {children}
     </div>
   );
@@ -352,7 +355,7 @@ function Chip({ active, onClick, children }: { active: boolean; onClick: () => v
     <button
       type="button"
       onClick={onClick}
-      className={`px-3 py-2 rounded-lg border text-sm transition-colors ${active ? 'border-yellow-500 bg-yellow-50 text-[#0E0E55]' : 'border-gray-200 text-gray-600 hover:bg-gray-50'}`}
+      className={`px-3 py-2 rounded-lg border text-sm transition-colors ${active ? 'border-yellow-500 bg-yellow-50 text-navy' : 'border-gray-200 text-gray-600 hover:bg-gray-50'}`}
     >
       {children}
     </button>
@@ -362,8 +365,8 @@ function Chip({ active, onClick, children }: { active: boolean; onClick: () => v
 function Row({ label, value, bold, green }: { label: string; value: string; bold?: boolean; green?: boolean }) {
   return (
     <div className="flex items-center justify-between">
-      <span className={bold ? 'text-[#0E0E55]' : 'text-gray-500'}>{label}</span>
-      <span className={`${bold ? 'text-[#0E0E55] font-medium' : green ? 'text-green-600' : 'text-[#0E0E55]'}`} dir="ltr">{value}</span>
+      <span className={bold ? 'text-navy' : 'text-gray-500'}>{label}</span>
+      <span className={`${bold ? 'text-navy font-medium' : green ? 'text-green-600' : 'text-navy'}`} dir="ltr">{value}</span>
     </div>
   );
 }

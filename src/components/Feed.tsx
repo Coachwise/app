@@ -121,7 +121,7 @@ export function Feed({ onCreatePost, userRole, onNavigate, onViewProfile, isPro 
   return (
     <div className="min-h-screen bg-gray-100">
       {/* Header */}
-      <div className="bg-[#0E0E55] px-4 py-4 sticky top-0 z-10">
+      <div className="bg-navy px-4 py-4 sticky top-0 z-10">
         <div className="flex items-center justify-between">
           <h1 className="text-white text-xl">{t('feed')}</h1>
           <HamburgerMenu 
@@ -159,9 +159,9 @@ export function Feed({ onCreatePost, userRole, onNavigate, onViewProfile, isPro 
                   onClick={() => onViewProfile && onViewProfile(post.userId)}
                   className="flex items-center gap-2 hover:opacity-80 transition-opacity"
                 >
-                  <span className="text-[#0E0E55]">{post.author.name}</span>
+                  <span className="text-navy">{post.author.name}</span>
                   {post.author.isCoach && (
-                    <span className="px-2 py-0.5 bg-yellow-500 text-[#0E0E55] rounded text-xs">
+                    <span className="px-2 py-0.5 bg-yellow-500 text-navy rounded text-xs">
                       {t('coachBadge')}
                     </span>
                   )}
@@ -173,10 +173,10 @@ export function Feed({ onCreatePost, userRole, onNavigate, onViewProfile, isPro 
             {/* PR Badge */}
             {post.isPR && (
               <div className="bg-yellow-500 rounded-lg p-3 mb-3 flex items-start gap-3">
-                <Trophy className="w-5 h-5 text-[#0E0E55] mt-0.5" />
+                <Trophy className="w-5 h-5 text-navy mt-0.5" />
                 <div>
-                  <div className="text-[#0E0E55] text-sm mb-1">{t('personalRecord')}</div>
-                  <div className="text-[#0E0E55]/80 text-sm">
+                  <div className="text-navy text-sm mb-1">{t('personalRecord')}</div>
+                  <div className="text-navy/80 text-sm">
                     {post.prDetails?.exercise}: {post.prDetails?.weight} × {post.prDetails?.reps} {t('repsUnit')}
                   </div>
                 </div>
@@ -205,7 +205,7 @@ export function Feed({ onCreatePost, userRole, onNavigate, onViewProfile, isPro 
                     />
                     <div className="absolute inset-0 flex items-center justify-center">
                       <div className="w-16 h-16 bg-white/90 rounded-full flex items-center justify-center">
-                        <Video className="w-8 h-8 text-[#0E0E55] ml-1" />
+                        <Video className="w-8 h-8 text-navy ml-1" />
                       </div>
                     </div>
                   </div>
@@ -224,11 +224,11 @@ export function Feed({ onCreatePost, userRole, onNavigate, onViewProfile, isPro 
                 <Heart className={`w-5 h-5 ${post.isLiked ? 'fill-red-500' : ''}`} />
                 <span className="text-sm">{post.likes}</span>
               </button>
-              <button className="flex items-center gap-2 text-gray-600 hover:text-[#0E0E55] transition-colors">
+              <button className="flex items-center gap-2 text-gray-600 hover:text-navy transition-colors">
                 <MessageCircle className="w-5 h-5" />
                 <span className="text-sm">{post.comments}</span>
               </button>
-              <button className="flex items-center gap-2 text-gray-600 hover:text-[#0E0E55] transition-colors">
+              <button className="flex items-center gap-2 text-gray-600 hover:text-navy transition-colors">
                 <Share2 className="w-5 h-5" />
               </button>
             </div>
@@ -239,7 +239,7 @@ export function Feed({ onCreatePost, userRole, onNavigate, onViewProfile, isPro 
       {/* Floating Action Button */}
       <button
         onClick={onCreatePost}
-        className="fixed bottom-20 right-4 w-14 h-14 bg-yellow-500 text-[#0E0E55] rounded-full shadow-xl hover:bg-yellow-400 transition-all active:scale-95 flex items-center justify-center z-10"
+        className="fixed bottom-20 right-4 w-14 h-14 bg-yellow-500 text-navy rounded-full shadow-xl hover:bg-yellow-400 transition-all active:scale-95 flex items-center justify-center z-10"
       >
         <Plus className="w-6 h-6" />
       </button>

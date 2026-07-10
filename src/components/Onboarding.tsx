@@ -51,7 +51,7 @@ export function Onboarding({ onDone }: OnboardingProps) {
 
   const iconSide = isRTL ? 'right-3' : 'left-3';
   const inputPad = isRTL ? 'pr-10 pl-4' : 'pl-10 pr-4';
-  const inputCls = `w-full bg-gray-50 border border-gray-200 rounded-lg py-3 ${inputPad} text-[#0E0E55] focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent`;
+  const inputCls = `w-full bg-gray-50 border border-gray-200 rounded-lg py-3 ${inputPad} text-navy focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent`;
 
   const handleAvatar = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -95,11 +95,11 @@ export function Onboarding({ onDone }: OnboardingProps) {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0E0E55] to-[#1A1A6E] flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-navy to-navy-light flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-6">
           <div className="inline-flex items-center justify-center w-14 h-14 bg-yellow-500 rounded-2xl mb-3">
-            <Dumbbell className="w-7 h-7 text-[#0E0E55]" />
+            <Dumbbell className="w-7 h-7 text-navy" />
           </div>
           <h1 className="text-white text-2xl mb-1">{t('welcomeToCoachwise')}</h1>
           <p className="text-white/80 text-sm">{t('completeProfileHint')}</p>
@@ -130,20 +130,20 @@ export function Onboarding({ onDone }: OnboardingProps) {
 
             <div className="flex gap-3">
               <div className="flex-1">
-                <label className="block text-[#0E0E55] text-sm mb-2">{t('firstName')}</label>
+                <label className="block text-navy text-sm mb-2">{t('firstName')}</label>
                 <div className="relative">
                   <UserIcon className={`absolute top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 ${iconSide}`} />
                   <input value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder={t('firstNamePlaceholder')} className={inputCls} required autoFocus />
                 </div>
               </div>
               <div className="flex-1">
-                <label className="block text-[#0E0E55] text-sm mb-2">{t('lastName')}</label>
-                <input value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder={t('lastNamePlaceholder')} className="w-full bg-gray-50 border border-gray-200 rounded-lg py-3 px-4 text-[#0E0E55] focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent" required />
+                <label className="block text-navy text-sm mb-2">{t('lastName')}</label>
+                <input value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder={t('lastNamePlaceholder')} className="w-full bg-gray-50 border border-gray-200 rounded-lg py-3 px-4 text-navy focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent" required />
               </div>
             </div>
 
             <div>
-              <label className="block text-[#0E0E55] text-sm mb-2">{t('username')}</label>
+              <label className="block text-navy text-sm mb-2">{t('username')}</label>
               <div className="relative">
                 <AtSign className={`absolute top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 ${iconSide}`} />
                 <input value={username} onChange={(e) => setUsername(e.target.value)} placeholder="your_username" className={inputCls} required />
@@ -162,7 +162,7 @@ export function Onboarding({ onDone }: OnboardingProps) {
               )}
             </div>
 
-            <button type="submit" disabled={saving || uploading || usernameStatus === 'taken' || usernameStatus === 'checking'} className="w-full bg-yellow-500 text-[#0E0E55] py-3 rounded-lg hover:bg-yellow-400 transition-colors shadow-md disabled:opacity-50 font-medium">
+            <button type="submit" disabled={saving || uploading || usernameStatus === 'taken' || usernameStatus === 'checking'} className="w-full bg-yellow-500 text-navy py-3 rounded-lg hover:bg-yellow-400 transition-colors shadow-md disabled:opacity-50 font-medium">
               {saving ? t('pleaseWait') : t('continueLabel')}
             </button>
           </form>

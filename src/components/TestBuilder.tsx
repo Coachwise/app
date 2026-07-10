@@ -100,16 +100,16 @@ export function TestBuilder({ token, testId, onCancel, onSave }: TestBuilderProp
 
   return (
     <div className="min-h-screen bg-gray-100">
-      <div className="bg-[#0E0E55] px-4 py-4 sticky top-0 z-10">
+      <div className="bg-navy px-4 py-4 sticky top-0 z-10">
         <div className="flex items-center justify-between">
-          <button onClick={onCancel} className="p-2 -ml-2 hover:bg-[#1A1A6E] rounded-lg transition-colors">
+          <button onClick={onCancel} className="p-2 -ml-2 hover:bg-navy-light rounded-lg transition-colors">
             <ArrowLeft className="w-6 h-6 text-white" />
           </button>
           <h2 className="text-white">{isEdit ? t('editTest') : t('createTest')}</h2>
           <button
             onClick={handleSave}
             disabled={!isValid || saving}
-            className="px-4 py-2 bg-yellow-500 text-[#0E0E55] rounded-lg hover:bg-yellow-400 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+            className="px-4 py-2 bg-yellow-500 text-navy rounded-lg hover:bg-yellow-400 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
           >
             {saving ? t('saving') : t('save')}
           </button>
@@ -154,7 +154,7 @@ export function TestBuilder({ token, testId, onCancel, onSave }: TestBuilderProp
                       key={key}
                       onClick={() => toggleMetric(idx, key)}
                       className={`flex-1 py-1.5 rounded-lg text-xs transition-colors flex items-center justify-center gap-1 border ${
-                        on ? 'bg-[#0E0E55] text-white border-[#0E0E55]' : 'bg-white text-gray-500 border-gray-200'
+                        on ? 'bg-navy text-white border-navy' : 'bg-white text-gray-500 border-gray-200'
                       }`}
                     >
                       {on && <Check className="w-3 h-3" />}

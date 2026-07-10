@@ -1,0 +1,89 @@
+name: Android Build
+
+# Builds an installable Android APK from the Capacitor project.
+#
+# Triggers:
+#   - pushing a version tag (v1.0.0, v1.2.3-beta, ...) → builds + attaches the
+#     APK to a GitHub Release for that tag.
+#   - manual "Run workflow" (workflow_dispatch) → builds + uploads the APK as a
+#     downloadable artifact.
+#
+# The web build's API URL comes from the repo variable VITE_API_URL
+# (Settings → Secrets and variables → Actions → Variables). Without it the app
+# would point at localhost and fail on a device.
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      api_url:
+        description: 'VITE_API_URL for this build (overrides the repo variable)'
+        required: false
+        default: ''
+
+permissions:
+  contents: write # needed to create/attach the Release on tag builds
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: gradle
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android platform + build-tools
+        run: sdkmanager "platform-tools" "platforms;android-36" "build-tools;36.0.0"
+
+      - name: Install web dependencies
+        run: npm ci
+
+      - name: Build web app
+        env:
+          # Manual input wins; otherwise the repo variable; otherwise a safe default.
+          VITE_API_URL: ${{ github.event.inputs.api_url != '' && github.event.inputs.api_url || vars.VITE_API_URL }}
+        run: npm run build
+
+      - name: Sync Capacitor
+        run: npx cap sync android
+
+      - name: Build debug APK
+        run: ./gradlew assembleDebug --no-daemon
+        working-directory: android
+
+      - name: Rename APK
+        run: |
+          mkdir -p dist
+          cp android/app/build/outputs/apk/debug/app-debug.apk \
+             "dist/coachwise-${{ github.ref_type == 'tag' && github.ref_name || github.sha }}.apk"
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: coachwise-apk
+          path: dist/*.apk
+          if-no-files-found: error
+
+      - name: Attach APK to Release
+        if: github.ref_type == 'tag'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*.apk
+          generate_release_notes: true

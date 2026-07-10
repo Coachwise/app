@@ -177,15 +177,15 @@ export function WorkoutLogging({ sport, sessionId, onBack }: WorkoutLoggingProps
   return (
     <div className="min-h-screen bg-gray-100">
       {/* Header */}
-      <div className="bg-[#0E0E55] px-4 py-4 sticky top-0 z-10">
+      <div className="bg-navy px-4 py-4 sticky top-0 z-10">
         <div className="flex items-center justify-between">
-          <button onClick={onBack} className="p-2 -ml-2 hover:bg-[#1A1A6E] rounded-lg transition-colors">
+          <button onClick={onBack} className="p-2 -ml-2 hover:bg-navy-light rounded-lg transition-colors">
             <ArrowLeft className="w-6 h-6 text-white" />
           </button>
           <h2 className="text-white">{t('workoutTitle', { sport: sport === 'fitness' ? t('sportFitness') : t('sportClimbing') })}</h2>
           <button
             onClick={handleFinishSession}
-            className="px-4 py-2 bg-yellow-500 text-[#0E0E55] rounded-lg hover:bg-yellow-400 transition-colors font-bold"
+            className="px-4 py-2 bg-yellow-500 text-navy rounded-lg hover:bg-yellow-400 transition-colors font-bold"
           >
             {t('finish')}
           </button>
@@ -200,13 +200,13 @@ export function WorkoutLogging({ sport, sessionId, onBack }: WorkoutLoggingProps
           </div>
         )}
         {/* Timer Card */}
-        <div className="bg-[#0E0E55] rounded-lg shadow-lg p-6 text-center">
+        <div className="bg-navy rounded-lg shadow-lg p-6 text-center">
           <div className="text-6xl text-white mb-4 font-mono">{formatTime(timer)}</div>
           <div className="flex gap-3 justify-center">
             {!isRunning ? (
               <button
                 onClick={() => setIsRunning(true)}
-                className="flex items-center gap-2 px-6 py-3 bg-yellow-500 text-[#0E0E55] rounded-lg hover:bg-yellow-400 transition-colors"
+                className="flex items-center gap-2 px-6 py-3 bg-yellow-500 text-navy rounded-lg hover:bg-yellow-400 transition-colors"
               >
                 <Play className="w-5 h-5" />
                 <span>{timer === 0 ? t('start') : t('resume')}</span>
@@ -214,7 +214,7 @@ export function WorkoutLogging({ sport, sessionId, onBack }: WorkoutLoggingProps
             ) : (
               <button
                 onClick={() => setIsRunning(false)}
-                className="flex items-center gap-2 px-6 py-3 bg-yellow-500 text-[#0E0E55] rounded-lg hover:bg-yellow-400 transition-colors"
+                className="flex items-center gap-2 px-6 py-3 bg-yellow-500 text-navy rounded-lg hover:bg-yellow-400 transition-colors"
               >
                 <Pause className="w-5 h-5" />
                 <span>{t('pause')}</span>
@@ -226,7 +226,7 @@ export function WorkoutLogging({ sport, sessionId, onBack }: WorkoutLoggingProps
                   setTimer(0);
                   setIsRunning(false);
                 }}
-                className="flex items-center gap-2 px-6 py-3 bg-white text-[#0E0E55] rounded-lg hover:bg-gray-100 transition-colors border border-gray-200"
+                className="flex items-center gap-2 px-6 py-3 bg-white text-navy rounded-lg hover:bg-gray-100 transition-colors border border-gray-200"
               >
                 <RotateCcw className="w-5 h-5" />
                 <span>{t('reset')}</span>

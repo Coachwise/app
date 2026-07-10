@@ -7,6 +7,7 @@ import * as WalletAPI from '../api/wallet';
 import * as PricingAPI from '../api/pricing';
 import { errorText } from '../api/errors';
 import { formatMoney, formatAmount, currencyLabel } from '../lib/money';
+import { openExternal } from '../lib/platform';
 
 // Convert Persian/Arabic-indic digits to ASCII so numeric input works when the
 // field is showing localized (FA) digits.
@@ -73,7 +74,7 @@ export function Wallet({ onBack }: WalletProps) {
 
   return (
     <div className="min-h-screen bg-gray-100" dir={isRTL ? 'rtl' : 'ltr'}>
-      <div className="bg-gradient-to-br from-[#0E0E55] to-[#1A1A6E] text-white p-4 pb-8">
+      <div className="bg-gradient-to-br from-navy to-navy-light text-white p-4 pb-8">
         <div className="flex items-center gap-3 mb-6">
           <button onClick={onBack} className="p-1 hover:bg-white/10 rounded-lg">
             <ArrowLeft className={`w-6 h-6 ${isRTL ? 'rotate-180' : ''}`} />
@@ -98,7 +99,7 @@ export function Wallet({ onBack }: WalletProps) {
         <div className="mt-5 flex gap-2">
           <button
             onClick={() => setTopUpOpen(true)}
-            className="flex-1 flex items-center justify-center gap-2 bg-yellow-500 text-[#0E0E55] py-2.5 rounded-lg hover:bg-yellow-400 font-medium"
+            className="flex-1 flex items-center justify-center gap-2 bg-yellow-500 text-navy py-2.5 rounded-lg hover:bg-yellow-400 font-medium"
           >
             <Plus className="w-4 h-4" />
             {t('addFunds')}
@@ -122,7 +123,7 @@ export function Wallet({ onBack }: WalletProps) {
         {isCoach && (
           <div className="bg-white rounded-lg shadow-sm p-4 mb-5">
             <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2 text-[#0E0E55] text-sm">
+              <div className="flex items-center gap-2 text-navy text-sm">
                 <CreditCard className="w-4 h-4 text-yellow-600" />
                 {t('payoutInfo')}
               </div>
@@ -136,7 +137,7 @@ export function Wallet({ onBack }: WalletProps) {
             </div>
             {payoutAccount ? (
               <div>
-                <div className="flex items-center gap-2 text-[#0E0E55]" dir="ltr">
+                <div className="flex items-center gap-2 text-navy" dir="ltr">
                   <CreditCard className="w-4 h-4 text-gray-400" />
                   <span className="tracking-wider">{maskCard(payoutAccount.card_number)}</span>
                 </div>
@@ -155,12 +156,12 @@ export function Wallet({ onBack }: WalletProps) {
 
         {isCoach && payouts.length > 0 && (
           <div className="mb-5">
-            <h2 className="text-[#0E0E55] text-sm mb-2">{t('payouts')}</h2>
+            <h2 className="text-navy text-sm mb-2">{t('payouts')}</h2>
             <div className="bg-white rounded-lg shadow-sm divide-y divide-gray-50">
               {payouts.map((p) => (
                 <div key={p.id} className="flex items-center justify-between px-4 py-3">
                   <div>
-                    <div className="text-[#0E0E55]" dir="ltr">{formatMoney(p.amount, p.currency, language)}</div>
+                    <div className="text-navy" dir="ltr">{formatMoney(p.amount, p.currency, language)}</div>
                     <div className="text-xs text-gray-400">{new Date(p.created_at).toLocaleDateString(dateLocale)}</div>
                   </div>
                   <span className={`text-xs px-2 py-1 rounded-full ${payoutBadge(p.status)}`}>{t(`payout_${p.status}`)}</span>
@@ -170,7 +171,7 @@ export function Wallet({ onBack }: WalletProps) {
           </div>
         )}
 
-        <h2 className="text-[#0E0E55] text-sm mb-2">{t('transactions')}</h2>
+        <h2 className="text-navy text-sm mb-2">{t('transactions')}</h2>
         {loading ? (
           <div className="flex justify-center py-10"><Loader2 className="w-6 h-6 text-gray-400 animate-spin" /></div>
         ) : txns.length === 0 ? (
@@ -186,13 +187,13 @@ export function Wallet({ onBack }: WalletProps) {
                     {credit ? <ArrowDownLeft className="w-4 h-4" /> : <ArrowUpRight className="w-4 h-4" />}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="text-[#0E0E55] text-sm truncate">{t(`txType_${tx.type}`)}</div>
+                    <div className="text-navy text-sm truncate">{t(`txType_${tx.type}`)}</div>
                     <div className="text-xs text-gray-400 flex items-center gap-1">
                       {new Date(tx.created_at).toLocaleDateString(dateLocale)}
                       {pending && <><Clock className="w-3 h-3" /> {t('pending')}</>}
                     </div>
                   </div>
-                  <div className={`text-sm ${credit ? 'text-green-600' : 'text-[#0E0E55]'}`} dir="ltr">
+                  <div className={`text-sm ${credit ? 'text-green-600' : 'text-navy'}`} dir="ltr">
                     {credit ? '+' : '−'} {formatMoney(Math.abs(tx.amount), tx.currency, language)}
                   </div>
                 </div>
@@ -277,7 +278,7 @@ function PayoutSheet({ balance, onClose, onDone }: { balance: WalletBalance; onC
   return (
     <div className="fixed inset-0 z-50 bg-black/40 flex items-end justify-center" onClick={onClose}>
       <div className="bg-white w-full max-w-md rounded-t-2xl p-5 space-y-4" onClick={(e) => e.stopPropagation()} dir={isRTL ? 'rtl' : 'ltr'}>
-        <h3 className="text-[#0E0E55] font-medium">{t('requestPayout')}</h3>
+        <h3 className="text-navy font-medium">{t('requestPayout')}</h3>
         <div className="flex items-center justify-between text-sm">
           <span className="text-gray-500">{t('availableBalance')}</span>
           <button
@@ -296,7 +297,7 @@ function PayoutSheet({ balance, onClose, onDone }: { balance: WalletBalance; onC
             value={amount ? formatAmount(Number(amount), language) : ''}
             onChange={(e) => setAmount(normalizeDigits(e.target.value).replace(/[^\d]/g, ''))}
             placeholder="0"
-            className="w-full bg-gray-50 border border-gray-200 rounded-lg py-3 px-4 text-[#0E0E55] text-center text-lg tracking-wide focus:outline-none focus:ring-2 focus:ring-yellow-500"
+            className="w-full bg-gray-50 border border-gray-200 rounded-lg py-3 px-4 text-navy text-center text-lg tracking-wide focus:outline-none focus:ring-2 focus:ring-yellow-500"
             dir="ltr"
             autoFocus
           />
@@ -308,7 +309,7 @@ function PayoutSheet({ balance, onClose, onDone }: { balance: WalletBalance; onC
         <button
           onClick={submit}
           disabled={submitting}
-          className="w-full flex items-center justify-center gap-2 bg-yellow-500 text-[#0E0E55] py-3 rounded-lg hover:bg-yellow-400 disabled:opacity-50 font-medium"
+          className="w-full flex items-center justify-center gap-2 bg-yellow-500 text-navy py-3 rounded-lg hover:bg-yellow-400 disabled:opacity-50 font-medium"
         >
           {submitting ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-4 h-4" />}
           {t('requestPayout')}
@@ -362,7 +363,7 @@ function PayoutAccountSheet({
   return (
     <div className="fixed inset-0 z-50 bg-black/40 flex items-end justify-center" onClick={onClose}>
       <div className="bg-white w-full max-w-md rounded-t-2xl p-5 space-y-4" onClick={(e) => e.stopPropagation()} dir={isRTL ? 'rtl' : 'ltr'}>
-        <h3 className="text-[#0E0E55] font-medium">{t('payoutInfo')}</h3>
+        <h3 className="text-navy font-medium">{t('payoutInfo')}</h3>
 
         {isIRR ? (
           <>
@@ -374,7 +375,7 @@ function PayoutAccountSheet({
                 value={groupCard(card)}
                 onChange={(e) => setCard(normalizeDigits(e.target.value).replace(/\D/g, '').slice(0, 16))}
                 placeholder="•••• •••• •••• ••••"
-                className="mt-1 w-full bg-gray-50 border border-gray-200 rounded-lg py-3 px-4 text-[#0E0E55] text-center text-lg tracking-widest focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                className="mt-1 w-full bg-gray-50 border border-gray-200 rounded-lg py-3 px-4 text-navy text-center text-lg tracking-widest focus:outline-none focus:ring-2 focus:ring-yellow-500"
                 dir="ltr"
                 autoFocus
               />
@@ -385,14 +386,14 @@ function PayoutAccountSheet({
                 type="text"
                 value={holder}
                 onChange={(e) => setHolder(e.target.value)}
-                className="mt-1 w-full bg-gray-50 border border-gray-200 rounded-lg py-3 px-4 text-[#0E0E55] focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                className="mt-1 w-full bg-gray-50 border border-gray-200 rounded-lg py-3 px-4 text-navy focus:outline-none focus:ring-2 focus:ring-yellow-500"
               />
             </div>
             {error && <div className="bg-red-50 text-red-700 border border-red-200 rounded-lg p-3 text-sm">{error}</div>}
             <button
               onClick={submit}
               disabled={submitting || card.length !== 16}
-              className="w-full flex items-center justify-center gap-2 bg-yellow-500 text-[#0E0E55] py-3 rounded-lg hover:bg-yellow-400 disabled:opacity-50 font-medium"
+              className="w-full flex items-center justify-center gap-2 bg-yellow-500 text-navy py-3 rounded-lg hover:bg-yellow-400 disabled:opacity-50 font-medium"
             >
               {submitting ? <Loader2 className="w-5 h-5 animate-spin" /> : <CreditCard className="w-4 h-4" />}
               {t('save')}
@@ -442,8 +443,9 @@ function TopUpSheet({ currency, onClose }: { currency: string; onClose: () => vo
     setError(null);
     try {
       const { redirect_url } = await WalletAPI.initiateTopup(token, { amount: value, provider });
-      // Mobile app: swap window.open for Capacitor Browser.open.
-      window.open(redirect_url, '_blank');
+      // In-app browser on native, new tab on web. The wallet refreshes over the
+      // realtime "wallet" signal once the gateway callback settles the top-up.
+      await openExternal(redirect_url);
       onClose();
     } catch (err) {
       setError(errorText(t, err));
@@ -455,7 +457,7 @@ function TopUpSheet({ currency, onClose }: { currency: string; onClose: () => vo
   return (
     <div className="fixed inset-0 z-50 bg-black/40 flex items-end justify-center" onClick={onClose}>
       <div className="bg-white w-full max-w-md rounded-t-2xl p-5 space-y-4" onClick={(e) => e.stopPropagation()} dir={isRTL ? 'rtl' : 'ltr'}>
-        <h3 className="text-[#0E0E55] font-medium">{t('addFunds')}</h3>
+        <h3 className="text-navy font-medium">{t('addFunds')}</h3>
 
         <div>
           <label className="text-gray-500 text-sm">{t('topUpAmount')}</label>
@@ -466,7 +468,7 @@ function TopUpSheet({ currency, onClose }: { currency: string; onClose: () => vo
               value={amount ? formatAmount(Number(amount), language) : ''}
               onChange={(e) => setAmount(normalizeDigits(e.target.value).replace(/[^\d]/g, ''))}
               placeholder="0"
-              className="w-full bg-gray-50 border border-gray-200 rounded-lg py-3 px-4 text-[#0E0E55] text-center text-lg tracking-wide focus:outline-none focus:ring-2 focus:ring-yellow-500"
+              className="w-full bg-gray-50 border border-gray-200 rounded-lg py-3 px-4 text-navy text-center text-lg tracking-wide focus:outline-none focus:ring-2 focus:ring-yellow-500"
               dir="ltr"
               autoFocus
             />
@@ -483,7 +485,7 @@ function TopUpSheet({ currency, onClose }: { currency: string; onClose: () => vo
                 key={p.name}
                 type="button"
                 onClick={() => setProvider(p.name)}
-                className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-sm ${p.name === provider ? 'border-yellow-500 bg-yellow-50 text-[#0E0E55]' : 'border-gray-200 text-gray-600 hover:bg-gray-50'}`}
+                className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-sm ${p.name === provider ? 'border-yellow-500 bg-yellow-50 text-navy' : 'border-gray-200 text-gray-600 hover:bg-gray-50'}`}
               >
                 {p.logo && <img src={p.logo} alt="" className="w-5 h-5 object-contain" />}
                 {p.title}
@@ -503,7 +505,7 @@ function TopUpSheet({ currency, onClose }: { currency: string; onClose: () => vo
         <button
           onClick={submit}
           disabled={submitting}
-          className="w-full flex items-center justify-center gap-2 bg-yellow-500 text-[#0E0E55] py-3 rounded-lg hover:bg-yellow-400 disabled:opacity-50 font-medium"
+          className="w-full flex items-center justify-center gap-2 bg-yellow-500 text-navy py-3 rounded-lg hover:bg-yellow-400 disabled:opacity-50 font-medium"
         >
           {submitting ? <Loader2 className="w-5 h-5 animate-spin" /> : <Plus className="w-4 h-4" />}
           {t('addFunds')}

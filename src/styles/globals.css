@@ -1,9 +1,12 @@
+@import "tailwindcss";
+
 @custom-variant dark (&:is(.dark *));
 
 :root {
   --font-size: 16px;
-  /* Brand Colors - Navy & Yellow Only */
+  /* Brand Colors - Navy & Yellow Only. Change these to re-theme the whole app. */
   --brand-yellow: #eab308;
+  --brand-yellow-light: #facc15;
   --brand-yellow-dark: #ca8a04;
   --brand-navy: #0E0E55;
   --brand-navy-light: #1A1A6E;
@@ -88,6 +91,15 @@
 }
 
 @theme inline {
+  /* Brand color tokens — every color in the app resolves to these vars, so the
+     palette is driven entirely from the --brand-* custom properties in :root.
+     Navy is exposed as `navy`/`navy-light`; the yellow scale is retargeted to
+     the brand yellow so existing yellow-400/500/600 classes are var-driven. */
+  --color-navy: var(--brand-navy);
+  --color-navy-light: var(--brand-navy-light);
+  --color-yellow-400: var(--brand-yellow-light);
+  --color-yellow-500: var(--brand-yellow);
+  --color-yellow-600: var(--brand-yellow-dark);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);

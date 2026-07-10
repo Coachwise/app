@@ -21,7 +21,7 @@ const TYPE_META: Record<string, { icon: typeof Bell; cls: string }> = {
   ASSESSMENT_ASSIGNED: { icon: ClipboardList, cls: 'bg-yellow-100 text-yellow-700' },
   ASSESSMENT_SUBMITTED: { icon: Send, cls: 'bg-yellow-100 text-yellow-700' },
   BADGE_GRANTED: { icon: Award, cls: 'bg-yellow-100 text-yellow-700' },
-  PACKAGE_SUBSCRIBED: { icon: Package, cls: 'bg-[#0E0E55]/10 text-[#0E0E55]' },
+  PACKAGE_SUBSCRIBED: { icon: Package, cls: 'bg-navy/10 text-navy' },
   PACKAGE_ASSIGNED: { icon: Package, cls: 'bg-green-100 text-green-600' },
   PACKAGE_REMOVED: { icon: Package, cls: 'bg-gray-100 text-gray-500' },
   PLAN_ASSIGNED: { icon: Dumbbell, cls: 'bg-green-100 text-green-600' },
@@ -182,7 +182,7 @@ export function Notifications({ onBack, onNavigate, onViewProfile }: Notificatio
         )}
 
         <div className="flex-1 min-w-0 py-0.5">
-          <p className={`text-sm leading-snug ${n.read ? 'text-gray-700' : 'text-[#0E0E55]'}`}>{message(n)}</p>
+          <p className={`text-sm leading-snug ${n.read ? 'text-gray-700' : 'text-navy'}`}>{message(n)}</p>
           <p className="text-gray-400 text-xs mt-1">{relativeTime(n.created_at)}</p>
         </div>
 
@@ -196,15 +196,15 @@ export function Notifications({ onBack, onNavigate, onViewProfile }: Notificatio
 
   return (
     <div className="min-h-screen bg-gray-100">
-      <div className="bg-[#0E0E55] px-4 py-4 sticky top-0 z-10 shadow-sm">
+      <div className="bg-navy px-4 py-4 sticky top-0 z-10 shadow-sm">
         <div className="flex items-center justify-between gap-2">
-          <button onClick={onBack} className="p-2 -ms-2 hover:bg-[#1A1A6E] rounded-lg transition-colors shrink-0">
+          <button onClick={onBack} className="p-2 -ms-2 hover:bg-navy-light rounded-lg transition-colors shrink-0">
             <ArrowLeft className="w-6 h-6 text-white" />
           </button>
           <div className="flex items-center gap-2 min-w-0">
             <h1 className="text-white text-xl truncate">{t('notifications')}</h1>
             {unreadCount > 0 && (
-              <span className="bg-yellow-500 text-[#0E0E55] text-xs font-semibold rounded-full px-2 py-0.5 shrink-0">
+              <span className="bg-yellow-500 text-navy text-xs font-semibold rounded-full px-2 py-0.5 shrink-0">
                 {unreadCount}
               </span>
             )}
@@ -214,7 +214,7 @@ export function Notifications({ onBack, onNavigate, onViewProfile }: Notificatio
               onClick={markAll}
               title={t('markAllRead')}
               aria-label={t('markAllRead')}
-              className="p-2 -me-2 text-white/90 hover:bg-[#1A1A6E] rounded-lg transition-colors shrink-0"
+              className="p-2 -me-2 text-white/90 hover:bg-navy-light rounded-lg transition-colors shrink-0"
             >
               <CheckCheck className="w-5 h-5" />
             </button>
