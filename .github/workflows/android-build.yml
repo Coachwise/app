@@ -8,9 +8,13 @@ name: Android Build
 #   - manual "Run workflow" (workflow_dispatch) → builds + uploads the APK as a
 #     downloadable artifact.
 #
-# The web build's API URL comes from the repo variable VITE_API_URL
-# (Settings → Secrets and variables → Actions → Variables). Without it the app
-# would point at localhost and fail on a device.
+# Build config (Settings → Secrets and variables → Actions):
+#   VITE_API_URL      variable or secret. REQUIRED, must be https:// — the build
+#                     fails rather than shipping an APK pointed at localhost.
+#   VITE_APP_CHANNEL  variable. Defaults to "beta"; set "stable" to drop the
+#                     Beta badge shown in the app.
+#   VITE_APP_VERSION  not configured — derived from the git tag (v1.2.0 → 1.2.0),
+#                     or 0.0.0+<sha> for non-tag builds.
 
 on:
   push:
@@ -69,10 +73,26 @@ jobs:
 
       - name: Build web app
         env:
-          # Manual input wins; otherwise the repo variable; otherwise a safe default.
-          VITE_API_URL: ${{ github.event.inputs.api_url != '' && github.event.inputs.api_url || vars.VITE_API_URL }}
-          VITE_APP_CHANNEL: beta
-        run: npm run build
+          # Manual input wins, then the Actions *variable*, then the *secret*
+          # (vars and secrets are separate namespaces — accept either so the URL
+          # can't go missing just because it was put in the wrong one).
+          VITE_API_URL: ${{ github.event.inputs.api_url != '' && github.event.inputs.api_url || (vars.VITE_API_URL != '' && vars.VITE_API_URL || secrets.VITE_API_URL) }}
+          # Release channel is a release decision, so it comes from a variable
+          # too. Set VITE_APP_CHANNEL=stable to drop the Beta badge everywhere.
+          VITE_APP_CHANNEL: ${{ vars.VITE_APP_CHANNEL != '' && vars.VITE_APP_CHANNEL || 'beta' }}
+        run: |
+          # Fail loudly rather than silently shipping an APK pointed at
+          # localhost: on a device that's an unfixable "failed to fetch".
+          if [ -z "$VITE_API_URL" ]; then
+            echo "::error::VITE_API_URL is empty. Set it as an Actions variable (or secret) named VITE_API_URL, e.g. https://api.coachwises.ir"
+            exit 1
+          fi
+          case "$VITE_API_URL" in
+            https://*) ;;
+            *) echo "::error::VITE_API_URL must be https:// for a device build (Android blocks cleartext). Got: $VITE_API_URL"; exit 1 ;;
+          esac
+          echo "Building against API: $VITE_API_URL"
+          npm run build
 
       - name: Sync Capacitor
         run: npx cap sync android

@@ -1,11 +1,22 @@
 import { useEffect, useState } from 'react';
-import { Dumbbell, Globe, KeyRound, Smartphone, ArrowLeft, ChevronDown } from 'lucide-react';
+import { Globe, KeyRound, Smartphone, ArrowLeft, ChevronDown } from 'lucide-react';
+import { Logo } from './ui/logo';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
 import * as AuthAPI from '../api/auth';
 import { errorText } from '../api/errors';
 import { SearchSelect } from './ui/SearchSelect';
 import { COUNTRIES, DEFAULT_COUNTRY, detectCountry, normalizePhone, type Country } from '../lib/countries';
+import { config, APP_VERSION, APP_IS_BETA } from '../config';
+
+// Host only (no scheme/path) — enough to spot a build pointed at the wrong API.
+const apiHost = (() => {
+  try {
+    return new URL(config.apiURL).host;
+  } catch {
+    return config.apiURL;
+  }
+})();
 
 interface AuthProps {
   onLogin: () => void;
@@ -99,7 +110,7 @@ export function Auth({ onLogin }: AuthProps) {
         <div className="w-full max-w-md">
           <div className="text-center mb-8">
             <div className="inline-flex items-center justify-center w-16 h-16 bg-yellow-500 rounded-2xl mb-4">
-              <Dumbbell className="w-8 h-8 text-navy" />
+              <Logo className="w-12 h-12 text-navy" />
             </div>
             <h1 className="text-white text-3xl mb-2">Coachwise</h1>
             <p className="text-white/80">{subtitle}</p>
@@ -182,6 +193,18 @@ export function Auth({ onLogin }: AuthProps) {
                 {submitLabel}
               </button>
             </form>
+          </div>
+
+          {/* Build info. The API host is shown while in beta: a device build that
+              silently points at the wrong host is otherwise undebuggable. */}
+          <div className="mt-6 text-center">
+            <p className="text-white/50 text-xs">
+              <span className="tabular-nums" dir="ltr">v{APP_VERSION}</span>
+              {APP_IS_BETA && <span className="ml-1 text-yellow-500/80 font-semibold">· {t('beta')}</span>}
+            </p>
+            {APP_IS_BETA && (
+              <p className="mt-0.5 text-white/30 text-[10px] truncate" dir="ltr">{apiHost}</p>
+            )}
           </div>
         </div>
       </div>

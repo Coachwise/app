@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { Camera, Dumbbell, User as UserIcon, AtSign, Loader2, Check, X } from 'lucide-react';
+import { Camera, User as UserIcon, AtSign, Loader2, Check, X } from 'lucide-react';
+import { Logo } from './ui/logo';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import * as UsersAPI from '../api/users';
@@ -99,7 +100,7 @@ export function Onboarding({ onDone }: OnboardingProps) {
       <div className="w-full max-w-md">
         <div className="text-center mb-6">
           <div className="inline-flex items-center justify-center w-14 h-14 bg-yellow-500 rounded-2xl mb-3">
-            <Dumbbell className="w-7 h-7 text-navy" />
+            <Logo className="w-10 h-10 text-navy" />
           </div>
           <h1 className="text-white text-2xl mb-1">{t('welcomeToCoachwise')}</h1>
           <p className="text-white/80 text-sm">{t('completeProfileHint')}</p>

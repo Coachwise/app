@@ -1,4 +1,5 @@
-import { ArrowLeft, Dumbbell } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
+import { Logo } from './ui/logo';
 import { useLanguage } from '../contexts/LanguageContext';
 import { APP_VERSION, APP_IS_BETA } from '../config';
 
@@ -22,7 +23,7 @@ export function About({ onBack }: AboutProps) {
 
       <div className="p-6 flex flex-col items-center text-center">
         <div className="w-20 h-20 rounded-2xl bg-navy flex items-center justify-center shadow-sm mt-6">
-          <Dumbbell className="w-10 h-10 text-yellow-500" />
+          <Logo className="w-14 h-14 text-yellow-500" />
         </div>
 
         <div className="mt-4 flex items-center gap-2">

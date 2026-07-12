@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <title>Coachwise</title>
+  <!-- The app icon: the mark on the navy tile. -->
+  <rect width="512" height="512" rx="114" fill="#0E0E55"/>
+  <polygon fill="#F5B70A" points="196,268 212,230 238,162 270,214 286,196 302,246 316,268"/>
+  <polygon fill="#F5B70A" opacity="0.42" points="192,276 320,276 386,300 352,344 300,410 250,376 196,400 140,336 168,296"/>
+</svg>
