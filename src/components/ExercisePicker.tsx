@@ -3,6 +3,7 @@ import { Plus, Trash2, Search } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { ExercisesAPI } from '../api';
 import type { Exercise } from '../api/types';
+import { localized } from '../lib/localize';
 import { toast } from 'sonner';
 
 export interface PickedExercise {
@@ -36,28 +37,28 @@ export function ExercisePicker<T extends PickedExercise>({
   title,
   emptyHint,
 }: ExercisePickerProps<T>) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [picking, setPicking] = useState(false);
   const [search, setSearch] = useState('');
 
+  // Server-side search (debounced); the backend does the tsvector matching.
   useEffect(() => {
     let active = true;
-    (async () => {
+    const id = setTimeout(async () => {
       try {
-        const list = await ExercisesAPI.listExercises(token);
-        if (active) setExercises(list);
+        const res = await ExercisesAPI.listExercises(token, { search: search.trim() || undefined, limit: 20 });
+        if (active) setExercises(res.items);
       } catch (e) {
         toast.error((e as Error).message);
       }
-    })();
-    return () => { active = false; };
-  }, [token]);
+    }, 300);
+    return () => { active = false; clearTimeout(id); };
+  }, [token, search]);
 
   const chosen = new Set(items.map((it) => it.exercise_id));
-  const filtered = exercises
-    .filter((e) => !chosen.has(e.id))
-    .filter((e) => !search.trim() || e.name.toLowerCase().includes(search.trim().toLowerCase()));
+  const exName = (e: Exercise) => localized(e.name_i18n, e.name, language);
+  const filtered = exercises.filter((e) => !chosen.has(e.id));
 
   const add = (ex: Exercise) => {
     onAdd(ex);
@@ -105,7 +106,7 @@ export function ExercisePicker<T extends PickedExercise>({
                   onClick={() => add(ex)}
                   className="w-full text-start px-4 py-2.5 hover:bg-yellow-50 transition-colors text-sm text-navy"
                 >
-                  {ex.name}
+                  {exName(ex)}
                 </button>
               ))}
             </div>

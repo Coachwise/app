@@ -8,6 +8,14 @@ export const config = {
 };
 
 /**
+ * App version + release channel. In CI these come from the git tag / build env
+ * (VITE_APP_VERSION, VITE_APP_CHANNEL); locally they fall back to dev defaults.
+ */
+export const APP_VERSION = import.meta.env.VITE_APP_VERSION || "0.1.0-dev";
+export const APP_IS_BETA =
+  (import.meta.env.VITE_APP_CHANNEL || "beta").toLowerCase() === "beta";
+
+/**
  * Feature flags for staged rollout.
  *
  * These features are hidden for the first public release. Flip a flag to `true`

@@ -15,9 +15,13 @@ interface WorkoutsHomeProps {
   onViewPlan?: (planId: string) => void;
   userRole: UserRole;
   onNavigate: (view: string) => void;
+  onResumeSession?: () => void;
+  onDiscardSession?: () => void;
   isPro?: boolean;
   refreshTrigger?: number; // Timestamp to trigger refresh
 }
+
+const ACTIVE_SESSION_KEY = 'coachwise-active-session';
 
 interface WorkoutPlan {
   id: string;
@@ -86,8 +90,15 @@ const windowKey = (center: Date) => {
   return `${dateKey(start)}:${dateKey(end)}`;
 };
 
-export function WorkoutsHome({ onStartSession, onCreatePlan, onViewPlan, userRole, onNavigate, isPro = true, refreshTrigger }: WorkoutsHomeProps) {
+export function WorkoutsHome({ onStartSession, onCreatePlan, onViewPlan, userRole, onNavigate, onResumeSession, onDiscardSession, isPro = true, refreshTrigger }: WorkoutsHomeProps) {
   const { t, language, isRTL } = useLanguage();
+
+  // An in-progress session (started then left) that can be resumed or discarded.
+  const [activeSession, setActiveSession] = useState<{ sessionId?: string; planId?: string } | null>(null);
+  useEffect(() => {
+    const raw = localStorage.getItem(ACTIVE_SESSION_KEY);
+    try { setActiveSession(raw ? JSON.parse(raw) : null); } catch { setActiveSession(null); }
+  }, [refreshTrigger]);
   const { tokens, user } = useAuth();
   // Use the Persian (Jalali/Shamsi) calendar with Persian month/day names when in Persian.
   const dateLocale = language === 'fa' ? 'fa-IR-u-ca-persian' : undefined;
@@ -571,6 +582,34 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, onViewPlan, userRol
       </div>
 
       <div className="p-4 -mt-4 space-y-6">
+        {activeSession && (
+          <div className="bg-navy text-white rounded-2xl p-4 flex items-center justify-between gap-3 shadow-sm">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-10 h-10 rounded-full bg-yellow-500 text-navy flex items-center justify-center flex-shrink-0">
+                <Play className="w-5 h-5 ml-0.5" />
+              </div>
+              <div className="min-w-0">
+                <p className="font-semibold truncate">{t('sessionInProgress')}</p>
+                <p className="text-xs text-white/70 truncate">{t('resumeOrDiscardSession')}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <button
+                onClick={onResumeSession}
+                className="px-3 py-2 bg-yellow-500 text-navy rounded-lg text-sm font-semibold hover:bg-yellow-400 transition-colors"
+              >
+                {t('continueSession')}
+              </button>
+              <button
+                onClick={onDiscardSession}
+                aria-label={t('discardSession')}
+                className="p-2 bg-white/10 rounded-lg hover:bg-white/20 transition-colors"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        )}
         {(scheduleError || planError) && (
           <div className="bg-red-50 border border-red-200 text-red-800 text-sm rounded-lg p-3">
             {scheduleError || planError}

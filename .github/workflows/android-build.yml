@@ -55,10 +55,23 @@ jobs:
       - name: Install web dependencies
         run: npm ci
 
+      - name: Compute app version
+        # Tag builds → the tag without its leading "v" (v1.2.0 → 1.2.0).
+        # Other builds → 0.0.0+<short-sha> so it's obvious it's not a release.
+        run: |
+          if [ "${{ github.ref_type }}" = "tag" ]; then
+            V="${{ github.ref_name }}"; V="${V#v}"
+          else
+            V="0.0.0+${GITHUB_SHA::7}"
+          fi
+          echo "VITE_APP_VERSION=$V" >> "$GITHUB_ENV"
+          echo "Building app version $V"
+
       - name: Build web app
         env:
           # Manual input wins; otherwise the repo variable; otherwise a safe default.
           VITE_API_URL: ${{ github.event.inputs.api_url != '' && github.event.inputs.api_url || vars.VITE_API_URL }}
+          VITE_APP_CHANNEL: beta
         run: npm run build
 
       - name: Sync Capacitor

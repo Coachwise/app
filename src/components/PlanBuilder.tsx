@@ -1,12 +1,13 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { ArrowLeft, Plus, GripVertical, Trash2, RefreshCw, Search, Dumbbell } from 'lucide-react';
-import type { Exercise, ExerciseSportType } from '../api/types';
+import type { Exercise, ExerciseCategory, ExerciseSportType } from '../api/types';
 import * as ExercisesAPI from '../api/exercises';
 import * as PlansAPI from '../api/plans';
 import { useAuth } from '../contexts/AuthContext';
 import { ExerciseBuilder } from './ExerciseBuilder';
 import { HeatSlider } from './ui';
 import { useLanguage } from '../contexts/LanguageContext';
+import { localized } from '../lib/localize';
 
 interface PlanBuilderProps {
   onCancel: () => void;
@@ -46,7 +47,8 @@ function SportTypeBadge({ sportType }: { sportType: ExerciseSportType }) {
 
 export function PlanBuilder({ onCancel, onSave, planId }: PlanBuilderProps) {
   const { tokens, user } = useAuth();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const PAGE_SIZE = 20;
   const [planName, setPlanName] = useState('');
   const [isPublic, setIsPublic] = useState(false);
   const [exercises, setExercises] = useState<PlanExercise[]>([]);
@@ -57,7 +59,14 @@ export function PlanBuilder({ onCancel, onSave, planId }: PlanBuilderProps) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showExerciseBuilder, setShowExerciseBuilder] = useState(false);
-  const [sportTypeFilter, setSportTypeFilter] = useState<ExerciseSportType | 'ALL'>('ALL');
+  const [categories, setCategories] = useState<ExerciseCategory[]>([]);
+  const [sports, setSports] = useState<string[]>([]);
+  const [sport, setSport] = useState(''); // selected exercise_sport_type
+  const [category, setCategory] = useState(''); // selected category slug ('' = all)
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
+  const listRef = useRef<HTMLDivElement>(null);
+  const categoriesForSport = categories.filter((c) => !c.sport_type || c.sport_type === sport);
   // Existing-plan state. isOwner gates editing; read-only when viewing a plan you don't own.
   const [isOwner, setIsOwner] = useState(true);
   const [originalExerciseIds, setOriginalExerciseIds] = useState<string[]>([]);
@@ -107,7 +116,7 @@ export function PlanBuilder({ onCancel, onSave, planId }: PlanBuilderProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [planId, tokens?.access_token, user?.id]);
 
-  const loadExercises = async () => {
+  const loadExercises = async (opts?: { search?: string; category?: string; sport?: string; page?: number; append?: boolean }) => {
     if (!tokens?.access_token) {
       setError(t('loginToLoadExercises'));
       return;
@@ -115,10 +124,17 @@ export function PlanBuilder({ onCancel, onSave, planId }: PlanBuilderProps) {
     setLoadingExercises(true);
     setError(null);
     try {
-      const list = await ExercisesAPI.listExercises(tokens.access_token, {
-        name: exerciseSearch.trim() || undefined,
+      const pageToLoad = opts?.page ?? 1;
+      const res = await ExercisesAPI.listExercises(tokens.access_token, {
+        search: (opts?.search ?? exerciseSearch).trim() || undefined,
+        category: (opts?.category ?? category) || undefined,
+        sport: (opts?.sport ?? sport) || undefined,
+        page: pageToLoad,
+        limit: PAGE_SIZE,
       });
-      setExerciseLibrary(Array.isArray(list) ? list : []);
+      setTotal(res.total);
+      setPage(pageToLoad);
+      setExerciseLibrary((prev) => (opts?.append ? [...prev, ...res.items] : res.items));
     } catch (e) {
       const msg = e instanceof Error ? e.message : t('unableToLoadExercises');
       setError(msg);
@@ -127,10 +143,44 @@ export function PlanBuilder({ onCancel, onSave, planId }: PlanBuilderProps) {
     }
   };
 
+  // Load categories, derive the available sports, and auto-select the first sport
+  // (which triggers the initial exercise load for that sport).
   useEffect(() => {
-    loadExercises();
+    if (!tokens?.access_token) return;
+    ExercisesAPI.listExerciseCategories(tokens.access_token)
+      .then((res) => {
+        setCategories(res.items);
+        const derived = Array.from(
+          new Set(res.items.map((c) => c.sport_type).filter((s): s is string => !!s)),
+        );
+        setSports(derived);
+        if (derived.length > 0) selectSport(derived[0]);
+      })
+      .catch(() => {});
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tokens?.access_token]);
+
+  const selectSport = (s: string) => {
+    setSport(s);
+    setCategory('');
+    if (listRef.current) listRef.current.scrollTop = 0;
+    loadExercises({ sport: s, category: '', page: 1 });
+  };
+
+  const selectCategory = (slug: string) => {
+    setCategory(slug);
+    if (listRef.current) listRef.current.scrollTop = 0;
+    loadExercises({ category: slug, page: 1 });
+  };
+
+  // Infinite scroll: load the next page as the list nears its bottom.
+  const onListScroll = () => {
+    const el = listRef.current;
+    if (!el || loadingExercises || exerciseLibrary.length >= total) return;
+    if (el.scrollTop + el.clientHeight >= el.scrollHeight - 80) {
+      loadExercises({ page: page + 1, append: true });
+    }
+  };
 
   const addExerciseToPlan = (exercise: Exercise) => {
     const summary = exercise.sets?.[0];
@@ -143,7 +193,7 @@ export function PlanBuilder({ onCancel, onSave, planId }: PlanBuilderProps) {
       {
         key: `${exercise.id}-${Date.now()}`,
         exerciseId: exercise.id,
-        name: exercise.name,
+        name: localized(exercise.name_i18n, exercise.name, language),
         type,
         sets: exercise.sets?.length || 1,
         repsOrDuration,
@@ -154,10 +204,11 @@ export function PlanBuilder({ onCancel, onSave, planId }: PlanBuilderProps) {
     setShowExerciseSelector(false);
   };
 
+  // Debounced search: reload page 1 once a sport is selected.
   useEffect(() => {
-    if (!tokens?.access_token) return;
+    if (!tokens?.access_token || !sport) return;
     const timer = window.setTimeout(() => {
-      loadExercises();
+      loadExercises({ page: 1 });
     }, 300);
     return () => window.clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -233,11 +284,6 @@ export function PlanBuilder({ onCancel, onSave, planId }: PlanBuilderProps) {
   };
 
   const existingExerciseIds = useMemo(() => new Set(exercises.map((ex) => ex.exerciseId)), [exercises]);
-
-  const filteredExercises = useMemo(() => {
-    if (sportTypeFilter === 'ALL') return exerciseLibrary;
-    return exerciseLibrary.filter((ex) => ex.sport_type === sportTypeFilter);
-  }, [exerciseLibrary, sportTypeFilter]);
 
   if (showExerciseBuilder) {
     return (
@@ -335,7 +381,7 @@ export function PlanBuilder({ onCancel, onSave, planId }: PlanBuilderProps) {
                   />
                 </div>
                 <button
-                  onClick={loadExercises}
+                  onClick={() => loadExercises({ page: 1 })}
                   className="px-3 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 flex items-center gap-2 text-sm"
                 >
                   <RefreshCw className={`w-4 h-4 ${loadingExercises ? 'animate-spin' : ''}`} />
@@ -349,22 +395,53 @@ export function PlanBuilder({ onCancel, onSave, planId }: PlanBuilderProps) {
                 </button>
               </div>
 
-              {/* Sport Type Filters */}
-              <div className="flex gap-2 mb-3 flex-wrap">
-                {(['ALL', 'STRENGTH', 'CLIMBING', 'CARDIO', 'MOBILITY', 'GENERAL'] as const).map((type) => (
-                  <button
-                    key={type}
-                    onClick={() => setSportTypeFilter(type)}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                      sportTypeFilter === type
-                        ? 'bg-navy text-white'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                    }`}
-                  >
-                    {t(`sport${type}`)}
-                  </button>
-                ))}
-              </div>
+              {/* Sport selector (first level) */}
+              {sports.length > 0 && (
+                <div className="mb-3">
+                  <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">{t('chooseSport')}</div>
+                  <div className="flex gap-2 overflow-x-auto pb-1">
+                    {sports.map((s) => (
+                      <button
+                        key={s}
+                        onClick={() => selectSport(s)}
+                        className={`shrink-0 px-5 py-2.5 rounded-xl text-sm font-semibold transition-colors ${
+                          sport === s ? 'bg-navy text-white shadow-sm' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        }`}
+                      >
+                        {t(`sport${s}`)}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Category selector (second level) */}
+              {categoriesForSport.length > 0 && (
+                <div className="mb-4">
+                  <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">{t('chooseCategory')}</div>
+                  <div className="flex gap-2 flex-wrap">
+                    <button
+                      onClick={() => selectCategory('')}
+                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                        category === '' ? 'bg-navy text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      }`}
+                    >
+                      {t('allCategories')}
+                    </button>
+                    {categoriesForSport.map((c) => (
+                      <button
+                        key={c.id}
+                        onClick={() => selectCategory(c.slug)}
+                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                          category === c.slug ? 'bg-navy text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        }`}
+                      >
+                        {localized(c.name_i18n, c.slug, language)}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {loadingExercises && (
                 <div className="text-sm text-gray-600 py-4 text-center">
@@ -379,14 +456,8 @@ export function PlanBuilder({ onCancel, onSave, planId }: PlanBuilderProps) {
                   <div className="text-xs text-gray-500 mt-1">{t('createFirstExercise')}</div>
                 </div>
               )}
-              {!loadingExercises && filteredExercises.length === 0 && exerciseLibrary.length > 0 && (
-                <div className="text-sm text-gray-600 py-8 text-center">
-                  <div className="font-medium">{t('noExercisesMatchFilter')}</div>
-                  <div className="text-xs text-gray-500 mt-1">{t('tryDifferentSport')}</div>
-                </div>
-              )}
-              <div className="space-y-2 max-h-96 overflow-auto">
-                {filteredExercises.map((exercise) => {
+              <div ref={listRef} onScroll={onListScroll} className="space-y-2 max-h-96 overflow-auto">
+                {exerciseLibrary.map((exercise) => {
                   const summary = exercise.sets?.[0];
                   const isTime = !!summary?.duration;
                   const displayTarget = isTime ? `${nsToSeconds(summary?.duration)} ${t('secUnit')}` : `${summary?.rep_count ?? 0} ${t('repsUnit')}`;
@@ -398,14 +469,14 @@ export function PlanBuilder({ onCancel, onSave, planId }: PlanBuilderProps) {
                       <div className="flex items-start justify-between gap-3">
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1">
-                            <div className="font-medium text-gray-900 truncate">{exercise.name}</div>
+                            <div className="font-medium text-gray-900 truncate">{localized(exercise.name_i18n, exercise.name, language)}</div>
                             <SportTypeBadge sportType={exercise.sport_type} />
                           </div>
                           <div className="text-sm text-gray-600">
                             {t('setsTargetRest', { sets: exercise.sets?.length || 1, target: displayTarget, rest })}
                           </div>
-                          {exercise.description && (
-                            <div className="text-xs text-gray-500 mt-1 line-clamp-1">{exercise.description}</div>
+                          {localized(exercise.description_i18n, exercise.description, language) && (
+                            <div className="text-xs text-gray-500 mt-1 line-clamp-1">{localized(exercise.description_i18n, exercise.description, language)}</div>
                           )}
                         </div>
                         <button
@@ -423,6 +494,17 @@ export function PlanBuilder({ onCancel, onSave, planId }: PlanBuilderProps) {
                     </div>
                   );
                 })}
+
+                {loadingExercises && exerciseLibrary.length > 0 && (
+                  <div className="py-3 text-center text-gray-500 text-sm">
+                    <RefreshCw className="w-4 h-4 animate-spin inline-block" />
+                  </div>
+                )}
+                {!loadingExercises && exerciseLibrary.length > 0 && exerciseLibrary.length < total && (
+                  <div className="py-2 text-center text-xs text-gray-400">
+                    {exerciseLibrary.length}/{total}
+                  </div>
+                )}
               </div>
             </div>
           )}

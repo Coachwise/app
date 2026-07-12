@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Menu, X, Bell, Shield, LogOut, Settings, Users, DollarSign, Globe, User, Crown, Coins, ClipboardList } from 'lucide-react';
+import { Menu, X, Bell, Shield, LogOut, Settings, Users, DollarSign, Globe, User, Crown, Coins, ClipboardList, Info } from 'lucide-react';
+import { APP_VERSION, APP_IS_BETA } from '../config';
 import type { UserRole } from '../App';
 import { useLanguage } from '../contexts/LanguageContext';
 import type { Language } from '../translations';
@@ -81,10 +82,13 @@ export function HamburgerMenu({
         />
       )}
 
-      {/* Slide-out Menu */}
-      <div className={`fixed top-0 right-0 h-full w-80 bg-white shadow-2xl z-50 transform transition-transform duration-300 ${
-        isMenuOpen ? 'translate-x-0' : 'translate-x-full'
-      }`}>
+      {/* Slide-out Menu — opens from the same edge the trigger sits on, which
+          follows the global language direction (right in LTR, left in RTL). */}
+      <div
+        className={`fixed top-0 ${isRTL ? 'left-0' : 'right-0'} h-full w-80 bg-white shadow-2xl z-50 transform transition-transform duration-300 ${
+          isMenuOpen ? 'translate-x-0' : isRTL ? '-translate-x-full' : 'translate-x-full'
+        }`}
+      >
         <div className="flex flex-col h-full">
           {/* Menu Header */}
           <div className="bg-navy px-4 py-6">
@@ -314,6 +318,14 @@ export function HamburgerMenu({
               <div className="border-t border-gray-200 my-2"></div>
 
               <button
+                onClick={() => { onNavigate('about'); setIsMenuOpen(false); }}
+                className="w-full flex items-center gap-3 p-3 hover:bg-gray-100 rounded-lg transition-colors text-navy text-left"
+              >
+                <Info className="w-5 h-5" />
+                <span>{t('about')}</span>
+              </button>
+
+              <button
                 onClick={() => {
                   setIsMenuOpen(false);
                   logout();
@@ -327,14 +339,25 @@ export function HamburgerMenu({
           </div>
 
           {/* Menu Footer */}
-          <div className="p-4 border-t border-gray-200">
-            <p className="text-gray-600 text-xs text-center">Coachwise v1.0.0</p>
-          </div>
+          <button
+            onClick={() => { onNavigate('about'); setIsMenuOpen(false); }}
+            className="p-4 border-t border-gray-200 w-full text-center hover:bg-gray-50 transition-colors"
+          >
+            <span className="text-gray-600 text-xs">
+              Coachwise <span className="tabular-nums" dir="ltr">v{APP_VERSION}</span>
+              {APP_IS_BETA && <span className="ml-1 text-yellow-600 font-semibold">· {t('beta')}</span>}
+            </span>
+          </button>
         </div>
       </div>
 
-      {/* Bell + Hamburger triggers */}
+      {/* Beta flag + Bell + Hamburger triggers */}
       <div className="flex items-center gap-1">
+        {APP_IS_BETA && (
+          <span className="mr-1 px-1.5 py-0.5 rounded bg-yellow-500 text-navy text-[10px] font-bold tracking-wide leading-none">
+            {t('beta')}
+          </span>
+        )}
         <button
           onClick={openNotifications}
           aria-label={t('notifications')}

@@ -88,13 +88,29 @@ export interface ExerciseSet {
 
 export type ExerciseSportType = 'STRENGTH' | 'CLIMBING' | 'CARDIO' | 'MOBILITY' | 'GENERAL';
 
+/** A translatable string stored as a { locale: text } map, e.g. { en, fa }. */
+export type LocalizedText = Record<string, string>;
+
+export interface ExerciseCategory {
+  id: UUID;
+  slug: string;
+  name_i18n: LocalizedText;
+  sport_type?: string | null;
+  sort_order: number;
+}
+
 export interface Exercise {
   id: UUID;
   user_id?: UUID | null;
+  slug?: string | null;
   name: string;
   description: string;
+  // Localized name/description; fall back to name/description when a locale is absent.
+  name_i18n?: LocalizedText | null;
+  description_i18n?: LocalizedText | null;
   public: boolean;
   sport_type: ExerciseSportType;
+  category_id?: UUID | null;
   media_id?: UUID | null;
   media?: Media | null;
   sets: ExerciseSet[];
@@ -226,6 +242,13 @@ export interface WalletBalance {
   currency: string;
   available: number;
   pending: number;
+}
+
+/** Cumulative earnings (SALE credits) — not the spendable balance. */
+export interface WalletIncome {
+  currency: string;
+  total: number; // all-time
+  month: number; // current calendar month
 }
 
 export type WalletTxType = 'TOPUP' | 'PURCHASE' | 'SALE' | 'FEE' | 'PAYOUT' | 'REFUND';

@@ -8,6 +8,9 @@ import * as ExercisesAPI from '../api/exercises';
 import type { Exercise } from '../api/types';
 import { SessionFeedbackDialog, type SessionFeedback } from './SessionFeedbackDialog';
 import { useLanguage } from '../contexts/LanguageContext';
+import { localized } from '../lib/localize';
+
+const isVideoUrl = (url: string) => /\.(mp4|webm|mov|m4v)$/i.test(url);
 
 interface WorkoutSessionProps {
   planId?: string;
@@ -39,7 +42,7 @@ const SESSION_KEY = 'coachwise-active-session';
 
 export function WorkoutSession({ planId, scheduleId, onBack, onEndSession, isPro = true, onNavigate }: WorkoutSessionProps) {
   const { tokens } = useAuth();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [showProModal, setShowProModal] = useState(false);
   const [sessionTime, setSessionTime] = useState(0);
   const [isTimerRunning, setIsTimerRunning] = useState(true);
@@ -68,6 +71,20 @@ export function WorkoutSession({ planId, scheduleId, onBack, onEndSession, isPro
     return () => clearInterval(interval);
   }, [isTimerRunning]);
 
+  // Persist elapsed time into the session key so leaving and resuming continues
+  // the timer instead of resetting it.
+  useEffect(() => {
+    if (!sessionId) return;
+    try {
+      const raw = localStorage.getItem(SESSION_KEY);
+      const obj = raw ? JSON.parse(raw) : {};
+      obj.sessionTime = sessionTime;
+      localStorage.setItem(SESSION_KEY, JSON.stringify(obj));
+    } catch {
+      /* ignore */
+    }
+  }, [sessionTime, sessionId]);
+
   // Initialize session and load plan exercises
   useEffect(() => {
     const initializeSession = async () => {
@@ -90,9 +107,10 @@ export function WorkoutSession({ planId, scheduleId, onBack, onEndSession, isPro
             plan_id: planId,
           });
           resolvedSessionId = session.id;
-          localStorage.setItem(SESSION_KEY, JSON.stringify({ sessionId: resolvedSessionId, planId: planId || null }));
+          localStorage.setItem(SESSION_KEY, JSON.stringify({ sessionId: resolvedSessionId, planId: planId || null, scheduleId: scheduleId || null }));
         }
         setSessionId(resolvedSessionId);
+        if (stored?.sessionTime) setSessionTime(stored.sessionTime);
 
         // Load plan exercises if planId provided
         if (planId) {
@@ -102,7 +120,7 @@ export function WorkoutSession({ planId, scheduleId, onBack, onEndSession, isPro
             const exerciseSets = pe.exercise?.sets || [];
             return {
               id: pe.id,
-              name: pe.exercise?.name || `Exercise ${idx + 1}`,
+              name: localized(pe.exercise?.name_i18n, pe.exercise?.name || `Exercise ${idx + 1}`, language),
               exerciseId: pe.exercise_id,
               mediaUrl: pe.exercise?.media?.url,
               targetSets: exerciseSets.length || 3,
@@ -116,10 +134,29 @@ export function WorkoutSession({ planId, scheduleId, onBack, onEndSession, isPro
             };
           });
 
-          setExercises(loadedExercises);
-          if (loadedExercises.length > 0) {
-            setExpandedExercise(loadedExercises[0].id);
+          // Restore already-logged sets so resuming keeps progress intact.
+          let restored = loadedExercises;
+          try {
+            const logs = await SessionsAPI.getSessionLogs(tokens.access_token, resolvedSessionId);
+            if (logs.length > 0) {
+              restored = loadedExercises.map((ex) => ({
+                ...ex,
+                sets: ex.sets.map((s, i) => {
+                  const log = logs.find((l) => l.exercise_id === ex.exerciseId && l.set_number === i + 1);
+                  return log
+                    ? { reps: log.reps ?? s.reps, weight: Number(log.weight ?? s.weight), completed: !!log.completed }
+                    : s;
+                }),
+              }));
+            }
+          } catch {
+            /* logs are best-effort */
           }
+
+          setExercises(restored);
+          // Expand the first exercise that still has work left.
+          const firstIncomplete = restored.find((ex) => ex.sets.some((s) => !s.completed)) || restored[0];
+          if (firstIncomplete) setExpandedExercise(firstIncomplete.id);
         }
 
         setLoading(false);
@@ -250,10 +287,11 @@ export function WorkoutSession({ planId, scheduleId, onBack, onEndSession, isPro
     const timer = setTimeout(async () => {
       setSearchLoading(true);
       try {
-        const results = await ExercisesAPI.listExercises(tokens.access_token, {
-          name: exerciseSearch || undefined,
+        const res = await ExercisesAPI.listExercises(tokens.access_token, {
+          search: exerciseSearch || undefined,
+          limit: 20,
         });
-        setSearchResults(results);
+        setSearchResults(res.items);
       } catch {
         setSearchResults([]);
       } finally {
@@ -274,7 +312,7 @@ export function WorkoutSession({ planId, scheduleId, onBack, onEndSession, isPro
     const defaultReps = exercise.sets[0]?.rep_count || 10;
     const newExercise: SessionExercise = {
       id: `${exercise.id}-${Date.now()}`,
-      name: exercise.name,
+      name: localized(exercise.name_i18n, exercise.name, language),
       exerciseId: exercise.id,
       mediaUrl: exercise.media?.url ?? null,
       targetSets: 3,
@@ -373,11 +411,9 @@ export function WorkoutSession({ planId, scheduleId, onBack, onEndSession, isPro
                 onClick={() => setExpandedExercise(isExpanded ? null : exercise.id)}
                 className="w-full p-4 flex items-center gap-3 bg-white"
               >
-                {exercise.mediaUrl && (
+                {!isExpanded && exercise.mediaUrl && (
                   <div className="flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden bg-gray-100">
-                    {exercise.mediaUrl.match(/\.(jpg|jpeg|png|gif|webp)$/i) ? (
-                      <img src={exercise.mediaUrl} alt={exercise.name} className="w-full h-full object-cover" />
-                    ) : (
+                    {isVideoUrl(exercise.mediaUrl) ? (
                       <video
                         src={exercise.mediaUrl}
                         className="w-full h-full object-cover"
@@ -386,6 +422,8 @@ export function WorkoutSession({ planId, scheduleId, onBack, onEndSession, isPro
                         muted
                         playsInline
                       />
+                    ) : (
+                      <img src={exercise.mediaUrl} alt={exercise.name} className="w-full h-full object-cover" />
                     )}
                   </div>
                 )}
@@ -408,6 +446,22 @@ export function WorkoutSession({ planId, scheduleId, onBack, onEndSession, isPro
 
               {isExpanded && (
                 <div className="px-4 pb-4 space-y-3 bg-gray-50/50 border-t border-gray-100 pt-4">
+                  {exercise.mediaUrl && (
+                    <div className="mb-1 rounded-2xl overflow-hidden bg-gradient-to-b from-white to-gray-100 border border-gray-200 flex items-center justify-center h-56">
+                      {isVideoUrl(exercise.mediaUrl) ? (
+                        <video
+                          src={exercise.mediaUrl}
+                          className="h-full w-auto object-contain"
+                          autoPlay
+                          loop
+                          muted
+                          playsInline
+                        />
+                      ) : (
+                        <img src={exercise.mediaUrl} alt={exercise.name} className="h-full w-auto object-contain" />
+                      )}
+                    </div>
+                  )}
                   {exercise.sets.map((set, setIndex) => (
                     <div 
                       key={setIndex}
@@ -519,15 +573,15 @@ export function WorkoutSession({ planId, scheduleId, onBack, onEndSession, isPro
               >
                 {exercise.media?.url && (
                   <div className="w-12 h-12 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
-                    {exercise.media.url.match(/\.(jpg|jpeg|png|gif|webp)$/i) ? (
-                      <img src={exercise.media.url} alt={exercise.name} className="w-full h-full object-cover" />
+                    {isVideoUrl(exercise.media.url) ? (
+                      <video src={exercise.media.url} className="w-full h-full object-cover" autoPlay muted loop playsInline />
                     ) : (
-                      <video src={exercise.media.url} className="w-full h-full object-cover" muted playsInline />
+                      <img src={exercise.media.url} alt={localized(exercise.name_i18n, exercise.name, language)} className="w-full h-full object-cover" />
                     )}
                   </div>
                 )}
                 <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-navy truncate">{exercise.name}</p>
+                  <p className="font-semibold text-navy truncate">{localized(exercise.name_i18n, exercise.name, language)}</p>
                   <p className="text-xs text-gray-400 capitalize">{exercise.sport_type.toLowerCase()}</p>
                 </div>
                 <div className="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center flex-shrink-0">

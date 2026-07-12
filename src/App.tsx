@@ -30,6 +30,7 @@ import { MessageThread } from './components/MessageThread';
 import { ChannelView } from './components/ChannelView';
 import { PrivacySettings } from './components/PrivacySettings';
 import { ProfileSettings } from './components/ProfileSettings';
+import { About } from './components/About';
 import { LanguageProvider } from './contexts/LanguageContext';
 import { useAuth } from './contexts/AuthContext';
 import * as SessionsAPI from './api/sessions';
@@ -43,7 +44,7 @@ const DEFAULT_VIEW: ViewType = FEATURES.feed ? 'feed' : 'workouts-home';
 export type SportType = 'fitness' | 'climbing';
 export type UserRole = 'athlete' | 'coach';
 export type UserTier = 'free' | 'pro';
-export type ViewType = 'sport-selection' | 'logging' | 'feed' | 'profile' | 'coach-dashboard' | 'post-creation' | 'exercise-builder' | 'plan-builder' | 'coach-application' | 'coach-marketplace' | 'tier-builder' | 'tier-comparison' | 'test-builder' | 'athlete-tests' | 'assessment-run' | 'assessment-history' | 'workouts-home' | 'workout-session' | 'athlete-search' | 'athletes-coaches' | 'messages' | 'message-thread' | 'channel-view' | 'privacy-settings' | 'profile-settings' | 'notifications' | 'wallet';
+export type ViewType = 'sport-selection' | 'logging' | 'feed' | 'profile' | 'coach-dashboard' | 'post-creation' | 'exercise-builder' | 'plan-builder' | 'coach-application' | 'coach-marketplace' | 'tier-builder' | 'tier-comparison' | 'test-builder' | 'athlete-tests' | 'assessment-run' | 'assessment-history' | 'workouts-home' | 'workout-session' | 'athlete-search' | 'athletes-coaches' | 'messages' | 'message-thread' | 'channel-view' | 'privacy-settings' | 'profile-settings' | 'notifications' | 'wallet' | 'about';
 
 export default function App() {
   const { isAuthenticated, user, tokens, refreshUser } = useAuth();
@@ -84,7 +85,7 @@ export default function App() {
         const { planId, scheduleId: storedScheduleId } = JSON.parse(storedRaw);
         setActivePlanId(planId || null);
         setActiveScheduleId(storedScheduleId || null);
-        setCurrentView('workout-session');
+        // Don't force back into the session — WorkoutsHome shows a resume banner.
       } catch {
         localStorage.removeItem(SESSION_KEY);
       }
@@ -146,11 +147,6 @@ export default function App() {
       setCurrentView((prev) => { if (prev !== 'notifications') setNotifReturnView(prev); return 'notifications'; });
       return;
     }
-    // If navigating to workouts while a session is active, resume it
-    if (view === 'workouts-home' && localStorage.getItem(SESSION_KEY)) {
-      setCurrentView('workout-session');
-      return;
-    }
     setCurrentView(view as ViewType);
   };
 
@@ -197,6 +193,38 @@ export default function App() {
     setActivePlanId(null);
     setActiveScheduleId(null);
     setCurrentView('workouts-home');
+  };
+
+  // Re-enter an in-progress session WITHOUT rewriting SESSION_KEY (keeps its
+  // sessionId so WorkoutSession resumes rather than creating a new session).
+  const handleResumeSession = () => {
+    const raw = localStorage.getItem(SESSION_KEY);
+    if (!raw) return;
+    try {
+      const { planId, scheduleId } = JSON.parse(raw);
+      setActivePlanId(planId || null);
+      setActiveScheduleId(scheduleId || null);
+      setCurrentView('workout-session');
+    } catch {
+      localStorage.removeItem(SESSION_KEY);
+    }
+  };
+
+  // Abandon the in-progress session and clear it.
+  const handleDiscardSession = async () => {
+    const raw = localStorage.getItem(SESSION_KEY);
+    localStorage.removeItem(SESSION_KEY);
+    setActivePlanId(null);
+    setActiveScheduleId(null);
+    setWorkoutsRefreshTrigger(Date.now());
+    if (raw && tokens?.access_token) {
+      try {
+        const { sessionId } = JSON.parse(raw);
+        if (sessionId) await SessionsAPI.updateSession(tokens.access_token, sessionId, { status: 'ABANDONED' });
+      } catch {
+        /* best-effort */
+      }
+    }
   };
 
   const renderView = () => {
@@ -345,6 +373,8 @@ export default function App() {
           }}
           onCreatePlan={() => { setBuilderPlanId(null); setCurrentView('plan-builder'); }}
           onViewPlan={(planId: string) => { setBuilderPlanId(planId); setCurrentView('plan-builder'); }}
+          onResumeSession={handleResumeSession}
+          onDiscardSession={handleDiscardSession}
           userRole={userRole}
           onNavigate={handleNavigate}
           isPro={isPro}
@@ -392,6 +422,8 @@ export default function App() {
         return null;
       case 'privacy-settings':
         return <PrivacySettings onBack={() => setCurrentView('profile')} />;
+      case 'about':
+        return <About onBack={() => setCurrentView(DEFAULT_VIEW)} />;
       case 'profile-settings':
         return <ProfileSettings userRole={userRole} onBack={() => setCurrentView('profile')} />;
       case 'pro-subscription':

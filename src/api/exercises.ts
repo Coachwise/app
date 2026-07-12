@@ -1,12 +1,24 @@
 import { request } from "./client";
-import type { Exercise, ExerciseForm } from "./types";
+import type { Exercise, ExerciseCategory, ExerciseForm } from "./types";
 
-export function listExercises(token: string, params?: { public?: boolean; name?: string }) {
-  const search = new URLSearchParams();
-  if (params?.public !== undefined) search.set("public", String(params.public));
-  if (params?.name) search.set("name", params.name);
-  const query = search.toString() ? `?${search.toString()}` : "";
-  return request<Exercise[]>(`/exercises${query}`, { token });
+export function listExercises(
+  token: string,
+  params?: { public?: boolean; search?: string; category?: string; sport?: string; page?: number; limit?: number },
+) {
+  const qs = new URLSearchParams();
+  if (params?.public !== undefined) qs.set("public", String(params.public));
+  if (params?.search) qs.set("search", params.search);
+  if (params?.category) qs.set("category", params.category);
+  if (params?.sport) qs.set("sport", params.sport);
+  if (params?.page) qs.set("page", String(params.page));
+  if (params?.limit) qs.set("limit", String(params.limit));
+  const query = qs.toString() ? `?${qs.toString()}` : "";
+  return request<{ items: Exercise[]; total: number }>(`/exercises${query}`, { token });
+}
+
+export function listExerciseCategories(token: string, sport?: string) {
+  const query = sport ? `?sport=${encodeURIComponent(sport)}` : "";
+  return request<{ items: ExerciseCategory[] }>(`/exercises/categories${query}`, { token });
 }
 
 export function createExercise(token: string, body: ExerciseForm) {

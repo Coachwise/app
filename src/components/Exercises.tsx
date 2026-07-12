@@ -2,9 +2,13 @@ import { useEffect, useState } from 'react';
 import { ArrowLeft, Plus, RefreshCw, Search, Dumbbell, Edit3, Trash2 } from 'lucide-react';
 import { ExerciseBuilder } from './ExerciseBuilder';
 import * as ExercisesAPI from '../api/exercises';
-import type { Exercise } from '../api/types';
+import type { Exercise, ExerciseCategory } from '../api/types';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
+import { localized } from '../lib/localize';
+
+// Only these play as <video>; everything else (svg, gif, webp, png, jpg) is an <img>.
+const isVideoUrl = (url: string) => /\.(mp4|webm|mov|m4v)$/i.test(url);
 
 interface ExercisesProps {
   onBack: () => void;
@@ -14,17 +18,22 @@ const nsToSeconds = (value?: number | null) => Math.max(0, Math.round((value ?? 
 
 export function Exercises({ onBack }: ExercisesProps) {
   const { tokens, user } = useAuth();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const isCoach = Boolean(user?.is_coach); // only coaches create/edit exercises
+  const PAGE_SIZE = 20;
   const [exercises, setExercises] = useState<Exercise[]>([]);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [publicOnly, setPublicOnly] = useState(false);
+  const [categories, setCategories] = useState<ExerciseCategory[]>([]);
+  const [category, setCategory] = useState(''); // selected category slug ('' = all)
   const [creating, setCreating] = useState(false);
   const [editing, setEditing] = useState<Exercise | null>(null);
 
-  const fetchExercises = async (opts?: { publicOnly?: boolean; search?: string }) => {
+  const fetchExercises = async (opts?: { publicOnly?: boolean; search?: string; category?: string; page?: number; append?: boolean }) => {
     if (!tokens?.access_token) {
       setError(t('notAuthenticated'));
       return;
@@ -34,11 +43,18 @@ export function Exercises({ onBack }: ExercisesProps) {
     try {
       const publicFilter = opts?.publicOnly ?? publicOnly;
       const searchFilter = opts?.search ?? search;
-      const items = await ExercisesAPI.listExercises(tokens.access_token, {
-        name: searchFilter.trim() || undefined,
+      const categoryFilter = opts?.category ?? category;
+      const pageToLoad = opts?.page ?? 1;
+      const res = await ExercisesAPI.listExercises(tokens.access_token, {
+        search: searchFilter.trim() || undefined,
+        category: categoryFilter || undefined,
         public: publicFilter ? true : undefined,
+        page: pageToLoad,
+        limit: PAGE_SIZE,
       });
-      setExercises(items);
+      setTotal(res.total);
+      setPage(pageToLoad);
+      setExercises((prev) => (opts?.append ? [...prev, ...res.items] : res.items));
     } catch (e) {
       const msg = e instanceof Error ? e.message : t('unableToLoadExercises');
       setError(msg);
@@ -47,10 +63,26 @@ export function Exercises({ onBack }: ExercisesProps) {
     }
   };
 
+  // Debounced server-side search: refetch page 1 when the query settles.
   useEffect(() => {
-    fetchExercises();
+    const id = setTimeout(() => fetchExercises({ search, page: 1 }), 300);
+    return () => clearTimeout(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [search]);
+
+  // Load categories once for the filter chips.
+  useEffect(() => {
+    if (!tokens?.access_token) return;
+    ExercisesAPI.listExerciseCategories(tokens.access_token)
+      .then((res) => setCategories(res.items))
+      .catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tokens?.access_token]);
+
+  const selectCategory = (slug: string) => {
+    setCategory(slug);
+    fetchExercises({ category: slug, page: 1 });
+  };
 
   const handleSaved = (exercise: Exercise) => {
     setCreating(false);
@@ -151,6 +183,30 @@ export function Exercises({ onBack }: ExercisesProps) {
             />
             {t('showPublicOnly')}
           </label>
+
+          {categories.length > 0 && (
+            <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
+              <button
+                onClick={() => selectCategory('')}
+                className={`shrink-0 px-3 py-1.5 rounded-full text-sm transition-colors ${
+                  category === '' ? 'bg-navy text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                {t('allCategories')}
+              </button>
+              {categories.map((c) => (
+                <button
+                  key={c.id}
+                  onClick={() => selectCategory(c.slug)}
+                  className={`shrink-0 px-3 py-1.5 rounded-full text-sm transition-colors ${
+                    category === c.slug ? 'bg-navy text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  {localized(c.name_i18n, c.slug, language)}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         <div className="space-y-3">
@@ -163,14 +219,15 @@ export function Exercises({ onBack }: ExercisesProps) {
             </div>
           )}
           {!loading &&
-            exercises.map((exercise) => (
+            exercises.map((exercise) => {
+              const name = localized(exercise.name_i18n, exercise.name, language);
+              const description = localized(exercise.description_i18n, exercise.description, language);
+              return (
               <div key={exercise.id} className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
                 <div className="flex items-start gap-3">
                   {exercise.media?.url && (
                     <div className="flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden bg-gray-100">
-                      {exercise.media.url.match(/\.(jpg|jpeg|png|gif|webp)$/i) ? (
-                        <img src={exercise.media.url} alt={exercise.name} className="w-full h-full object-cover" />
-                      ) : (
+                      {isVideoUrl(exercise.media.url) ? (
                         <video
                           src={exercise.media.url}
                           className="w-full h-full object-cover"
@@ -179,17 +236,19 @@ export function Exercises({ onBack }: ExercisesProps) {
                           muted
                           playsInline
                         />
+                      ) : (
+                        <img src={exercise.media.url} alt={name} className="w-full h-full object-cover" />
                       )}
                     </div>
                   )}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <h3 className="text-gray-900 font-semibold">{exercise.name}</h3>
+                      <h3 className="text-gray-900 font-semibold">{name}</h3>
                       {exercise.public && (
                         <span className="text-xs px-2 py-0.5 rounded-full bg-green-100 text-green-700">{t('publicLabel')}</span>
                       )}
                     </div>
-                    <p className="text-gray-600 text-sm mt-1">{exercise.description || t('noDescriptionYet')}</p>
+                    <p className="text-gray-600 text-sm mt-1">{description || t('noDescriptionYet')}</p>
                     <div className="mt-3 space-y-1">
                       {exercise.sets.map((set, idx) => (
                         <div key={set.id || idx} className="text-sm text-gray-700">
@@ -223,7 +282,17 @@ export function Exercises({ onBack }: ExercisesProps) {
                   )}
                 </div>
               </div>
-            ))}
+              );
+            })}
+
+          {!loading && exercises.length > 0 && exercises.length < total && (
+            <button
+              onClick={() => fetchExercises({ page: page + 1, append: true })}
+              className="w-full py-2.5 text-sm text-navy bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              {t('loadMore')} ({exercises.length}/{total})
+            </button>
+          )}
         </div>
       </div>
     </div>

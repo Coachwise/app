@@ -54,10 +54,10 @@ export function Wallet({ onBack }: WalletProps) {
       setTxns(tx);
       if (isCoach) {
         const [pos, acc] = await Promise.all([
-          WalletAPI.listPayouts(token),
+          WalletAPI.listPayouts(token, { limit: 50 }),
           WalletAPI.getPayoutAccount(token),
         ]);
-        setPayouts(pos);
+        setPayouts(pos.items);
         setPayoutAccount(acc.account);
       }
       setError(null);

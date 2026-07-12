@@ -5,12 +5,19 @@ import type {
   PayoutAccount,
   PayoutAccountResponse,
   WalletBalance,
+  WalletIncome,
   WalletTransaction,
 } from "./types";
 
 // The current user's wallet balance (available + pending/escrow).
 export function getWallet(token: string) {
   return request<WalletBalance>("/wallet", { token });
+}
+
+// Cumulative earnings: all-time total + current month. Distinct from the
+// spendable balance, which nets out payouts and escrow.
+export function getIncome(token: string) {
+  return request<WalletIncome>("/wallet/income", { token });
 }
 
 // Ledger, newest first.
@@ -48,8 +55,12 @@ export function requestPayout(token: string, body: { amount: number; note?: stri
 }
 
 // A coach's payout requests.
-export function listPayouts(token: string) {
-  return request<Payout[]>("/wallet/payouts", { token });
+export function listPayouts(token: string, params?: { page?: number; limit?: number }) {
+  const qs = new URLSearchParams();
+  if (params?.page) qs.set("page", String(params.page));
+  if (params?.limit) qs.set("limit", String(params.limit));
+  const query = qs.toString() ? `?${qs.toString()}` : "";
+  return request<{ items: Payout[]; total: number }>(`/wallet/payouts${query}`, { token });
 }
 
 // The coach's payout destination for the wallet currency (account may be null).

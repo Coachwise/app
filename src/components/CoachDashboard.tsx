@@ -8,7 +8,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { ConnectionsAPI, PackagesAPI, PlansAPI, TestsAPI, AchievementsAPI } from '../api';
 import * as WalletAPI from '../api/wallet';
 import { formatMoney } from '../lib/money';
-import type { CoachClient, CoachPackage, Plan, User, Test, CoachAssignment, WalletBalance } from '../api/types';
+import type { CoachClient, CoachPackage, Plan, User, Test, CoachAssignment, WalletBalance, WalletIncome } from '../api/types';
 import type { ConnectionRequest } from '../api/connections';
 import { toast } from 'sonner';
 
@@ -49,13 +49,17 @@ export function CoachDashboard({ onBack, onNavigate, userRole = 'coach', isPro =
   const activeSection: Section = (section as Section) ?? localSection;
   const setActiveSection = (s: Section) => { setLocalSection(s); onSectionChange?.(s); };
 
-  // Coach earnings balance, loaded when the analytics tab is open.
+  // Coach earnings (cumulative income) + wallet balance, loaded when the
+  // analytics tab is open. Income is what they've earned; the wallet balance is
+  // what's currently spendable (net of payouts/escrow) — they are not the same.
   useEffect(() => {
     if (activeSection !== 'analytics' || !token) return;
     WalletAPI.getWallet(token).then(setWallet).catch(() => setWallet(null));
+    WalletAPI.getIncome(token).then(setIncome).catch(() => setIncome(null));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeSection, token]);
   const [wallet, setWallet] = useState<WalletBalance | null>(null);
+  const [income, setIncome] = useState<WalletIncome | null>(null);
   const [clients, setClients] = useState<CoachClient[]>([]);
   const [pending, setPending] = useState<ConnectionRequest[]>([]);
   const [myPlans, setMyPlans] = useState<Plan[]>([]);
@@ -854,23 +858,58 @@ export function CoachDashboard({ onBack, onNavigate, userRole = 'coach', isPro =
               </div>
               <div className="text-4xl text-navy">{myPlans.length}</div>
             </div>
+            {/* Income — each figure gets its own full-width card, because Toman
+                amounts are long and collide in a 2-up grid. Income is cumulative
+                earnings; the wallet balance below is what's actually spendable. */}
+            <div className="col-span-2 flex items-center justify-between mt-2">
+              <div className="flex items-center gap-2">
+                <DollarSign className="w-5 h-5 text-yellow-600" />
+                <span className="text-gray-600 text-sm">{t('earnings')}</span>
+              </div>
+              <button onClick={() => onNavigate?.('wallet')} className="text-yellow-600 text-sm hover:text-yellow-700">
+                {t('wallet')} →
+              </button>
+            </div>
+
             <div className="bg-white rounded-lg p-5 shadow-md border border-gray-200 col-span-2">
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <DollarSign className="w-5 h-5 text-yellow-600" />
-                  <span className="text-gray-600 text-sm">{t('earnings')}</span>
-                </div>
-                <button onClick={() => onNavigate?.('wallet')} className="text-yellow-600 text-sm hover:text-yellow-700">
-                  {t('wallet')} →
-                </button>
+              <div className="flex items-center gap-2 mb-2">
+                <TrendingUp className="w-4 h-4 text-gray-400" />
+                <span className="text-gray-500 text-sm">{t('totalIncome')}</span>
               </div>
-              <div className="text-3xl text-navy mb-1" dir="ltr">
-                {wallet ? formatMoney(wallet.available, wallet.currency, language) : '—'}
+              <div
+                className="text-3xl text-navy font-semibold tabular-nums break-words leading-tight"
+                dir="ltr"
+              >
+                {income ? formatMoney(income.total, income.currency, language) : '—'}
               </div>
-              <div className="text-gray-500 text-sm">{t('availableBalance')}</div>
+            </div>
+
+            <div className="bg-white rounded-lg p-5 shadow-md border border-gray-200 col-span-2">
+              <div className="flex items-center gap-2 mb-2">
+                <Calendar className="w-4 h-4 text-gray-400" />
+                <span className="text-gray-500 text-sm">{t('thisMonthIncome')}</span>
+              </div>
+              <div
+                className="text-3xl text-navy font-semibold tabular-nums break-words leading-tight"
+                dir="ltr"
+              >
+                {income ? formatMoney(income.month, income.currency, language) : '—'}
+              </div>
+            </div>
+
+            <div className="bg-white rounded-lg p-4 shadow-md border border-gray-200 col-span-2">
+              <div className="flex items-baseline justify-between gap-3">
+                <span className="text-gray-500 text-sm shrink-0">{t('availableBalance')}</span>
+                <span className="text-navy font-medium tabular-nums text-end break-words" dir="ltr">
+                  {wallet ? formatMoney(wallet.available, wallet.currency, language) : '—'}
+                </span>
+              </div>
               {wallet && wallet.pending > 0 && (
-                <div className="text-gray-400 text-xs mt-1" dir="ltr">
-                  + {formatMoney(wallet.pending, wallet.currency, language)} {t('pendingBalance')}
+                <div className="flex items-baseline justify-between gap-3 mt-1.5">
+                  <span className="text-gray-400 text-xs shrink-0">{t('pendingBalance')}</span>
+                  <span className="text-gray-400 text-xs tabular-nums text-end break-words" dir="ltr">
+                    + {formatMoney(wallet.pending, wallet.currency, language)}
+                  </span>
                 </div>
               )}
             </div>
