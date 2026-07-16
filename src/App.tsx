@@ -35,6 +35,7 @@ import { LanguageProvider } from './contexts/LanguageContext';
 import { useAuth } from './contexts/AuthContext';
 import * as SessionsAPI from './api/sessions';
 import { FEATURES } from './config';
+import { setReportView } from './lib/report';
 
 const SESSION_KEY = 'coachwise-active-session';
 // Where the app lands after login / when returning "home". Feed can be hidden
@@ -116,6 +117,8 @@ export default function App() {
     window.scrollTo(0, 0);
     const scroller = document.querySelector('.overflow-auto');
     if (scroller) scroller.scrollTop = 0;
+    // Tell the crash reporter which screen we're on, so an alert can name it.
+    setReportView(currentView);
   }, [currentView, viewingUserId]);
 
   const handleLogin = () => {

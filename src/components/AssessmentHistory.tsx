@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { ArrowLeft, Plus, TrendingUp, TrendingDown, Minus, LineChart, History } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
+import { localized } from '../lib/localize';
 import { TestsAPI } from '../api';
 import type { Test, TestRequest, TestItem } from '../api/types';
 import { toast } from 'sonner';
@@ -165,7 +166,7 @@ export function AssessmentHistory({ token, protocolId, onBack, onRun, athleteId,
                   <div key={item.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
                     <div className="flex items-start justify-between gap-2 mb-1">
                       <div className="min-w-0">
-                        <div className="text-navy font-medium truncate">{item.exercise_name}</div>
+                        <div className="text-navy font-medium truncate">{localized(item.exercise_name_i18n, item.exercise_name, language)}</div>
                         <div className="text-[11px] text-gray-400">{t('latest')}</div>
                       </div>
                       <div className="text-end shrink-0">
@@ -205,7 +206,7 @@ export function AssessmentHistory({ token, protocolId, onBack, onRun, athleteId,
                   <div className="space-y-1.5">
                     {run.records.map((r, i) => (
                       <div key={i} className="flex items-center justify-between gap-2 text-sm">
-                        <span className="text-gray-600 truncate">{r.exercise_name}</span>
+                        <span className="text-gray-600 truncate">{localized(r.exercise_name_i18n, r.exercise_name ?? '', language)}</span>
                         <span className="text-navy tabular-nums shrink-0">
                           {[
                             r.weight != null ? `${r.weight} ${t('unitKg')}` : null,

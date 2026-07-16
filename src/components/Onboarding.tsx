@@ -1,15 +1,26 @@
 import { useEffect, useRef, useState } from 'react';
 import { Camera, User as UserIcon, AtSign, Loader2, Check, X } from 'lucide-react';
-import { Logo } from './ui/logo';
+import { Brand } from './ui/logo';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import * as UsersAPI from '../api/users';
 import * as MediaAPI from '../api/media';
 import * as AuthAPI from '../api/auth';
 import { errorText } from '../api/errors';
+import { prepareImage, UnsupportedImageError, type PreparedImage } from '../lib/image';
+import { AvatarCropper } from './AvatarCropper';
 
 interface OnboardingProps {
   onDone: () => void;
+}
+
+// A username is 5–24 letters and digits, matching the API's binding rule
+// (min=5,max=24,alphanum). Returns the translation key of the problem, or null.
+function usernameProblem(raw: string): string | null {
+  const handle = raw.trim().replace(/^@+/, '');
+  if (handle.length < 5 || handle.length > 24) return 'usernameLength';
+  if (!/^[a-zA-Z0-9]+$/.test(handle)) return 'usernameCharset';
+  return null;
 }
 
 // Shown once after a first (typically phone) login, before the app: the
@@ -26,6 +37,7 @@ export function Onboarding({ onDone }: OnboardingProps) {
   const [avatarId, setAvatarId] = useState<string | null>(user?.avatar_id ?? null);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(user?.avatar?.url ?? null);
   const [uploading, setUploading] = useState(false);
+  const [pending, setPending] = useState<PreparedImage | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   // Check username availability as they type (debounced) so we catch a clash
@@ -34,7 +46,9 @@ export function Onboarding({ onDone }: OnboardingProps) {
 
   useEffect(() => {
     const handle = username.trim().replace(/^@/, '');
-    if (!handle || handle.length < 3 || handle === user?.username) {
+    // Don't ask the server whether an invalid handle is free — the form already
+    // knows the answer is "you can't have it either way".
+    if (!handle || handle === user?.username || usernameProblem(handle)) {
       setUsernameStatus('idle');
       return;
     }
@@ -54,15 +68,32 @@ export function Onboarding({ onDone }: OnboardingProps) {
   const inputPad = isRTL ? 'pr-10 pl-4' : 'pl-10 pr-4';
   const inputCls = `w-full bg-gray-50 border border-gray-200 rounded-lg py-3 ${inputPad} text-navy focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent`;
 
+  // Picking a photo opens the cropper; the upload happens once it's framed.
   const handleAvatar = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file || !tokens?.access_token) return;
-    setUploading(true);
+    e.target.value = '';
+    if (!file) return;
     setError(null);
     try {
-      const media = await MediaAPI.uploadMedia(tokens.access_token, file);
+      setPending(await prepareImage(file));
+    } catch (err) {
+      setError(err instanceof UnsupportedImageError ? t('imageFormatUnsupported') : errorText(t, err));
+    }
+  };
+
+  const closeCropper = () => {
+    pending?.release();
+    setPending(null);
+  };
+
+  const uploadAvatar = async (avatar: File) => {
+    if (!tokens?.access_token) return;
+    setUploading(true);
+    try {
+      const media = await MediaAPI.uploadMedia(tokens.access_token, avatar);
       setAvatarId(media.id);
       setAvatarUrl(media.url);
+      closeCropper();
     } catch (err) {
       setError(errorText(t, err));
     } finally {
@@ -76,6 +107,8 @@ export function Onboarding({ onDone }: OnboardingProps) {
     if (!firstName.trim()) { setError(t('firstNameRequired')); return; }
     if (!lastName.trim()) { setError(t('lastNameRequired')); return; }
     if (!username.trim()) { setError(t('usernameRequired')); return; }
+    const problem = usernameProblem(username);
+    if (problem) { setError(t(problem)); return; }
     if (usernameStatus === 'taken') { setError(t('usernameExists')); return; }
     setSaving(true);
     setError(null);
@@ -97,11 +130,12 @@ export function Onboarding({ onDone }: OnboardingProps) {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-navy to-navy-light flex items-center justify-center p-4">
+      {pending && (
+        <AvatarCropper image={pending} busy={uploading} onCancel={closeCropper} onDone={uploadAvatar} />
+      )}
       <div className="w-full max-w-md">
         <div className="text-center mb-6">
-          <div className="inline-flex items-center justify-center w-14 h-14 bg-yellow-500 rounded-2xl mb-3">
-            <Logo className="w-10 h-10 text-navy" />
-          </div>
+          <Brand name={t('appName')} tile="yellow" size="sm" className="text-white mb-3" />
           <h1 className="text-white text-2xl mb-1">{t('welcomeToCoachwise')}</h1>
           <p className="text-white/80 text-sm">{t('completeProfileHint')}</p>
         </div>
@@ -147,14 +181,25 @@ export function Onboarding({ onDone }: OnboardingProps) {
               <label className="block text-navy text-sm mb-2">{t('username')}</label>
               <div className="relative">
                 <AtSign className={`absolute top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 ${iconSide}`} />
-                <input value={username} onChange={(e) => setUsername(e.target.value)} placeholder="your_username" className={inputCls} required />
+                <input
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  placeholder="yourname"
+                  maxLength={24}
+                  className={inputCls}
+                  required
+                />
                 <span className={`absolute top-1/2 -translate-y-1/2 ${isRTL ? 'left-3' : 'right-3'}`}>
                   {usernameStatus === 'checking' && <Loader2 className="w-4 h-4 text-gray-400 animate-spin" />}
                   {usernameStatus === 'available' && <Check className="w-4 h-4 text-green-600" />}
-                  {usernameStatus === 'taken' && <X className="w-4 h-4 text-red-500" />}
+                  {(usernameStatus === 'taken' || (username.trim() !== '' && usernameProblem(username))) && (
+                    <X className="w-4 h-4 text-red-500" />
+                  )}
                 </span>
               </div>
-              {usernameStatus === 'taken' ? (
+              {username.trim() !== '' && usernameProblem(username) ? (
+                <p className="text-red-500 text-xs mt-1.5">{t(usernameProblem(username)!)}</p>
+              ) : usernameStatus === 'taken' ? (
                 <p className="text-red-500 text-xs mt-1.5">{t('usernameExists')}</p>
               ) : usernameStatus === 'available' ? (
                 <p className="text-green-600 text-xs mt-1.5">{t('usernameAvailable')}</p>

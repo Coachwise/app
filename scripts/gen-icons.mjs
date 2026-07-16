@@ -17,8 +17,12 @@ const brand = (f) => readFileSync(join(root, 'brand', f), 'utf8');
 const res = (p) => join(root, 'android/app/src/main/res', p);
 
 const NAVY = '#0E0E55';
+const YELLOW = '#eab308'; // --brand-yellow
 
 const icon = brand('icon.svg');
+// mark.svg is `currentColor` (one colour, set by whatever it sits on), so every
+// job that uses it must say which colour — here it is always the yellow-on-navy
+// pairing of the splash screens.
 const mark = brand('mark.svg');
 const foreground = brand('icon-foreground.svg');
 // iOS masks the icon itself, so it needs the art square, not pre-rounded.
@@ -89,6 +93,7 @@ for (const job of jobs) {
     `<style>
        html,body{margin:0;padding:0;width:${job.w}px;height:${job.h}px;
          background:${job.bg ?? 'transparent'};
+         color:${job.color ?? YELLOW};
          display:flex;align-items:center;justify-content:center}
        svg{${size};display:block}
      </style>${job.svg}`,

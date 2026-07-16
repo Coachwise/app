@@ -571,6 +571,8 @@ export const translations = {
     field_email: 'Email',
     field_phone: 'Phone number',
     field_password: 'Password',
+    // The product name, written in the reader's script.
+    appName: 'Coachwise',
     // Onboarding
     welcomeToCoachwise: 'Welcome to Coachwise',
     completeProfileHint: "Let's set up your profile — this is how coaches and athletes will find you.",
@@ -578,7 +580,9 @@ export const translations = {
     lastNamePlaceholder: 'Rezaei',
     firstNameRequired: 'Please enter your first name',
     lastNameRequired: 'Please enter your last name',
-    usernameHint: 'Others find and mention you by this handle.',
+    usernameHint: '5–24 letters and numbers. Others find and mention you by this handle.',
+    usernameLength: 'Username must be between 5 and 24 characters',
+    usernameCharset: 'Username can only contain letters and numbers',
     usernameAvailable: 'Username is available',
     continueLabel: 'Continue',
 
@@ -869,6 +873,11 @@ export const translations = {
     videoThumbnailAlt: 'Video thumbnail',
     // --- Profile settings ---
     unableToUploadImage: 'Unable to upload image',
+    imageFormatUnsupported: "This photo's format isn't supported. Try another photo, or take a new one.",
+    adjustPhoto: 'Frame your photo',
+    adjustPhotoHint: 'Drag to move, pinch or scroll to zoom.',
+    usePhoto: 'Use photo',
+    zoom: 'Zoom',
     unableToSaveProfile: 'Unable to save profile',
     profileSettings: 'Profile Settings',
     firstName: 'First Name',
@@ -1713,14 +1722,18 @@ export const translations = {
     field_email: 'ایمیل',
     field_phone: 'شماره موبایل',
     field_password: 'رمز عبور',
+    // The product name, written in the reader's script.
+    appName: 'کوچ‌وایز',
     // Onboarding
-    welcomeToCoachwise: 'به Coachwise خوش آمدید',
+    welcomeToCoachwise: 'به کوچ‌وایز خوش آمدید',
     completeProfileHint: 'بیایید پروفایلتان را کامل کنیم — مربی‌ها و ورزشکاران از این طریق شما را پیدا می‌کنند.',
     firstNamePlaceholder: 'علی',
     lastNamePlaceholder: 'رضایی',
     firstNameRequired: 'لطفاً نام خود را وارد کنید',
     lastNameRequired: 'لطفاً نام خانوادگی خود را وارد کنید',
-    usernameHint: 'دیگران با این نام کاربری شما را پیدا و منشن می‌کنند.',
+    usernameHint: '۵ تا ۲۴ حرف و عدد. دیگران با این نام کاربری شما را پیدا و منشن می‌کنند.',
+    usernameLength: 'نام کاربری باید بین ۵ تا ۲۴ نویسه باشد',
+    usernameCharset: 'نام کاربری فقط می‌تواند شامل حروف انگلیسی و عدد باشد',
     usernameAvailable: 'نام کاربری در دسترس است',
     continueLabel: 'ادامه',
 
@@ -2010,6 +2023,11 @@ export const translations = {
     videoThumbnailAlt: 'بندانگشتی ویدیو',
     // --- Profile settings ---
     unableToUploadImage: 'بارگذاری تصویر ممکن نشد',
+    imageFormatUnsupported: 'قالب این عکس پشتیبانی نمی‌شود. عکس دیگری انتخاب کنید یا یک عکس تازه بگیرید.',
+    adjustPhoto: 'عکس خود را تنظیم کنید',
+    adjustPhotoHint: 'برای جابه‌جایی بکشید، برای بزرگ‌نمایی دو انگشت را باز کنید.',
+    usePhoto: 'استفاده از عکس',
+    zoom: 'بزرگ‌نمایی',
     unableToSaveProfile: 'ذخیره پروفایل ممکن نشد',
     profileSettings: 'تنظیمات پروفایل',
     firstName: 'نام',

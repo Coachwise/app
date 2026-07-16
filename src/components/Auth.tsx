@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Globe, KeyRound, Smartphone, ArrowLeft, ChevronDown } from 'lucide-react';
-import { Logo } from './ui/logo';
+import { Brand } from './ui/logo';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
 import * as AuthAPI from '../api/auth';
@@ -109,10 +109,7 @@ export function Auth({ onLogin }: AuthProps) {
       <div className="flex-1 flex items-center justify-center p-4">
         <div className="w-full max-w-md">
           <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-yellow-500 rounded-2xl mb-4">
-              <Logo className="w-12 h-12 text-navy" />
-            </div>
-            <h1 className="text-white text-3xl mb-2">Coachwise</h1>
+            <Brand name={t('appName')} tile="yellow" size="lg" className="text-white mb-3" />
             <p className="text-white/80">{subtitle}</p>
           </div>
 

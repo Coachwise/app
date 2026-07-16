@@ -2,6 +2,34 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Type. The same pair the landing site uses, self-hosted from public/fonts —
+   Google Fonts is a poor dependency for users in Iran, and inside the native
+   shell there may be no network at first paint at all.
+
+   Vazirmatn carries the interface in both languages. Lalezar is the display
+   face (Persian poster lettering; its Latin covers English), and it is reserved
+   for the brand wordmark — it is a voice, not a text face. */
+@font-face {
+  font-family: "Vazirmatn";
+  src: url("/fonts/Vazirmatn-var.woff2") format("woff2-variations");
+  font-weight: 300 800;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Lalezar";
+  src: url("/fonts/Lalezar-arabic.woff2") format("woff2");
+  unicode-range: U+0600-06FF, U+0750-077F, U+FB50-FDFF, U+FE70-FEFF, U+200C;
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Lalezar";
+  src: url("/fonts/Lalezar-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+2000-206F, U+2190-21FF, U+2212;
+  font-weight: 400;
+  font-display: swap;
+}
+
 :root {
   --font-size: 16px;
   /* Brand Colors - Navy & Yellow Only. Change these to re-theme the whole app. */
@@ -10,6 +38,7 @@
   --brand-yellow-dark: #ca8a04;
   --brand-navy: #0E0E55;
   --brand-navy-light: #1A1A6E;
+  --brand-ice: #EEF2F7;
   --brand-gray-medium: #6B7280;
   --brand-gray-light: #9CA3AF;
   
@@ -95,8 +124,14 @@
      palette is driven entirely from the --brand-* custom properties in :root.
      Navy is exposed as `navy`/`navy-light`; the yellow scale is retargeted to
      the brand yellow so existing yellow-400/500/600 classes are var-driven. */
+  /* One text face for both languages; the display face is the brand's voice and
+     is used only for the wordmark (`font-display`). */
+  --font-sans: "Vazirmatn", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: "Lalezar", "Vazirmatn", system-ui, sans-serif;
+
   --color-navy: var(--brand-navy);
   --color-navy-light: var(--brand-navy-light);
+  --color-ice: var(--brand-ice);
   --color-yellow-400: var(--brand-yellow-light);
   --color-yellow-500: var(--brand-yellow);
   --color-yellow-600: var(--brand-yellow-dark);
@@ -146,7 +181,7 @@
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans;
   }
 }
 
@@ -233,7 +268,6 @@ html {
   flex-direction: row-reverse;
 }
 
-/* Persian font support - better readability */
-[lang="fa"] {
-  font-family: system-ui, -apple-system, "Segoe UI", "Roboto", "Ubuntu", "Cantarell", "Noto Sans", sans-serif;
-}
+/* Persian used to fall back to whatever sans the device had. It now gets
+   Vazirmatn like everything else (see the @font-face block at the top) — this
+   rule would have overridden it on exactly the language that needs it most. */

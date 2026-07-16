@@ -333,6 +333,7 @@ export interface TestItem {
   id: UUID;
   exercise_id: UUID;
   exercise_name: string;
+  exercise_name_i18n?: Record<string, string> | null;
   track_reps: boolean;
   track_weight: boolean;
   track_time: boolean;
@@ -374,6 +375,7 @@ export type TestRequestStatus = 'PENDING' | 'SUBMITTED' | 'SEEN';
 export interface TestRequestRecord {
   exercise_id: UUID;
   exercise_name?: string;
+  exercise_name_i18n?: Record<string, string> | null;
   reps?: number | null;
   weight?: number | null;
   duration_seconds?: number | null;
@@ -439,6 +441,7 @@ export interface Achievement {
 export interface PersonalRecord {
   exercise_id: UUID;
   exercise_name: string;
+  exercise_name_i18n?: Record<string, string> | null;
   best_weight?: number | null;
   best_reps?: number | null;
   best_time?: number | null;

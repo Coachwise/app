@@ -1,5 +1,5 @@
 import { ArrowLeft } from 'lucide-react';
-import { Logo } from './ui/logo';
+import { Brand } from './ui/logo';
 import { useLanguage } from '../contexts/LanguageContext';
 import { APP_VERSION, APP_IS_BETA } from '../config';
 
@@ -22,12 +22,9 @@ export function About({ onBack }: AboutProps) {
       </div>
 
       <div className="p-6 flex flex-col items-center text-center">
-        <div className="w-20 h-20 rounded-2xl bg-navy flex items-center justify-center shadow-sm mt-6">
-          <Logo className="w-14 h-14 text-yellow-500" />
-        </div>
+        <Brand name={t('appName')} tile="navy" size="sm" className="text-navy mt-6" />
 
         <div className="mt-4 flex items-center gap-2">
-          <h2 className="text-2xl font-bold text-navy">Coachwise</h2>
           {APP_IS_BETA && (
             <span className="px-2 py-0.5 rounded-md bg-yellow-500 text-navy text-xs font-bold tracking-wide">
               {t('beta')}

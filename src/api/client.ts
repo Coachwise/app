@@ -1,5 +1,6 @@
 import { config } from "@/config";
 import { ApiError } from "./errors";
+import { report } from "@/lib/report";
 
 const API_URL = config.apiURL;
 
@@ -59,6 +60,17 @@ export async function request<TResponse, TBody = unknown>(
   const data = text ? JSON.parse(text) : null;
 
   if (!res.ok) {
+    // A 5xx is the server's bug, not the caller's — report it, tagged with the
+    // request id the API echoed, so this report and the server-side alert join
+    // up. 4xx is expected (bad input, expired token) and is left to the caller.
+    if (res.status >= 500) {
+      report({
+        kind: "api",
+        message: `${res.status} ${method} ${path}: ${data?.error || res.statusText}`,
+        requestId: res.headers.get("X-Request-ID") ?? undefined,
+        url: `${API_URL}${path}`,
+      });
+    }
     throw new ApiError({
       code: data?.code,
       message: data?.error || res.statusText,

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { ArrowLeft, ClipboardList } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
+import { localized } from '../lib/localize';
 import { TestsAPI } from '../api';
 import type { Test, TestItem, SubmittedRecord } from '../api/types';
 import { toast } from 'sonner';
@@ -20,7 +21,7 @@ const METRIC_FIELDS: { field: 'reps' | 'weight' | 'time'; track: keyof TestItem;
 ];
 
 export function RunAssessment({ token, protocolId, onCancel, onSaved }: RunAssessmentProps) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [protocol, setProtocol] = useState<Test | null>(null);
   const [values, setValues] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
@@ -108,7 +109,7 @@ export function RunAssessment({ token, protocolId, onCancel, onSaved }: RunAsses
                   const fields = METRIC_FIELDS.filter((f) => it[f.track]);
                   return (
                     <div key={it.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
-                      <div className="text-navy font-medium mb-2.5">{it.exercise_name}</div>
+                      <div className="text-navy font-medium mb-2.5">{localized(it.exercise_name_i18n, it.exercise_name, language)}</div>
                       <div className="flex gap-2">
                         {fields.map((f) => (
                           <div key={f.field} className="flex-1">

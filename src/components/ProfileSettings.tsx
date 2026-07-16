@@ -5,10 +5,21 @@ import type { UserRole } from '../App';
 import { useAuth } from '../contexts/AuthContext';
 import * as UsersAPI from '../api/users';
 import * as MediaAPI from '../api/media';
+import { prepareImage, UnsupportedImageError, type PreparedImage } from '../lib/image';
+import { AvatarCropper } from './AvatarCropper';
 
 interface ProfileSettingsProps {
   userRole: UserRole;
   onBack: () => void;
+}
+
+// A username is 5–24 letters and digits, matching the API's binding rule
+// (min=5,max=24,alphanum). Returns the translation key of the problem, or null.
+function usernameProblem(raw: string): string | null {
+  const handle = raw.trim().replace(/^@+/, '');
+  if (handle.length < 5 || handle.length > 24) return 'usernameLength';
+  if (!/^[a-zA-Z0-9]+$/.test(handle)) return 'usernameCharset';
+  return null;
 }
 
 export function ProfileSettings({ onBack }: ProfileSettingsProps) {
@@ -18,6 +29,7 @@ export function ProfileSettings({ onBack }: ProfileSettingsProps) {
 
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [avatarId, setAvatarId] = useState<string | null>(null);
+  const [pending, setPending] = useState<PreparedImage | null>(null);
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [username, setUsername] = useState('');
@@ -57,23 +69,45 @@ export function ProfileSettings({ onBack }: ProfileSettingsProps) {
       setError(t('notAuthenticated'));
       return;
     }
-    setUploadingImage(true);
     setError(null);
     try {
-      const media = await MediaAPI.uploadMedia(tokens.access_token, file);
+      setPending(await prepareImage(file));
+    } catch (e) {
+      if (e instanceof UnsupportedImageError) setError(t('imageFormatUnsupported'));
+      else setError(e instanceof Error ? e.message : t('unableToUploadImage'));
+    } finally {
+      event.target.value = '';
+    }
+  };
+
+  const closeCropper = () => {
+    pending?.release();
+    setPending(null);
+  };
+
+  const uploadAvatar = async (avatar: File) => {
+    if (!tokens?.access_token) return;
+    setUploadingImage(true);
+    try {
+      const media = await MediaAPI.uploadMedia(tokens.access_token, avatar);
       setProfileImage(media.url);
       setAvatarId(media.id);
+      closeCropper();
     } catch (e) {
       setError(e instanceof Error ? e.message : t('unableToUploadImage'));
     } finally {
       setUploadingImage(false);
-      event.target.value = '';
     }
   };
 
   const handleSave = async () => {
     if (!tokens?.access_token) {
       setError(t('notAuthenticated'));
+      return;
+    }
+    const problem = username.trim() ? usernameProblem(username) : null;
+    if (problem) {
+      setError(t(problem));
       return;
     }
     setSaving(true);
@@ -105,6 +139,10 @@ export function ProfileSettings({ onBack }: ProfileSettingsProps) {
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
+      {pending && (
+        <AvatarCropper image={pending} busy={uploadingImage} onCancel={closeCropper} onDone={uploadAvatar} />
+      )}
+
       {/* Header */}
       <div className="bg-navy px-4 py-4 sticky top-0 z-10">
         <div className="flex items-center justify-between">
@@ -171,7 +209,10 @@ export function ProfileSettings({ onBack }: ProfileSettingsProps) {
                 <input type="text" value={lastName} onChange={(e) => setLastName(e.target.value)} className={inputCls} />
               </Field>
               <Field label={t('username')}>
-                <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} className={inputCls} />
+                <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} maxLength={24} className={inputCls} />
+                {username.trim() !== '' && usernameProblem(username) && (
+                  <p className="text-red-500 text-xs mt-1.5">{t(usernameProblem(username)!)}</p>
+                )}
               </Field>
               <Field label={t('jobTitle')} icon={<Briefcase className="w-4 h-4" />}>
                 <input type="text" value={jobTitle} onChange={(e) => setJobTitle(e.target.value)} className={inputCls} placeholder={t('jobTitlePlaceholder')} />
