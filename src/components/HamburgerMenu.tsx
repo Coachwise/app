@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Menu, X, Bell, Shield, LogOut, Settings, Users, DollarSign, Globe, User, Crown, Coins, ClipboardList, Info } from 'lucide-react';
+import { Menu, X, Bell, Shield, LogOut, Settings, Users, DollarSign, Globe, User, Crown, Coins, ClipboardList, Info, LifeBuoy } from 'lucide-react';
 import { APP_VERSION, APP_IS_BETA } from '../config';
 import type { UserRole } from '../App';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -276,6 +276,17 @@ export function HamburgerMenu({
               >
                 <Shield className="w-5 h-5 text-gray-600" />
                 <span className="text-navy">{t('privacySecurity')}</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  onNavigate('support');
+                  setIsMenuOpen(false);
+                }}
+                className="w-full flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg transition-colors text-left"
+              >
+                <LifeBuoy className="w-5 h-5 text-gray-600" />
+                <span className="text-navy">{t('support')}</span>
               </button>
 
               {/* Language Selector */}

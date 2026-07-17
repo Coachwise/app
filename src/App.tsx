@@ -31,6 +31,7 @@ import { ChannelView } from './components/ChannelView';
 import { PrivacySettings } from './components/PrivacySettings';
 import { ProfileSettings } from './components/ProfileSettings';
 import { About } from './components/About';
+import { Support } from './components/Support';
 import { LanguageProvider } from './contexts/LanguageContext';
 import { useAuth } from './contexts/AuthContext';
 import * as SessionsAPI from './api/sessions';
@@ -45,7 +46,7 @@ const DEFAULT_VIEW: ViewType = FEATURES.feed ? 'feed' : 'workouts-home';
 export type SportType = 'fitness' | 'climbing';
 export type UserRole = 'athlete' | 'coach';
 export type UserTier = 'free' | 'pro';
-export type ViewType = 'sport-selection' | 'logging' | 'feed' | 'profile' | 'coach-dashboard' | 'post-creation' | 'exercise-builder' | 'plan-builder' | 'coach-application' | 'coach-marketplace' | 'tier-builder' | 'tier-comparison' | 'test-builder' | 'athlete-tests' | 'assessment-run' | 'assessment-history' | 'workouts-home' | 'workout-session' | 'athlete-search' | 'athletes-coaches' | 'messages' | 'message-thread' | 'channel-view' | 'privacy-settings' | 'profile-settings' | 'notifications' | 'wallet' | 'about';
+export type ViewType = 'sport-selection' | 'logging' | 'feed' | 'profile' | 'coach-dashboard' | 'post-creation' | 'exercise-builder' | 'plan-builder' | 'coach-application' | 'coach-marketplace' | 'tier-builder' | 'tier-comparison' | 'test-builder' | 'athlete-tests' | 'assessment-run' | 'assessment-history' | 'workouts-home' | 'workout-session' | 'athlete-search' | 'athletes-coaches' | 'messages' | 'message-thread' | 'channel-view' | 'privacy-settings' | 'profile-settings' | 'notifications' | 'wallet' | 'about' | 'support';
 
 export default function App() {
   const { isAuthenticated, user, tokens, refreshUser } = useAuth();
@@ -75,6 +76,7 @@ export default function App() {
   const [historyReturnView, setHistoryReturnView] = useState<ViewType>('athlete-tests'); // where assessment history returns
   const [coachSection, setCoachSection] = useState('clients'); // coach dashboard active tab (persists across navigation)
   const [notifReturnView, setNotifReturnView] = useState<ViewType>(DEFAULT_VIEW); // where notifications returns on back
+  const [supportTicketId, setSupportTicketId] = useState<string | null>(null); // set when a notification deep-links into a ticket
   const [activeScheduleId, setActiveScheduleId] = useState<string | null>(null); // Track active schedule
   const [workoutsRefreshTrigger, setWorkoutsRefreshTrigger] = useState(0); // Trigger refresh after workout
 
@@ -144,6 +146,11 @@ export default function App() {
   const handleNavigate = (view: string) => {
     if (view === 'profile') {
       setViewingUserId(null);
+    }
+    // Opening support from the menu means the ticket list, not whatever thread a
+    // notification deep-linked to earlier.
+    if (view === 'support') {
+      setSupportTicketId(null);
     }
     // Remember where we opened notifications from, so "back" returns there.
     if (view === 'notifications') {
@@ -336,6 +343,7 @@ export default function App() {
           onBack={() => setCurrentView(notifReturnView)}
           onNavigate={handleNavigate}
           onViewProfile={handleViewProfile}
+          onOpenSupport={(ticketId) => { setSupportTicketId(ticketId); setCurrentView('support'); }}
         />;
       case 'post-creation':
         return <PostCreation onCancel={() => setCurrentView(DEFAULT_VIEW)} onPost={handlePostCreated} />;
@@ -427,6 +435,11 @@ export default function App() {
         return <PrivacySettings onBack={() => setCurrentView('profile')} />;
       case 'about':
         return <About onBack={() => setCurrentView(DEFAULT_VIEW)} />;
+      case 'support':
+        return <Support
+          initialTicketId={supportTicketId}
+          onBack={() => { setSupportTicketId(null); setCurrentView(DEFAULT_VIEW); }}
+        />;
       case 'profile-settings':
         return <ProfileSettings userRole={userRole} onBack={() => setCurrentView('profile')} />;
       case 'pro-subscription':

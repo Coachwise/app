@@ -57,7 +57,21 @@ export async function request<TResponse, TBody = unknown>(
   }
 
   const text = await res.text();
-  const data = text ? JSON.parse(text) : null;
+  // The body isn't always JSON: a missing route gives Gin's plain-text
+  // "404 page not found", and a proxy or crash can return an HTML error page.
+  // Parsing those blindly throws a cryptic "Unexpected non-whitespace character
+  // after JSON" that hides the real status, so parse defensively.
+  let data: any = null;
+  if (text) {
+    try {
+      data = JSON.parse(text);
+    } catch {
+      if (res.ok) {
+        throw new ApiError({ status: res.status, message: "Malformed response from server" });
+      }
+      data = { error: text.slice(0, 200) };
+    }
+  }
 
   if (!res.ok) {
     // A 5xx is the server's bug, not the caller's — report it, tagged with the
