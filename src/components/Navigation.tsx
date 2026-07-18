@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Home, Dumbbell, LayoutDashboard, MessageCircle, Compass } from 'lucide-react';
+import { Home, Dumbbell, LayoutDashboard, MessageCircle, Compass, Activity } from 'lucide-react';
 import type { ViewType, UserRole } from '../App';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -43,6 +43,7 @@ export function Navigation({ currentView, onNavigate, userRole }: NavigationProp
     ...(FEATURES.feed ? [{ id: 'feed' as ViewType, icon: Home, label: t('feed') }] : []),
     { id: 'athlete-search' as ViewType, icon: Compass, label: t('discover') },
     { id: 'workouts-home' as ViewType, icon: Dumbbell, label: t('workouts') },
+    { id: 'analytics' as ViewType, icon: Activity, label: t('analytics') },
     ...(userRole === 'coach' ? [
       { id: 'messages' as ViewType, icon: MessageCircle, label: t('messages') },
       { id: 'coach-dashboard' as ViewType, icon: LayoutDashboard, label: t('dashboard') }

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Users, Calendar, TrendingUp, DollarSign, Package, CheckCircle, Plus, Trash2, Lock, Globe, UserPlus, Search, ClipboardList, Send, Award, LineChart, Pencil, Dumbbell } from 'lucide-react';
+import { Users, Calendar, TrendingUp, DollarSign, Package, CheckCircle, Plus, Trash2, Lock, Globe, UserPlus, Search, ClipboardList, Send, Award, LineChart, Pencil, Dumbbell, ChevronRight } from 'lucide-react';
 import { BackButton } from './ui/back-button';
 import { Button } from './ui/button';
 import { HamburgerMenu } from './HamburgerMenu';
@@ -25,6 +25,7 @@ interface CoachDashboardProps {
   onCreateTest?: () => void;
   onEditTest?: (id: string) => void;
   onViewClientHistory?: (testId: string, athleteId: string, clientName: string) => void;
+  onViewClient?: (clientId: string, clientName: string) => void;
   // Active tab, lifted to the parent so it survives navigating away and back.
   section?: string;
   onSectionChange?: (s: string) => void;
@@ -37,7 +38,7 @@ const displayName = (u: { first_name?: string | null; last_name?: string | null;
   return full || u.username;
 };
 
-export function CoachDashboard({ onBack, onNavigate, userRole = 'coach', isPro = false, onCreatePackage, onEditPackage, onCreatePlan, onCreateTest, onEditTest, onViewClientHistory, section, onSectionChange }: CoachDashboardProps) {
+export function CoachDashboard({ onBack, onNavigate, userRole = 'coach', isPro = false, onCreatePackage, onEditPackage, onCreatePlan, onCreateTest, onEditTest, onViewClientHistory, onViewClient, section, onSectionChange }: CoachDashboardProps) {
   const { t, language } = useLanguage();
   const { tokens, user } = useAuth();
   const token = tokens?.access_token || '';
@@ -478,13 +479,19 @@ export function CoachDashboard({ onBack, onNavigate, userRole = 'coach', isPro =
                     const pkg = client.packages[0]; // a client holds at most one package
                     return (
                       <div key={client.id} className="p-4">
-                        {/* Header */}
+                        {/* Header — tap to open the client's analytics */}
                         <div className="flex items-center gap-3">
-                          <Avatar user={client} />
-                          <div className="flex-1 min-w-0">
-                            <h4 className="text-navy font-medium truncate">{displayName(client)}</h4>
-                            <p className="text-gray-400 text-xs truncate">@{client.username}</p>
-                          </div>
+                          <button
+                            onClick={() => onViewClient?.(client.id, displayName(client))}
+                            className="flex items-center gap-3 flex-1 min-w-0 text-start hover:opacity-80 transition-opacity"
+                          >
+                            <Avatar user={client} />
+                            <div className="flex-1 min-w-0">
+                              <h4 className="text-navy font-medium truncate">{displayName(client)}</h4>
+                              <p className="text-gray-400 text-xs truncate">@{client.username}</p>
+                            </div>
+                            <ChevronRight className="w-4 h-4 text-gray-400 shrink-0" />
+                          </button>
                           <span className="text-xs text-gray-500 bg-gray-100 rounded-full px-2.5 py-1 whitespace-nowrap">
                             {t('assignedPlansCount', { count: String(client.assigned_plans.length) })}
                           </span>

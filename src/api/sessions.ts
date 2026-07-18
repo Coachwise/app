@@ -64,10 +64,12 @@ export interface DailyAnalytics {
   total_volume?: number | null;
 }
 
-export function listDailyAnalytics(token: string, params?: { limit?: number; offset?: number }) {
+export function listDailyAnalytics(token: string, params?: { limit?: number; offset?: number; athlete?: string }) {
   const search = new URLSearchParams();
   if (params?.limit) search.set("limit", String(params.limit));
   if (params?.offset) search.set("offset", String(params.offset));
+  // A coach may pass a client's id to view their analytics.
+  if (params?.athlete) search.set("athlete", params.athlete);
   const query = search.toString() ? `?${search.toString()}` : "";
   return request<{ items: DailyAnalytics[]; total: number }>(`/workouts/sessions/analytics/daily${query}`, { token });
 }

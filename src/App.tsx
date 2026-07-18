@@ -24,6 +24,7 @@ import { AssessmentHistory } from './components/AssessmentHistory';
 import { Notifications } from './components/Notifications';
 import { WorkoutsHome } from './components/WorkoutsHome';
 import { WorkoutSession } from './components/WorkoutSession';
+import { AnalyticsDashboard } from './components/AnalyticsDashboard';
 import { AthleteSearch } from './components/AthleteSearch';
 import { MessagesWithChannels } from './components/MessagesWithChannels';
 import { MessageThread } from './components/MessageThread';
@@ -47,7 +48,7 @@ const DEFAULT_VIEW: ViewType = FEATURES.feed ? 'feed' : 'workouts-home';
 export type SportType = 'fitness' | 'climbing';
 export type UserRole = 'athlete' | 'coach';
 export type UserTier = 'free' | 'pro';
-export type ViewType = 'sport-selection' | 'logging' | 'feed' | 'profile' | 'coach-dashboard' | 'post-creation' | 'exercise-builder' | 'plan-builder' | 'coach-application' | 'coach-marketplace' | 'tier-builder' | 'tier-comparison' | 'test-builder' | 'athlete-tests' | 'assessment-run' | 'assessment-history' | 'workouts-home' | 'workout-session' | 'athlete-search' | 'athletes-coaches' | 'messages' | 'message-thread' | 'channel-view' | 'privacy-settings' | 'profile-settings' | 'notifications' | 'wallet' | 'about' | 'support';
+export type ViewType = 'sport-selection' | 'logging' | 'feed' | 'profile' | 'coach-dashboard' | 'post-creation' | 'exercise-builder' | 'plan-builder' | 'coach-application' | 'coach-marketplace' | 'tier-builder' | 'tier-comparison' | 'test-builder' | 'athlete-tests' | 'assessment-run' | 'assessment-history' | 'workouts-home' | 'workout-session' | 'analytics' | 'athlete-search' | 'athletes-coaches' | 'messages' | 'message-thread' | 'channel-view' | 'privacy-settings' | 'profile-settings' | 'notifications' | 'wallet' | 'about' | 'support';
 
 export default function App() {
   const { isAuthenticated, user, tokens, refreshUser } = useAuth();
@@ -75,6 +76,8 @@ export default function App() {
   const [historyAthleteId, setHistoryAthleteId] = useState<string | null>(null); // when a coach views a client's run history
   const [historyClientName, setHistoryClientName] = useState<string | null>(null);
   const [historyReturnView, setHistoryReturnView] = useState<ViewType>('athlete-tests'); // where assessment history returns
+  const [analyticsAthleteId, setAnalyticsAthleteId] = useState<string | null>(null); // when a coach views a client's analytics
+  const [analyticsClientName, setAnalyticsClientName] = useState<string | null>(null);
   const [coachSection, setCoachSection] = useState('clients'); // coach dashboard active tab (persists across navigation)
   const [notifReturnView, setNotifReturnView] = useState<ViewType>(DEFAULT_VIEW); // where notifications returns on back
   const [supportTicketId, setSupportTicketId] = useState<string | null>(null); // set when a notification deep-links into a ticket
@@ -164,6 +167,12 @@ export default function App() {
     // notification deep-linked to earlier.
     if (view === 'support') {
       setSupportTicketId(null);
+    }
+    // The Analytics bottom-nav tab always shows the user's own analytics, not a
+    // client a coach was last looking at.
+    if (view === 'analytics') {
+      setAnalyticsAthleteId(null);
+      setAnalyticsClientName(null);
     }
     // Remember where we opened notifications from, so "back" returns there.
     if (view === 'notifications') {
@@ -305,6 +314,9 @@ export default function App() {
           onCreatePlan={() => { setBuilderPlanId(null); setCurrentView('plan-builder'); }}
           onCreateTest={() => { setBuilderTestId(null); setBuilderReturnView('coach-dashboard'); setCurrentView('test-builder'); }}
           onEditTest={(id: string) => { setBuilderTestId(id); setBuilderReturnView('coach-dashboard'); setCurrentView('test-builder'); }}
+          onViewClient={(clientId: string, clientName: string) => {
+            setAnalyticsAthleteId(clientId); setAnalyticsClientName(clientName); setCurrentView('analytics');
+          }}
           onViewClientHistory={(testId: string, athleteId: string, clientName: string) => {
             setProtocolId(testId);
             setHistoryAthleteId(athleteId); setHistoryClientName(clientName); setHistoryReturnView('coach-dashboard');
@@ -386,6 +398,23 @@ export default function App() {
         />;
       case 'tier-comparison':
         return <TierComparison onCancel={() => setCurrentView('coach-marketplace')} coachName="Sarah Martinez" />;
+      case 'analytics':
+        return <AnalyticsDashboard
+          token={tokens?.access_token || ''}
+          selfId={user?.id || ''}
+          athleteId={analyticsAthleteId || undefined}
+          clientName={analyticsClientName || undefined}
+          onBack={() => {
+            if (analyticsAthleteId) {
+              setAnalyticsAthleteId(null);
+              setAnalyticsClientName(null);
+              setCurrentView('coach-dashboard');
+            } else {
+              setCurrentView('workouts-home');
+            }
+          }}
+          onViewAssessments={analyticsAthleteId ? undefined : () => setCurrentView('athlete-tests')}
+        />;
       case 'workouts-home':
         return <WorkoutsHome
           onStartSession={(planId?: string, scheduleId?: string) => {
