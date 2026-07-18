@@ -248,7 +248,7 @@ export function HamburgerMenu({
                 className="w-full flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg transition-colors text-left"
               >
                 <Bell className="w-5 h-5 text-gray-600" />
-                <span className="text-navy flex-1">{t('notifications')}</span>
+                <span className="text-navy flex-1 text-start">{t('notifications')}</span>
                 {unread > 0 && (
                   <span className="min-w-[20px] h-5 px-1.5 flex items-center justify-center bg-yellow-500 text-navy text-xs font-bold rounded-full tabular-nums">
                     {unread > 99 ? '99+' : unread}
@@ -295,7 +295,7 @@ export function HamburgerMenu({
                 className="w-full flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg transition-colors text-left"
               >
                 <Globe className="w-5 h-5 text-gray-600" />
-                <span className="text-navy flex-1">{t('language')}</span>
+                <span className="text-navy flex-1 text-start">{t('language')}</span>
                 <span className="text-gray-500 text-sm">{language === 'en' ? 'EN' : 'فا'}</span>
               </button>
 

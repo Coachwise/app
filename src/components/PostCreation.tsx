@@ -1,5 +1,7 @@
 import { useState } from 'react';
-import { ArrowLeft, Image, TrendingUp, Tag, Globe, Users, AlertTriangle, X, Video, Upload } from 'lucide-react';
+import { Image, TrendingUp, Tag, Globe, Users, AlertTriangle, X, Video, Upload } from 'lucide-react';
+import { Button } from './ui/button';
+import { BackButton } from './ui/back-button';
 import { useLanguage } from '../contexts/LanguageContext';
 
 interface PostCreationProps {
@@ -41,17 +43,11 @@ export function PostCreation({ onCancel, onPost }: PostCreationProps) {
       {/* Header */}
       <div className="bg-navy px-4 py-4 sticky top-0 z-10">
         <div className="flex items-center justify-between">
-          <button onClick={onCancel} className="p-2 -ml-2 hover:bg-navy-light rounded-lg transition-colors">
-            <ArrowLeft className="w-6 h-6 text-white" />
-          </button>
+          <BackButton onClick={onCancel} aria-label={t('back')} />
           <h2 className="text-white">{t('createPost')}</h2>
-          <button
-            onClick={handlePost}
-            disabled={!content.trim()}
-            className="px-4 py-2 bg-yellow-500 text-navy rounded-lg hover:bg-yellow-400 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
-          >
+          <Button variant="brand" size="sm" disabled={!content.trim()} onClick={handlePost}>
             {t('post')}
-          </button>
+          </Button>
         </div>
       </div>
 

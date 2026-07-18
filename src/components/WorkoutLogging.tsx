@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
-import { ArrowLeft, Plus, Trash2, Play, Pause, RotateCcw } from 'lucide-react';
+import { Plus, Trash2, Play, Pause, RotateCcw } from 'lucide-react';
+import { BackButton } from './ui/back-button';
+import { Button } from './ui/button';
 import type { SportType } from '../App';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -179,16 +181,11 @@ export function WorkoutLogging({ sport, sessionId, onBack }: WorkoutLoggingProps
       {/* Header */}
       <div className="bg-navy px-4 py-4 sticky top-0 z-10">
         <div className="flex items-center justify-between">
-          <button onClick={onBack} className="p-2 -ml-2 hover:bg-navy-light rounded-lg transition-colors">
-            <ArrowLeft className="w-6 h-6 text-white" />
-          </button>
+          <BackButton onClick={onBack} aria-label={t('back')} />
           <h2 className="text-white">{t('workoutTitle', { sport: sport === 'fitness' ? t('sportFitness') : t('sportClimbing') })}</h2>
-          <button
-            onClick={handleFinishSession}
-            className="px-4 py-2 bg-yellow-500 text-navy rounded-lg hover:bg-yellow-400 transition-colors font-bold"
-          >
+          <Button variant="brand" size="sm" onClick={handleFinishSession} className="font-bold">
             {t('finish')}
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -204,21 +201,13 @@ export function WorkoutLogging({ sport, sessionId, onBack }: WorkoutLoggingProps
           <div className="text-6xl text-white mb-4 font-mono">{formatTime(timer)}</div>
           <div className="flex gap-3 justify-center">
             {!isRunning ? (
-              <button
-                onClick={() => setIsRunning(true)}
-                className="flex items-center gap-2 px-6 py-3 bg-yellow-500 text-navy rounded-lg hover:bg-yellow-400 transition-colors"
-              >
-                <Play className="w-5 h-5" />
-                <span>{timer === 0 ? t('start') : t('resume')}</span>
-              </button>
+              <Button variant="brand" icon={<Play className="size-5" />} onClick={() => setIsRunning(true)} className="px-6 py-3">
+                {timer === 0 ? t('start') : t('resume')}
+              </Button>
             ) : (
-              <button
-                onClick={() => setIsRunning(false)}
-                className="flex items-center gap-2 px-6 py-3 bg-yellow-500 text-navy rounded-lg hover:bg-yellow-400 transition-colors"
-              >
-                <Pause className="w-5 h-5" />
-                <span>{t('pause')}</span>
-              </button>
+              <Button variant="brand" icon={<Pause className="size-5" />} onClick={() => setIsRunning(false)} className="px-6 py-3">
+                {t('pause')}
+              </Button>
             )}
             {timer > 0 && (
               <button

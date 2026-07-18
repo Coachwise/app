@@ -1,5 +1,6 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { Plus, Trash2, Search } from 'lucide-react';
+import { Button } from './ui/button';
 import { useLanguage } from '../contexts/LanguageContext';
 import { ExercisesAPI } from '../api';
 import type { Exercise } from '../api/types';
@@ -72,13 +73,9 @@ export function ExercisePicker<T extends PickedExercise>({
         <h3 className="text-navy font-medium">
           {title || t('testExercises')} <span className="text-gray-400">({items.length})</span>
         </h3>
-        <button
-          onClick={() => setPicking(!picking)}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-yellow-500 text-navy hover:bg-yellow-400 transition-colors"
-        >
-          <Plus className="w-4 h-4" />
+        <Button variant="brand" size="sm" icon={<Plus />} onClick={() => setPicking(!picking)}>
           {t('addExercise')}
-        </button>
+        </Button>
       </div>
 
       {picking && (

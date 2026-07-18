@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
-import { ArrowLeft, ClipboardList, Send, Plus, Play, LineChart, Pencil, Dumbbell } from 'lucide-react';
+import { ClipboardList, Send, Plus, Play, LineChart, Pencil, Dumbbell } from 'lucide-react';
+import { BackButton } from './ui/back-button';
+import { Button } from './ui/button';
 import { HamburgerMenu } from './HamburgerMenu';
 import { UserAvatar } from './UserAvatar';
 import type { UserRole } from '../App';
@@ -99,18 +101,12 @@ export function AthleteTests({
     <div className="min-h-screen bg-gray-100">
       <div className="bg-navy px-4 py-4 sticky top-0 z-10">
         <div className="flex items-center justify-between">
-          <button onClick={onBack} className="p-2 -ml-2 hover:bg-navy-light rounded-lg transition-colors">
-            <ArrowLeft className="w-6 h-6 text-white" />
-          </button>
+          <BackButton onClick={onBack} aria-label={t('back')} />
           <h1 className="text-white text-xl">{t('myAssessments')}</h1>
           <div className="flex items-center gap-1">
-            <button
-              onClick={onNewProtocol}
-              className="inline-flex items-center gap-1 px-3 py-2 bg-yellow-500 text-navy rounded-lg hover:bg-yellow-400 transition-colors text-sm font-medium"
-            >
-              <Plus className="w-4 h-4" />
+            <Button variant="brand" size="sm" icon={<Plus />} onClick={onNewProtocol}>
               {t('newProtocolShort')}
-            </button>
+            </Button>
             <HamburgerMenu userRole={userRole} onNavigate={onNavigate} isPro={isPro} />
           </div>
         </div>
@@ -142,13 +138,9 @@ export function AthleteTests({
                 <ClipboardList className="w-9 h-9 text-gray-200 mx-auto mb-2" />
                 <p className="text-gray-500 text-sm">{t('noProtocolsYet')}</p>
                 <p className="text-gray-400 text-xs mt-1">{t('protocolsHint')}</p>
-                <button
-                  onClick={onNewProtocol}
-                  className="mt-4 inline-flex items-center gap-1.5 px-4 py-2 bg-yellow-500 text-navy rounded-lg hover:bg-yellow-400 transition-colors text-sm font-medium"
-                >
-                  <Plus className="w-4 h-4" />
+                <Button variant="brand" size="sm" icon={<Plus />} className="mt-4" onClick={onNewProtocol}>
                   {t('newProtocol')}
-                </button>
+                </Button>
               </div>
             ) : (
               <div className="space-y-3">{protocols.map((p) => protocolCard(p, true))}</div>

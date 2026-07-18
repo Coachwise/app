@@ -1,5 +1,7 @@
 import { useState, useRef } from 'react';
-import { ArrowLeft, Send, Image as ImageIcon, X, Video, Play, Users, Link as LinkIcon, UserPlus, Hash, Copy, Check, MoreVertical, Edit2, Trash2 } from 'lucide-react';
+import { Send, Image as ImageIcon, X, Video, Play, Users, Link as LinkIcon, UserPlus, Hash, Copy, Check, MoreVertical, Edit2, Trash2 } from 'lucide-react';
+import { BackButton } from './ui/back-button';
+import { Button } from './ui/button';
 import { useLanguage } from '../contexts/LanguageContext';
 import type { UserRole } from '../App';
 
@@ -183,12 +185,7 @@ export function ChannelView({ channelId, userRole, onBack }: ChannelViewProps) {
       {/* Header */}
       <div className="bg-navy px-4 py-3 sticky top-0 z-10">
         <div className="flex items-center gap-3 mb-2">
-          <button 
-            onClick={onBack}
-            className="p-2 -ml-2 hover:bg-navy-light rounded-lg transition-colors"
-          >
-            <ArrowLeft className="w-6 h-6 text-white" />
-          </button>
+          <BackButton onClick={onBack} aria-label={t('back')} />
           
           <div className="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center">
             <Hash className="w-6 h-6 text-yellow-600" />
@@ -205,12 +202,9 @@ export function ChannelView({ channelId, userRole, onBack }: ChannelViewProps) {
           {/* Members & Invite Buttons */}
           <div className="flex gap-2">
             {channelInfo.isOwner && (
-              <button
-                onClick={() => setShowInviteLink(!showInviteLink)}
-                className="p-2 bg-yellow-500 text-navy rounded-lg hover:bg-yellow-400 transition-colors"
-              >
-                <UserPlus className="w-5 h-5" />
-              </button>
+              <Button variant="brand" size="icon" onClick={() => setShowInviteLink(!showInviteLink)}>
+                <UserPlus className="size-5" />
+              </Button>
             )}
             <button
               onClick={() => setShowMembers(!showMembers)}
@@ -536,13 +530,15 @@ export function ChannelView({ channelId, userRole, onBack }: ChannelViewProps) {
             </div>
 
             {/* Send Button */}
-            <button
+            <Button
+              variant="brand"
+              size="icon"
               onClick={handleSendMessage}
               disabled={!messageText.trim() && !selectedMedia}
-              className="p-3 bg-yellow-500 text-navy rounded-full hover:bg-yellow-400 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex-shrink-0"
+              className="size-12 rounded-full flex-shrink-0"
             >
-              <Send className="w-6 h-6" />
-            </button>
+              <Send className="size-6" />
+            </Button>
           </div>
         </div>
       )}

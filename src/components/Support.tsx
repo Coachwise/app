@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ArrowLeft, ArrowRight, Send, Plus, LifeBuoy, Lock, X } from 'lucide-react';
+import { Button } from './ui/button';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useRealtimeRefetch } from '../contexts/RealtimeContext';
@@ -51,13 +52,9 @@ export function Support({ onBack, initialTicketId }: SupportProps) {
         </button>
         <h1 className="text-white text-lg flex-1">{t('support')}</h1>
         {mode.name === 'list' && (
-          <button
-            onClick={() => setMode({ name: 'new' })}
-            className="flex items-center gap-1 bg-yellow-500 text-navy px-3 py-1.5 rounded-full text-sm font-semibold hover:bg-yellow-400 transition-colors"
-          >
-            <Plus className="w-4 h-4" />
+          <Button variant="brand" size="sm" icon={<Plus />} onClick={() => setMode({ name: 'new' })} className="rounded-full">
             {t('newTicket')}
-          </button>
+          </Button>
         )}
       </div>
 
@@ -154,12 +151,9 @@ function TicketList({
       <div className="flex-1 flex flex-col items-center justify-center px-8 text-center gap-3">
         <LifeBuoy className="w-12 h-12 text-gray-300" />
         <p className="text-gray-500">{t('noTicketsYet')}</p>
-        <button
-          onClick={onNew}
-          className="mt-2 bg-yellow-500 text-navy px-5 py-2.5 rounded-full font-semibold hover:bg-yellow-400 transition-colors"
-        >
+        <Button variant="brand" onClick={onNew} className="mt-2 px-5 rounded-full">
           {t('openFirstTicket')}
-        </button>
+        </Button>
       </div>
     );
   }
@@ -237,13 +231,9 @@ function NewTicket({ token, onCreated }: { token?: string; onCreated: (id: strin
         />
       </div>
       {error && <p className="text-red-600 text-sm">{error}</p>}
-      <button
-        onClick={submit}
-        disabled={!subject.trim() || !body.trim() || busy}
-        className="w-full bg-yellow-500 text-navy py-3 rounded-full font-semibold hover:bg-yellow-400 transition-colors disabled:opacity-50"
-      >
-        {busy ? t('sending') : t('sendTicket')}
-      </button>
+      <Button variant="brand" size="block" loading={busy} disabled={!subject.trim() || !body.trim()} onClick={submit} className="rounded-full">
+        {t('sendTicket')}
+      </Button>
       <p className="text-gray-400 text-xs text-center">{t('supportReplyHint')}</p>
     </div>
   );
@@ -404,14 +394,16 @@ function Thread({
             placeholder={t('typeMessage')}
             className="flex-1 bg-gray-100 rounded-full px-4 py-2.5 text-navy focus:outline-none focus:ring-2 focus:ring-yellow-500"
           />
-          <button
+          <Button
+            variant="brand"
+            size="icon"
             onClick={send}
             disabled={!text.trim() || sending}
-            className="p-2.5 rounded-full bg-yellow-500 text-navy hover:bg-yellow-400 transition-colors disabled:opacity-50"
             aria-label={t('send')}
+            className="rounded-full"
           >
-            <Send className={`w-5 h-5 ${isRTL ? 'rotate-180' : ''}`} />
-          </button>
+            <Send className={`size-5 ${isRTL ? 'rotate-180' : ''}`} />
+          </Button>
         </div>
       ) : (
         <div className="bg-white border-t border-gray-200 p-4 text-center text-gray-500 text-sm">

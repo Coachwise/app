@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Trophy, Award, Medal, Eye, EyeOff, ChevronUp, ChevronDown, Check, X, SlidersHorizontal } from 'lucide-react';
+import { Button } from './ui/button';
 import { useLanguage } from '../contexts/LanguageContext';
 import { AchievementsAPI } from '../api';
 import type { UserAchievements, PersonalRecord, Achievement } from '../api/types';
@@ -211,14 +212,9 @@ export function TrophyCase({ data, isOwner, token, onLayoutSaved }: TrophyCasePr
 
       {editing && (
         <div className="flex gap-2 mt-4">
-          <button
-            onClick={save}
-            disabled={saving}
-            className="flex-1 py-2.5 rounded-xl text-sm font-medium bg-yellow-500 text-navy hover:bg-yellow-400 disabled:bg-gray-300 transition-colors flex items-center justify-center gap-1.5"
-          >
-            <Check className="w-4 h-4" />
-            {saving ? t('saving') : t('saveOrder')}
-          </button>
+          <Button variant="brand" icon={<Check />} loading={saving} onClick={save} className="flex-1 rounded-xl">
+            {t('saveOrder')}
+          </Button>
           <button
             onClick={() => setEditing(false)}
             className="px-4 py-2.5 rounded-xl text-sm font-medium bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors flex items-center gap-1.5"

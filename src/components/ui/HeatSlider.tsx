@@ -47,7 +47,12 @@ export function HeatSlider({
         </label>
       )}
 
+      {/* The heat scale reads low→high left-to-right (like a volume slider), and
+          its fill/thumb are positioned from the left. Pin the interactive area to
+          LTR so a native range input in an RTL page doesn't invert it — dragging
+          right always raises the value. The label above keeps the page direction. */}
       <div
+        dir="ltr"
         className="relative py-2"
         onMouseEnter={() => setShowTooltip(true)}
         onMouseLeave={() => setShowTooltip(false)}

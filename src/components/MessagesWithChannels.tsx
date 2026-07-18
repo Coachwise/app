@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { SquarePen, X } from 'lucide-react';
+import { Button } from './ui/button';
 import { HamburgerMenu } from './HamburgerMenu';
 import { UserAvatar } from './UserAvatar';
 import { ConnectionPicker } from './ConnectionPicker';
@@ -91,13 +92,9 @@ export function MessagesWithChannels({ userRole, onNavigate, setCurrentConversat
         <div className="flex items-center justify-between">
           <h1 className="text-white text-xl">{t('messages')}</h1>
           <div className="flex items-center gap-1">
-            <button
-              onClick={() => setShowNew((v) => !v)}
-              className="inline-flex items-center gap-1.5 px-3 py-2 bg-yellow-500 text-navy rounded-lg hover:bg-yellow-400 transition-colors text-sm font-medium"
-            >
-              <SquarePen className="w-4 h-4" />
+            <Button variant="brand" size="sm" icon={<SquarePen />} onClick={() => setShowNew((v) => !v)}>
               {t('newChat')}
-            </button>
+            </Button>
             <HamburgerMenu userRole={userRole} onNavigate={onNavigate} />
           </div>
         </div>

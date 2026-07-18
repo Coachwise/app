@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
-import { ArrowLeft, Plus, RefreshCw, Search, Dumbbell, Edit3, Trash2 } from 'lucide-react';
+import { Plus, RefreshCw, Search, Dumbbell, Edit3, Trash2 } from 'lucide-react';
+import { BackButton } from './ui/back-button';
+import { Button } from './ui/button';
 import { ExerciseBuilder } from './ExerciseBuilder';
 import * as ExercisesAPI from '../api/exercises';
 import type { Exercise, ExerciseCategory } from '../api/types';
@@ -19,7 +21,9 @@ const nsToSeconds = (value?: number | null) => Math.max(0, Math.round((value ?? 
 export function Exercises({ onBack }: ExercisesProps) {
   const { tokens, user } = useAuth();
   const { t, language } = useLanguage();
-  const isCoach = Boolean(user?.is_coach); // only coaches create/edit exercises
+  // Anyone can build their own exercises; editing is limited to ones they own
+  // (library rows have a null user_id and belong to nobody).
+  const ownsExercise = (ex: Exercise) => !!user && ex.user_id === user.id;
   const PAGE_SIZE = 20;
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [total, setTotal] = useState(0);
@@ -126,24 +130,14 @@ export function Exercises({ onBack }: ExercisesProps) {
     <div className="min-h-screen bg-gray-100">
       <div className="bg-navy px-4 py-4 sticky top-0 z-10">
         <div className="flex items-center justify-between">
-          <button onClick={onBack} className="p-2 -ml-2 hover:bg-navy-light rounded-lg transition-colors">
-            <ArrowLeft className="w-6 h-6 text-white" />
-          </button>
+          <BackButton onClick={onBack} aria-label={t('back')} />
           <h2 className="text-white flex items-center gap-2">
             <Dumbbell className="w-5 h-5" />
             {t('exercisesLabel')}
           </h2>
-          {isCoach ? (
-            <button
-              onClick={() => setCreating(true)}
-              className="px-4 py-2 bg-yellow-500 text-navy rounded-lg hover:bg-yellow-400 transition-colors flex items-center gap-2"
-            >
-              <Plus className="w-4 h-4" />
-              <span>{t('newLabel')}</span>
-            </button>
-          ) : (
-            <span className="w-10" />
-          )}
+          <Button variant="brand" size="sm" icon={<Plus />} onClick={() => setCreating(true)}>
+            {t('newLabel')}
+          </Button>
         </div>
       </div>
 
@@ -215,7 +209,7 @@ export function Exercises({ onBack }: ExercisesProps) {
           )}
           {!loading && exercises.length === 0 && (
             <div className="bg-white border border-dashed border-gray-300 rounded-lg p-6 text-center text-gray-600">
-              {isCoach ? t('noExercisesTryCreate') : t('noExercisesYet')}
+              {t('noExercisesTryCreate')}
             </div>
           )}
           {!loading &&
@@ -262,7 +256,7 @@ export function Exercises({ onBack }: ExercisesProps) {
                       ))}
                     </div>
                   </div>
-                  {isCoach && (
+                  {ownsExercise(exercise) && (
                     <div className="flex-shrink-0 flex gap-2">
                       <button
                         onClick={() => setEditing(exercise)}

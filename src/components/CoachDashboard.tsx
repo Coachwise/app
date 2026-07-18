@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
-import { ArrowLeft, Users, Calendar, TrendingUp, DollarSign, Package, CheckCircle, Plus, Trash2, Lock, Globe, UserPlus, Search, ClipboardList, Send, Award, LineChart, Pencil, Dumbbell } from 'lucide-react';
+import { Users, Calendar, TrendingUp, DollarSign, Package, CheckCircle, Plus, Trash2, Lock, Globe, UserPlus, Search, ClipboardList, Send, Award, LineChart, Pencil, Dumbbell } from 'lucide-react';
+import { BackButton } from './ui/back-button';
+import { Button } from './ui/button';
 import { HamburgerMenu } from './HamburgerMenu';
 import { ConnectionPicker } from './ConnectionPicker';
 import type { UserRole } from '../App';
@@ -282,9 +284,7 @@ export function CoachDashboard({ onBack, onNavigate, userRole = 'coach', isPro =
       {/* Header */}
       <div className="bg-navy px-4 py-4 sticky top-0 z-10">
         <div className="flex items-center justify-between mb-4">
-          <button onClick={onBack} className="p-2 -ml-2 hover:bg-navy-light rounded-lg transition-colors">
-            <ArrowLeft className="w-6 h-6 text-white" />
-          </button>
+          <BackButton onClick={onBack} aria-label={t('back')} />
           <h1 className="text-white text-xl">{t('coachDashboard')}</h1>
           {onNavigate ? (
             <HamburgerMenu userRole={userRole} onNavigate={onNavigate} isPro={isPro} />
@@ -363,13 +363,9 @@ export function CoachDashboard({ onBack, onNavigate, userRole = 'coach', isPro =
                         </div>
                       </div>
                       <div className="flex gap-2">
-                        <button
-                          onClick={() => acceptPending(req.id)}
-                          className="flex-1 py-2 bg-yellow-500 text-navy rounded-lg hover:bg-yellow-400 transition-colors text-sm flex items-center justify-center gap-2"
-                        >
-                          <CheckCircle className="w-4 h-4" />
-                          <span>{t('accept')}</span>
-                        </button>
+                        <Button variant="brand" size="sm" icon={<CheckCircle />} onClick={() => acceptPending(req.id)} className="flex-1">
+                          {t('accept')}
+                        </Button>
                         <button
                           onClick={() => declinePending(req.id)}
                           className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors text-sm"
@@ -412,13 +408,9 @@ export function CoachDashboard({ onBack, onNavigate, userRole = 'coach', isPro =
                   {packages.length === 0 ? (
                     <div className="p-5 text-center">
                       <p className="text-gray-500 text-sm mb-3">{t('noPackagesYet')}</p>
-                      <button
-                        onClick={() => onCreatePackage?.()}
-                        className="px-3 py-1.5 bg-yellow-500 text-navy rounded-lg hover:bg-yellow-400 transition-colors text-sm inline-flex items-center gap-1.5"
-                      >
-                        <Plus className="w-4 h-4" />
+                      <Button variant="brand" size="sm" icon={<Plus />} onClick={() => onCreatePackage?.()}>
                         {t('createPackage')}
-                      </button>
+                      </Button>
                     </div>
                   ) : candidateConnections.length === 0 ? (
                     <div className="p-5 text-center text-gray-500 text-sm">{t('noConnectionsToEnroll')}</div>
@@ -449,12 +441,9 @@ export function CoachDashboard({ onBack, onNavigate, userRole = 'coach', isPro =
                                   <div className="text-navy text-sm truncate">{displayName(conn)}</div>
                                   <div className="text-gray-500 text-xs truncate">@{conn.username}</div>
                                 </div>
-                                <button
-                                  onClick={() => setAssignConn(assignConn === conn.id ? null : conn.id)}
-                                  className="px-3 py-1.5 bg-yellow-500 text-navy rounded-lg hover:bg-yellow-400 transition-colors text-sm whitespace-nowrap"
-                                >
+                                <Button variant="brand" size="sm" onClick={() => setAssignConn(assignConn === conn.id ? null : conn.id)} className="whitespace-nowrap">
                                   {assignConn === conn.id ? t('cancel') : t('assignPackage')}
-                                </button>
+                                </Button>
                               </div>
                               {assignConn === conn.id && (
                                 <div className="mt-3 space-y-2">
@@ -624,13 +613,9 @@ export function CoachDashboard({ onBack, onNavigate, userRole = 'coach', isPro =
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
               <div className="px-4 py-3.5 border-b border-gray-100 flex items-center justify-between">
                 <h3 className="text-navy font-medium">{t('yourPlans')}</h3>
-                <button
-                  onClick={() => (onCreatePlan ? onCreatePlan() : onNavigate?.('plan-builder'))}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-yellow-500 text-navy hover:bg-yellow-400 transition-colors"
-                >
-                  <Plus className="w-4 h-4" />
+                <Button variant="brand" size="sm" icon={<Plus />} onClick={() => (onCreatePlan ? onCreatePlan() : onNavigate?.('plan-builder'))}>
                   {t('create')}
-                </button>
+                </Button>
               </div>
               {myPlans.length === 0 ? (
                 <div className="p-8 text-center text-gray-500 text-sm">{t('noPlansToBundle')}</div>
@@ -663,13 +648,9 @@ export function CoachDashboard({ onBack, onNavigate, userRole = 'coach', isPro =
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
               <div className="px-4 py-3.5 border-b border-gray-100 flex items-center justify-between">
                 <h3 className="text-navy font-medium">{t('yourPackages')}</h3>
-                <button
-                  onClick={() => onCreatePackage?.()}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-yellow-500 text-navy hover:bg-yellow-400 transition-colors"
-                >
-                  <Plus className="w-4 h-4" />
+                <Button variant="brand" size="sm" icon={<Plus />} onClick={() => onCreatePackage?.()}>
                   {t('create')}
-                </button>
+                </Button>
               </div>
               {packages.length === 0 ? (
                 <div className="p-8 text-center text-gray-500 text-sm">{t('noPackagesYet')}</div>
@@ -730,13 +711,9 @@ export function CoachDashboard({ onBack, onNavigate, userRole = 'coach', isPro =
                   <Dumbbell className="w-5 h-5 text-yellow-500" />
                   {t('myProtocols')}
                 </h3>
-                <button
-                  onClick={() => onCreateTest?.()}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-yellow-500 text-navy hover:bg-yellow-400 transition-colors"
-                >
-                  <Plus className="w-4 h-4" />
+                <Button variant="brand" size="sm" icon={<Plus />} onClick={() => onCreateTest?.()}>
                   {t('create')}
-                </button>
+                </Button>
               </div>
               {tests.length === 0 ? (
                 <div className="bg-white rounded-2xl p-8 text-center border border-gray-100 shadow-sm">

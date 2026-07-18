@@ -1,4 +1,5 @@
-import { ArrowLeft, Lock, Eye, EyeOff, Shield, UserX, Bell, Mail, Users, Globe, ChevronRight } from 'lucide-react';
+import { Lock, Eye, EyeOff, Shield, UserX, Bell, Mail, Users, Globe, ChevronRight } from 'lucide-react';
+import { BackButton } from './ui/back-button';
 import { useState } from 'react';
 import { useLanguage } from '../contexts/LanguageContext';
 
@@ -28,12 +29,7 @@ export function PrivacySettings({ onBack }: PrivacySettingsProps) {
       {/* Header */}
       <div className="bg-navy px-4 py-4 sticky top-0 z-10">
         <div className="flex items-center gap-3">
-          <button 
-            onClick={onBack}
-            className="p-2 -ml-2 hover:bg-navy-light rounded-lg transition-colors"
-          >
-            <ArrowLeft className="w-6 h-6 text-white" />
-          </button>
+          <BackButton onClick={onBack} aria-label={t('back')} />
           <div className="flex items-center gap-2">
             <Shield className="w-6 h-6 text-yellow-500" />
             <h1 className="text-white text-xl">{t('privacySecurity')}</h1>

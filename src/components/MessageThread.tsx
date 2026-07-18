@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ArrowLeft, ArrowRight, Send } from 'lucide-react';
+import { Button } from './ui/button';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useRealtimeRefetch } from '../contexts/RealtimeContext';
@@ -153,14 +154,16 @@ export function MessageThread({ conversationId, onBack, onViewProfile }: Message
           placeholder={t('typeMessage')}
           className="flex-1 bg-gray-100 rounded-full px-4 py-2.5 text-navy focus:outline-none focus:ring-2 focus:ring-yellow-500"
         />
-        <button
+        <Button
+          variant="brand"
+          size="icon"
           onClick={handleSend}
           disabled={!text.trim() || sending}
-          className="p-2.5 rounded-full bg-yellow-500 text-navy hover:bg-yellow-400 transition-colors disabled:opacity-50"
           aria-label={t('send')}
+          className="rounded-full"
         >
-          <Send className={`w-5 h-5 ${isRTL ? 'rotate-180' : ''}`} />
-        </button>
+          <Send className={`size-5 ${isRTL ? 'rotate-180' : ''}`} />
+        </Button>
       </div>
     </div>
   );

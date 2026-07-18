@@ -1,5 +1,7 @@
 import { useState } from 'react';
-import { ArrowLeft, Crown, Check, Zap, Coins } from 'lucide-react';
+import { Crown, Check, Zap, Coins } from 'lucide-react';
+import { BackButton } from './ui/back-button';
+import { Button } from './ui/button';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
 import { FEATURES } from '../config';
@@ -40,9 +42,7 @@ export function ProSubscription({ onBack, entBalance, onNavigate }: ProSubscript
       {/* Header */}
       <div className="bg-navy px-4 py-4 sticky top-0 z-10">
         <div className="flex items-center gap-3">
-          <button onClick={onBack} className="p-2 hover:bg-navy-light rounded-lg transition-colors">
-            <ArrowLeft className="w-6 h-6 text-white" />
-          </button>
+          <BackButton onClick={onBack} aria-label={t('back')} />
           <h1 className="text-white text-xl flex items-center gap-2">
             <Crown className="w-6 h-6 text-yellow-500" />
             {t('becomePro')}
@@ -155,13 +155,9 @@ export function ProSubscription({ onBack, entBalance, onNavigate }: ProSubscript
         </>)}
 
         {/* Continue → choose duration, currency & payment method in the sheet */}
-        <button
-          onClick={() => setSheetOpen(true)}
-          className="w-full flex items-center justify-center gap-2 bg-yellow-500 text-navy py-3 rounded-lg hover:bg-yellow-400 transition-colors shadow-md disabled:opacity-50 font-medium"
-        >
-          <Crown className="w-5 h-5" />
+        <Button variant="brand" size="block" icon={<Crown className="size-5" />} onClick={() => setSheetOpen(true)}>
           {isPro ? t('renewPro') : t('upgradeToPro')}
-        </button>
+        </Button>
 
         {/* FAQ Note */}
         <div className="mt-6 text-center text-gray-500 text-xs">

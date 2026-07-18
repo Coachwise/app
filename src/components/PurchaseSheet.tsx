@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { X, Check, Loader2, Wallet as WalletIcon, ShieldCheck, ExternalLink } from 'lucide-react';
+import { Button } from './ui/button';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useRealtimeRefetch } from '../contexts/RealtimeContext';
@@ -324,15 +325,17 @@ export function PurchaseSheet({ open, onClose, kind, pkg, onSuccess }: PurchaseS
                 </button>
               </div>
             ) : (
-              <button
+              <Button
                 type="button"
+                variant="brand"
+                size="block"
+                loading={submitting}
+                disabled={quoting || !quote || !provider}
+                icon={isRedirect ? <ExternalLink className="size-5" /> : <WalletIcon className="size-5" />}
                 onClick={confirm}
-                disabled={submitting || quoting || !quote || !provider}
-                className="w-full flex items-center justify-center gap-2 bg-yellow-500 text-navy py-3 rounded-lg hover:bg-yellow-400 transition-colors shadow-md disabled:opacity-50 font-medium"
               >
-                {submitting ? <Loader2 className="w-5 h-5 animate-spin" /> : isRedirect ? <ExternalLink className="w-5 h-5" /> : <WalletIcon className="w-5 h-5" />}
                 {quote ? t('payAmount', { amount: formatMoney(quote.total, quote.currency, language) }) : t('pleaseWait')}
-              </button>
+              </Button>
             )}
           </div>
         )}

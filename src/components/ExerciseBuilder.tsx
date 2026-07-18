@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState, useRef } from 'react';
-import { ArrowLeft, Plus, Trash2, Loader2, Eye, Upload, X } from 'lucide-react';
+import { Plus, Trash2, Loader2, Eye, Upload, X, Copy, Save } from 'lucide-react';
+import { Button } from './ui/button';
+import { BackButton } from './ui/back-button';
 import * as ExercisesAPI from '../api/exercises';
 import * as MediaAPI from '../api/media';
 import type { Exercise, ExerciseSportType } from '../api/types';
@@ -30,8 +32,13 @@ export function ExerciseBuilder({ onCancel, onSaved, exercise }: ExerciseBuilder
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [name, setName] = useState(exercise?.name || '');
   const [description, setDescription] = useState(exercise?.description || '');
-  const [isPublic, setIsPublic] = useState<boolean>(!!exercise?.public);
   const [sportType, setSportType] = useState<ExerciseSportType>(exercise?.sport_type || 'GENERAL');
+  // Which extra actuals this exercise logs per set. Weight defaults on for new
+  // exercises; editing an existing one keeps whatever it had.
+  const [trackWeight, setTrackWeight] = useState(exercise ? exercise.track_weight !== false : true);
+  const [trackDistance, setTrackDistance] = useState(!!exercise?.track_distance);
+  const [trackGrade, setTrackGrade] = useState(!!exercise?.track_grade);
+  const [trackHeight, setTrackHeight] = useState(!!exercise?.track_height);
   const [mediaId, setMediaId] = useState<string | null>(exercise?.media_id || null);
   const [mediaUrl, setMediaUrl] = useState<string | null>(exercise?.media?.url || null);
   const [uploadingMedia, setUploadingMedia] = useState(false);
@@ -53,23 +60,58 @@ export function ExerciseBuilder({ onCancel, onSaved, exercise }: ExerciseBuilder
     }));
   });
 
+  // Quick-add builds N identical sets in one go (e.g. 12 hangboard repeaters).
+  const [bulkCount, setBulkCount] = useState(12);
+  const [bulkType, setBulkType] = useState<'reps' | 'time'>('time');
+  const [bulkValue, setBulkValue] = useState(10);
+  const [bulkRest, setBulkRest] = useState(5);
+
   const canSave = useMemo(() => name.trim() !== '' && description.trim() !== '' && sets.length > 0, [name, description, sets.length]);
 
   const updateSet = (id: string, updates: Partial<EditableSet>) => {
     setSets((prev) => prev.map((set) => (set.id === id ? { ...set, ...updates } : set)));
   };
 
+  // A new manual set inherits the previous one's shape, so building a run of
+  // similar sets is one tap each instead of re-entering every field.
   const addSet = () => {
-    setSets((prev) => [
-      ...prev,
-      {
+    setSets((prev) => {
+      const last = prev[prev.length - 1];
+      return [
+        ...prev,
+        {
+          id: uuid(),
+          name: `Set ${prev.length + 1}`,
+          type: last?.type ?? 'reps',
+          value: last?.value ?? 10,
+          restSeconds: last?.restSeconds ?? 60,
+        },
+      ];
+    });
+  };
+
+  const duplicateSet = (id: string) => {
+    setSets((prev) => {
+      const idx = prev.findIndex((s) => s.id === id);
+      if (idx === -1) return prev;
+      const copy = { ...prev[idx], id: uuid() };
+      return [...prev.slice(0, idx + 1), copy, ...prev.slice(idx + 1)];
+    });
+  };
+
+  const addBulkSets = () => {
+    const n = Math.max(1, Math.floor(bulkCount));
+    setSets((prev) => {
+      const base = prev.length;
+      const extra: EditableSet[] = Array.from({ length: n }, (_, i) => ({
         id: uuid(),
-        name: `Set ${prev.length + 1}`,
-        type: 'reps',
-        value: 10,
-        restSeconds: 60,
-      },
-    ]);
+        name: `Set ${base + i + 1}`,
+        type: bulkType,
+        value: Math.max(0, bulkValue),
+        restSeconds: Math.max(0, bulkRest),
+      }));
+      return [...prev, ...extra];
+    });
   };
 
   const removeSet = (id: string) => {
@@ -120,12 +162,16 @@ export function ExerciseBuilder({ onCancel, onSaved, exercise }: ExerciseBuilder
       const payload = {
         name: name.trim(),
         description: description.trim(),
-        public: isPublic,
         sport_type: sportType,
         media_id: mediaId,
+        track_weight: trackWeight,
+        track_distance: trackDistance,
+        track_grade: trackGrade,
+        track_height: trackHeight,
         sets: sets.map((set, idx) => ({
           name: set.name || `Set ${idx + 1}`,
-          rest_time: secondsToNs(set.restSeconds),
+          // There is no rest after the final set.
+          rest_time: idx === sets.length - 1 ? 0 : secondsToNs(set.restSeconds),
           rep_count: set.type === 'reps' ? Math.max(0, Math.round(set.value)) : undefined,
           duration: set.type === 'time' ? secondsToNs(set.value) : undefined,
         })),
@@ -147,18 +193,11 @@ export function ExerciseBuilder({ onCancel, onSaved, exercise }: ExerciseBuilder
     <div className="min-h-screen bg-gray-100">
       <div className="bg-navy px-4 py-4 sticky top-0 z-10">
         <div className="flex items-center justify-between">
-          <button onClick={onCancel} className="p-2 -ml-2 hover:bg-navy-light rounded-lg transition-colors">
-            <ArrowLeft className="w-6 h-6 text-white" />
-          </button>
+          <BackButton onClick={onCancel} aria-label={t('back')} />
           <h2 className="text-white">{exercise ? t('editExercise') : t('newExercise')}</h2>
-          <button
-            onClick={handleSave}
-            disabled={!canSave || saving}
-            className="px-4 py-2 bg-yellow-500 text-navy rounded-lg hover:bg-yellow-400 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
-          >
-            {saving && <Loader2 className="w-4 h-4 animate-spin" />}
-            <span>{t('save')}</span>
-          </button>
+          <Button variant="brand" size="sm" icon={<Save />} loading={saving} disabled={!canSave} onClick={handleSave}>
+            {t('save')}
+          </Button>
         </div>
       </div>
 
@@ -201,6 +240,30 @@ export function ExerciseBuilder({ onCancel, onSaved, exercise }: ExerciseBuilder
               <option value="MOBILITY">{t('sportMOBILITY')}</option>
               <option value="GENERAL">{t('sportGENERAL')}</option>
             </select>
+          </div>
+
+          <div>
+            <label className="text-[#3D3D3D] mb-2 block">{t('trackedMetrics')}</label>
+            <p className="text-gray-500 text-xs mb-2">{t('trackedMetricsHint')}</p>
+            <div className="grid grid-cols-2 gap-2">
+              {([
+                ['weight', trackWeight, setTrackWeight, t('metricWeight')],
+                ['distance', trackDistance, setTrackDistance, t('metricDistance')],
+                ['grade', trackGrade, setTrackGrade, t('metricGrade')],
+                ['height', trackHeight, setTrackHeight, t('metricHeight')],
+              ] as const).map(([key, on, set, label]) => (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => set(!on)}
+                  className={`px-3 py-2 rounded-lg text-sm font-medium border transition-colors ${
+                    on ? 'bg-yellow-500 text-navy border-yellow-500' : 'bg-white text-gray-600 border-gray-300'
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
           </div>
 
           <div>
@@ -257,19 +320,6 @@ export function ExerciseBuilder({ onCancel, onSaved, exercise }: ExerciseBuilder
               </button>
             )}
           </div>
-
-          <label className="flex items-center gap-3 cursor-pointer select-none">
-            <input
-              type="checkbox"
-              checked={isPublic}
-              onChange={(e) => setIsPublic(e.target.checked)}
-              className="w-5 h-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
-            />
-            <div>
-              <span className="text-gray-900">{t('makeExercisePublic')}</span>
-              <p className="text-gray-600 text-sm">{t('shareWithCommunity')}</p>
-            </div>
-          </label>
         </div>
 
         <div className="bg-white rounded-lg shadow-md p-4 border border-gray-200">
@@ -278,13 +328,69 @@ export function ExerciseBuilder({ onCancel, onSaved, exercise }: ExerciseBuilder
               <h3 className="text-[#3D3D3D]">{t('setsLabel')}</h3>
               <p className="text-sm text-gray-600">{t('repsOrTimedHolds')}</p>
             </div>
-            <button
-              onClick={addSet}
-              className="flex items-center gap-2 px-3 py-2 bg-yellow-500 text-navy rounded-lg hover:bg-yellow-400 transition-colors text-sm"
-            >
-              <Plus className="w-4 h-4" />
+            <Button variant="brand" size="sm" icon={<Plus />} onClick={addSet}>
               {t('addSet')}
-            </button>
+            </Button>
+          </div>
+
+          <div className="mb-4 rounded-lg border border-yellow-300 bg-yellow-50 p-3">
+            <div className="mb-2">
+              <h4 className="text-sm font-medium text-[#3D3D3D]">{t('quickAddTitle')}</h4>
+              <p className="text-xs text-gray-600">{t('quickAddHint')}</p>
+            </div>
+            <div className="flex flex-wrap items-end gap-2">
+              <div>
+                <label className="block text-xs text-gray-700 mb-1">{t('countLabel')}</label>
+                <input
+                  type="number"
+                  min={1}
+                  value={bulkCount}
+                  onChange={(e) => setBulkCount(Number(e.target.value))}
+                  className="w-16 px-2 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                />
+              </div>
+              <div className="flex gap-1 pb-[1px]">
+                <button
+                  onClick={() => setBulkType('reps')}
+                  className={`px-3 py-2 rounded-lg text-sm transition-colors ${bulkType === 'reps' ? 'bg-yellow-500 text-navy' : 'bg-white text-gray-700 border border-gray-300'}`}
+                >
+                  {t('repsLabel')}
+                </button>
+                <button
+                  onClick={() => setBulkType('time')}
+                  className={`px-3 py-2 rounded-lg text-sm transition-colors ${bulkType === 'time' ? 'bg-yellow-500 text-navy' : 'bg-white text-gray-700 border border-gray-300'}`}
+                >
+                  {t('timeLabel')}
+                </button>
+              </div>
+              <div>
+                <label className="block text-xs text-gray-700 mb-1">{bulkType === 'reps' ? t('repsLabel') : t('durationSec')}</label>
+                <input
+                  type="number"
+                  min={0}
+                  value={bulkValue}
+                  onChange={(e) => setBulkValue(Number(e.target.value))}
+                  className="w-20 px-2 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-gray-700 mb-1">{t('restSecondsLabel')}</label>
+                <input
+                  type="number"
+                  min={0}
+                  value={bulkRest}
+                  onChange={(e) => setBulkRest(Number(e.target.value))}
+                  className="w-20 px-2 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                />
+              </div>
+              <button
+                onClick={addBulkSets}
+                className="flex items-center gap-2 px-3 py-2 bg-navy text-white rounded-lg hover:bg-navy-light transition-colors text-sm"
+              >
+                <Plus className="w-4 h-4" />
+                {t('addCountSets', { n: Math.max(1, Math.floor(bulkCount)) })}
+              </button>
+            </div>
           </div>
 
           <div className="space-y-3">
@@ -295,13 +401,22 @@ export function ExerciseBuilder({ onCancel, onSaved, exercise }: ExerciseBuilder
                     <Eye className="w-4 h-4" />
                     <span>{t('setNumber', { n: index + 1 })}</span>
                   </div>
-                  <button
-                    onClick={() => removeSet(set.id)}
-                    className="text-red-500 hover:text-red-600"
-                    aria-label={t('removeSetAria')}
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={() => duplicateSet(set.id)}
+                      className="text-gray-500 hover:text-gray-700"
+                      aria-label={t('duplicateSet')}
+                    >
+                      <Copy className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => removeSet(set.id)}
+                      className="text-red-500 hover:text-red-600"
+                      aria-label={t('removeSetAria')}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
@@ -319,10 +434,14 @@ export function ExerciseBuilder({ onCancel, onSaved, exercise }: ExerciseBuilder
                     <input
                       type="number"
                       min={0}
-                      value={set.restSeconds}
+                      value={index === sets.length - 1 ? 0 : set.restSeconds}
+                      disabled={index === sets.length - 1}
                       onChange={(e) => updateSet(set.id, { restSeconds: Number(e.target.value) })}
-                      className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:text-gray-400"
                     />
+                    {index === sets.length - 1 && (
+                      <p className="mt-1 text-xs text-gray-500">{t('lastSetNoRest')}</p>
+                    )}
                   </div>
                 </div>
 

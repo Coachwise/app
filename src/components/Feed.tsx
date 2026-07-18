@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Plus, Heart, MessageCircle, Share2, TrendingUp, Users, Trophy, Award, Video } from 'lucide-react';
+import { Button } from './ui/button';
 import { useLanguage } from '../contexts/LanguageContext';
 import { ProBadge } from './ProBadge';
 import { HamburgerMenu } from './HamburgerMenu';
@@ -237,12 +238,13 @@ export function Feed({ onCreatePost, userRole, onNavigate, onViewProfile, isPro 
       </div>
 
       {/* Floating Action Button */}
-      <button
+      <Button
+        variant="brand"
         onClick={onCreatePost}
-        className="fixed bottom-20 right-4 w-14 h-14 bg-yellow-500 text-navy rounded-full shadow-xl hover:bg-yellow-400 transition-all active:scale-95 flex items-center justify-center z-10"
+        className="fixed bottom-20 right-4 w-14 h-14 rounded-full shadow-xl active:scale-95 z-10"
       >
-        <Plus className="w-6 h-6" />
-      </button>
+        <Plus className="size-6" />
+      </Button>
     </div>
   );
 }

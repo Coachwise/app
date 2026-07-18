@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { CheckCircle2, UserPlus, Clock, Check, X, ArrowLeft, ArrowRight, MessageCircle, Package, Users, Globe, Instagram } from 'lucide-react';
+import { Button } from './ui/button';
 import type { UserRole } from '../App';
 import { useLanguage } from '../contexts/LanguageContext';
 import { HamburgerMenu } from './HamburgerMenu';
@@ -245,14 +246,9 @@ export function Profile({ userRole, onNavigate, onBack, onMessage, viewingUserId
     </button>
   ) : connStatus === 'pending_incoming' ? (
     <div className="flex gap-2">
-      <button
-        onClick={handleAcceptIncoming}
-        disabled={connBusy || !incomingReqId}
-        className="flex-1 py-3 rounded-lg bg-yellow-500 text-navy hover:bg-yellow-400 transition-colors flex items-center justify-center gap-2 disabled:opacity-60"
-      >
-        <Check className="w-5 h-5" />
-        <span>{t('accept')}</span>
-      </button>
+      <Button variant="brand" icon={<Check className="size-5" />} disabled={connBusy || !incomingReqId} onClick={handleAcceptIncoming} className="flex-1 py-3">
+        {t('accept')}
+      </Button>
       <button
         onClick={handleRejectIncoming}
         disabled={connBusy || !incomingReqId}
@@ -263,14 +259,9 @@ export function Profile({ userRole, onNavigate, onBack, onMessage, viewingUserId
       </button>
     </div>
   ) : (
-    <button
-      onClick={handleConnect}
-      disabled={connBusy}
-      className="w-full py-3 rounded-lg bg-yellow-500 text-navy hover:bg-yellow-400 transition-colors flex items-center justify-center gap-2 disabled:opacity-60"
-    >
-      <UserPlus className="w-5 h-5" />
-      <span>{t('connect')}</span>
-    </button>
+    <Button variant="brand" size="block" icon={<UserPlus className="size-5" />} disabled={connBusy} onClick={handleConnect}>
+      {t('connect')}
+    </Button>
   );
 
   return (
@@ -341,12 +332,9 @@ export function Profile({ userRole, onNavigate, onBack, onMessage, viewingUserId
           </div>
 
           {isOwnProfile ? (
-            <button
-              onClick={() => onNavigate?.('profile-settings')}
-              className="w-full bg-yellow-500 text-navy py-3 rounded-lg hover:bg-yellow-400 transition-colors"
-            >
+            <Button variant="brand" size="block" onClick={() => onNavigate?.('profile-settings')}>
               {t('editProfile')}
-            </button>
+            </Button>
           ) : (
             connectionButton
           )}

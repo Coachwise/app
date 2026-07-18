@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Loader2, ZoomIn } from 'lucide-react';
+import { Button } from './ui/button';
 import { useLanguage } from '../contexts/LanguageContext';
 import { cropToAvatar, type PreparedImage } from '../lib/image';
 
@@ -183,15 +184,9 @@ export function AvatarCropper({ image, busy, onCancel, onDone }: AvatarCropperPr
         >
           {t('cancel')}
         </button>
-        <button
-          type="button"
-          onClick={handleDone}
-          disabled={working}
-          className="flex-1 py-3 rounded-xl bg-yellow-500 text-navy font-semibold disabled:opacity-50 flex items-center justify-center gap-2"
-        >
-          {working && <Loader2 className="w-4 h-4 animate-spin" />}
+        <Button type="button" variant="brand" loading={working} onClick={handleDone} className="flex-1 py-3 rounded-xl font-semibold">
           {t('usePhoto')}
-        </button>
+        </Button>
       </div>
     </div>
   );

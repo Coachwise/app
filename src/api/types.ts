@@ -113,6 +113,12 @@ export interface Exercise {
   category_id?: UUID | null;
   media_id?: UUID | null;
   media?: Media | null;
+  // Which extra actuals this exercise logs per set (reps/duration come from the
+  // set prescription). Weight defaults on.
+  track_weight?: boolean;
+  track_distance?: boolean;
+  track_grade?: boolean;
+  track_height?: boolean;
   sets: ExerciseSet[];
   created_at: string;
   updated_at: string;
@@ -561,6 +567,8 @@ export interface WorkoutLog {
   rpe?: number | null;
   duration_seconds?: number | null;
   grade?: string | null;
+  distance?: number | null;
+  height?: number | null;
   completed: boolean;
   attempts?: number | null;
   notes?: string | null;
@@ -653,9 +661,12 @@ export type PasswordChangePayload = DirectPasswordChangePayload | NormalPassword
 export interface ExerciseForm {
   name: string;
   description: string;
-  public: boolean;
   sport_type?: ExerciseSportType;
   media_id?: UUID | null;
+  track_weight?: boolean;
+  track_distance?: boolean;
+  track_grade?: boolean;
+  track_height?: boolean;
   sets?: Array<{
     name: string;
     rest_time: number;
@@ -722,6 +733,8 @@ export interface CreateWorkoutLogPayload {
   rpe?: number;
   duration_seconds?: number;
   grade?: string;
+  distance?: number;
+  height?: number;
   completed?: boolean;
   attempts?: number;
   notes?: string;

@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import type { ReactNode } from 'react';
 import { Search, UserPlus, UserCheck, CheckCircle2, Clock, Check, X } from 'lucide-react';
+import { Button } from './ui/button';
 import { HamburgerMenu } from './HamburgerMenu';
 import { UserAvatar } from './UserAvatar';
 import type { UserRole } from '../App';
@@ -223,10 +224,9 @@ export function AthleteSearch({ userRole, onNavigate, onViewProfile, activeTab: 
       );
     }
     return (
-      <button onClick={() => handleConnect(user)} disabled={busy} className={`${base} bg-yellow-500 text-navy hover:bg-yellow-400`}>
-        <UserPlus className="w-4 h-4" />
+      <Button variant="brand" icon={<UserPlus />} disabled={busy} onClick={() => handleConnect(user)} className={base}>
         <span className="hidden sm:inline">{t('connect')}</span>
-      </button>
+      </Button>
     );
   };
 
@@ -380,14 +380,15 @@ export function AthleteSearch({ userRole, onNavigate, onViewProfile, activeTab: 
                       user={req.user}
                       trailing={
                         <div className="flex items-center gap-2">
-                          <button
-                            onClick={() => handleAccept(req)}
+                          <Button
+                            variant="brand"
+                            size="icon"
                             disabled={pendingIds.has(req.id)}
-                            className="p-2 rounded-lg bg-yellow-500 text-navy hover:bg-yellow-400 transition-colors disabled:opacity-60"
+                            onClick={() => handleAccept(req)}
                             aria-label={t('accept')}
                           >
-                            <Check className="w-5 h-5" />
-                          </button>
+                            <Check className="size-5" />
+                          </Button>
                           <button
                             onClick={() => handleReject(req)}
                             disabled={pendingIds.has(req.id)}

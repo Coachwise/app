@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
-import { ArrowLeft, Check } from 'lucide-react';
+import { Check, Save } from 'lucide-react';
+import { Button } from './ui/button';
+import { BackButton } from './ui/back-button';
 import { useLanguage } from '../contexts/LanguageContext';
 import { TestsAPI } from '../api';
 import type { Exercise } from '../api/types';
@@ -102,17 +104,11 @@ export function TestBuilder({ token, testId, onCancel, onSave }: TestBuilderProp
     <div className="min-h-screen bg-gray-100">
       <div className="bg-navy px-4 py-4 sticky top-0 z-10">
         <div className="flex items-center justify-between">
-          <button onClick={onCancel} className="p-2 -ml-2 hover:bg-navy-light rounded-lg transition-colors">
-            <ArrowLeft className="w-6 h-6 text-white" />
-          </button>
+          <BackButton onClick={onCancel} aria-label={t('back')} />
           <h2 className="text-white">{isEdit ? t('editTest') : t('createTest')}</h2>
-          <button
-            onClick={handleSave}
-            disabled={!isValid || saving}
-            className="px-4 py-2 bg-yellow-500 text-navy rounded-lg hover:bg-yellow-400 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
-          >
-            {saving ? t('saving') : t('save')}
-          </button>
+          <Button variant="brand" size="sm" icon={<Save />} loading={saving} disabled={!isValid} onClick={handleSave}>
+            {t('save')}
+          </Button>
         </div>
       </div>
 

@@ -1,5 +1,7 @@
 import { useState } from 'react';
-import { Search, Star, Filter, CheckCircle2, MapPin, ArrowLeft } from 'lucide-react';
+import { Search, Star, Filter, CheckCircle2, MapPin } from 'lucide-react';
+import { BackButton } from './ui/back-button';
+import { Button } from './ui/button';
 import { useLanguage } from '../contexts/LanguageContext';
 
 interface Coach {
@@ -105,12 +107,7 @@ export function CoachMarketplace({ onBack, onViewProfile }: CoachMarketplaceProp
       {/* Header */}
       <div className="bg-navy px-4 py-6 sticky top-0 z-10">
         <div className="flex items-center gap-3 mb-4">
-          <button 
-            onClick={onBack}
-            className="p-2 -ml-2 hover:bg-navy-light rounded-lg transition-colors"
-          >
-            <ArrowLeft className="w-6 h-6 text-white" />
-          </button>
+          <BackButton onClick={onBack} aria-label={t('back')} />
           <h1 className="text-white">{t('findYourCoach')}</h1>
         </div>
         
@@ -194,9 +191,9 @@ export function CoachMarketplace({ onBack, onViewProfile }: CoachMarketplaceProp
                   <span className="text-gray-600 text-sm">{t('from')} </span>
                   <span className="text-navy">${coach.priceFrom}/{t('month')}</span>
                 </div>
-                <button className="px-6 py-2 bg-yellow-500 text-navy rounded-lg hover:bg-yellow-400 transition-colors" onClick={() => onViewProfile?.(coach.id)}>
+                <Button variant="brand" onClick={() => onViewProfile?.(coach.id)} className="px-6">
                   {t('viewProfile')}
-                </button>
+                </Button>
               </div>
             </div>
           </div>

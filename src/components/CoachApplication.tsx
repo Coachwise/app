@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
-import { ArrowLeft, Upload, CheckCircle2, Clock, XCircle } from 'lucide-react';
+import { Upload, CheckCircle2, Clock, XCircle } from 'lucide-react';
+import { Button } from './ui/button';
+import { BackButton } from './ui/back-button';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
 import * as CoachesAPI from '../api/coaches';
@@ -95,9 +97,7 @@ export function CoachApplication({ onCancel, onSubmit }: CoachApplicationProps) 
       <div className="min-h-screen bg-gray-100">
         <div className="bg-navy px-4 py-4 sticky top-0 z-10">
           <div className="flex items-center justify-between">
-            <button onClick={onCancel} className="p-2 -ml-2 hover:bg-navy-light rounded-lg transition-colors">
-              <ArrowLeft className="w-6 h-6 text-white" />
-            </button>
+            <BackButton onClick={onCancel} aria-label={t('back')} />
             <h2 className="text-white">{t('becomeACoach')}</h2>
             <div className="w-10" />
           </div>
@@ -124,9 +124,7 @@ export function CoachApplication({ onCancel, onSubmit }: CoachApplicationProps) 
       {/* Header */}
       <div className="bg-navy px-4 py-4 sticky top-0 z-10">
         <div className="flex items-center justify-between">
-          <button onClick={onCancel} className="p-2 -ml-2 hover:bg-navy-light rounded-lg transition-colors">
-            <ArrowLeft className="w-6 h-6 text-white" />
-          </button>
+          <BackButton onClick={onCancel} aria-label={t('back')} />
           <h2 className="text-white">{t('becomeACoach')}</h2>
           <div className="w-10"></div>
         </div>
@@ -294,13 +292,9 @@ export function CoachApplication({ onCancel, onSubmit }: CoachApplicationProps) 
               <div className="bg-red-50 border border-red-200 text-red-800 text-sm rounded-lg p-3">{error}</div>
             )}
 
-            <button
-              onClick={handleSubmit}
-              disabled={submitting}
-              className="w-full py-3 rounded-lg bg-yellow-500 text-navy font-medium hover:bg-yellow-400 transition-colors disabled:opacity-60"
-            >
-              {submitting ? t('submitting') : (application?.status === 'REJECTED' ? t('reapply') : t('submitApplication'))}
-            </button>
+            <Button variant="brand" size="block" loading={submitting} onClick={handleSubmit}>
+              {application?.status === 'REJECTED' ? t('reapply') : t('submitApplication')}
+            </Button>
           </div>
         </div>
       </div>

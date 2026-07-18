@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { X } from 'lucide-react';
+import { Button } from './ui/button';
 import { HeatSlider, StarRating } from './ui';
 import { useLanguage } from '../contexts/LanguageContext';
 
@@ -121,20 +122,12 @@ export function SessionFeedbackDialog({
 
           {/* Actions */}
           <div className="flex gap-3 p-4 bg-gray-50 rounded-b-lg">
-            <button
-              onClick={handleSkip}
-              disabled={loading}
-              className="flex-1 px-4 py-3 text-gray-700 bg-white border-2 border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
-            >
+            <Button variant="outline" disabled={loading} onClick={handleSkip} className="flex-1 h-12">
               {t('skip')}
-            </button>
-            <button
-              onClick={handleSubmit}
-              disabled={loading}
-              className="flex-1 px-4 py-3 bg-yellow-500 text-navy rounded-lg hover:bg-yellow-400 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-bold"
-            >
-              {loading ? t('saving') : t('finishSession')}
-            </button>
+            </Button>
+            <Button variant="brand" loading={loading} onClick={handleSubmit} className="flex-1 h-12 font-bold">
+              {t('finishSession')}
+            </Button>
           </div>
         </div>
       </div>

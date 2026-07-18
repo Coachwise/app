@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
-import { ArrowLeft, Plus, Trash2, Check } from 'lucide-react';
+import { Plus, Trash2, Check, Save } from 'lucide-react';
+import { BackButton } from './ui/back-button';
+import { Button } from './ui/button';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
 import { PackagesAPI, PlansAPI } from '../api';
@@ -166,29 +168,16 @@ export function SubscriptionTierBuilder({ onCancel, onSave, token, packageId }: 
       {/* Header + progress */}
       <div className="bg-navy px-4 py-4 sticky top-0 z-10">
         <div className="flex items-center justify-between mb-3">
-          <button
-            onClick={() => (step === 1 ? onCancel() : setStep(step - 1))}
-            className="p-2 -ml-2 hover:bg-navy-light rounded-lg transition-colors"
-          >
-            <ArrowLeft className="w-6 h-6 text-white" />
-          </button>
+          <BackButton onClick={() => (step === 1 ? onCancel() : setStep(step - 1))} aria-label={t('back')} />
           <h2 className="text-white">{isEdit ? t('editTier') : t('createTier')}</h2>
           {step < TOTAL_STEPS ? (
-            <button
-              onClick={() => canAdvance(step) && setStep(step + 1)}
-              disabled={!canAdvance(step)}
-              className="px-4 py-2 bg-yellow-500 text-navy rounded-lg hover:bg-yellow-400 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
-            >
+            <Button variant="brand" size="sm" disabled={!canAdvance(step)} onClick={() => canAdvance(step) && setStep(step + 1)}>
               {t('next')}
-            </button>
+            </Button>
           ) : (
-            <button
-              onClick={handleSave}
-              disabled={!isFormValid() || saving}
-              className="px-4 py-2 bg-yellow-500 text-navy rounded-lg hover:bg-yellow-400 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
-            >
-              {saving ? t('saving') : t('save')}
-            </button>
+            <Button variant="brand" size="sm" icon={<Save />} loading={saving} disabled={!isFormValid()} onClick={handleSave}>
+              {t('save')}
+            </Button>
           )}
         </div>
         {/* Step segments */}

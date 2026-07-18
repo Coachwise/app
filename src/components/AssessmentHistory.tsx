@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
-import { ArrowLeft, Plus, TrendingUp, TrendingDown, Minus, LineChart, History } from 'lucide-react';
+import { Plus, TrendingUp, TrendingDown, Minus, LineChart, History } from 'lucide-react';
+import { BackButton } from './ui/back-button';
+import { Button } from './ui/button';
 import { useLanguage } from '../contexts/LanguageContext';
 import { localized } from '../lib/localize';
 import { TestsAPI } from '../api';
@@ -107,21 +109,15 @@ export function AssessmentHistory({ token, protocolId, onBack, onRun, athleteId,
     <div className="min-h-screen bg-gray-100">
       <div className="bg-navy px-4 py-4 sticky top-0 z-10">
         <div className="flex items-center justify-between">
-          <button onClick={onBack} className="p-2 -ml-2 hover:bg-navy-light rounded-lg transition-colors">
-            <ArrowLeft className="w-6 h-6 text-white" />
-          </button>
+          <BackButton onClick={onBack} aria-label={t('back')} />
           <div className="min-w-0 text-center px-2">
             <h1 className="text-white text-lg truncate">{protocol?.name || t('history')}</h1>
             {clientName && <p className="text-white/60 text-xs truncate">{clientName}</p>}
           </div>
           {onRun ? (
-            <button
-              onClick={onRun}
-              className="inline-flex items-center gap-1 px-3 py-2 bg-yellow-500 text-navy rounded-lg hover:bg-yellow-400 transition-colors text-sm font-medium"
-            >
-              <Plus className="w-4 h-4" />
+            <Button variant="brand" size="sm" icon={<Plus />} onClick={onRun}>
               {t('runNow')}
-            </button>
+            </Button>
           ) : (
             <span className="w-10" />
           )}
@@ -136,13 +132,9 @@ export function AssessmentHistory({ token, protocolId, onBack, onRun, athleteId,
             <LineChart className="w-10 h-10 text-gray-200 mx-auto mb-3" />
             <p className="text-gray-500 text-sm">{athleteId ? t('clientNoRuns') : t('noRunsYet')}</p>
             {onRun && (
-              <button
-                onClick={onRun}
-                className="mt-4 inline-flex items-center gap-1.5 px-4 py-2 bg-yellow-500 text-navy rounded-lg hover:bg-yellow-400 transition-colors text-sm font-medium"
-              >
-                <Plus className="w-4 h-4" />
+              <Button variant="brand" size="sm" icon={<Plus />} className="mt-4" onClick={onRun}>
                 {t('recordFirstRun')}
-              </button>
+              </Button>
             )}
           </div>
         )}

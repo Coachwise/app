@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { ArrowLeft, Coins, TrendingUp, Check, Dumbbell, Users, Crown, Zap } from 'lucide-react';
+import { Button } from './ui/button';
 import { HamburgerMenu } from './HamburgerMenu';
 import type { UserRole } from '../App';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -219,12 +220,9 @@ export function ClaimENT({ onBack, onNavigate, userRole, isPro }: ClaimENTProps)
               <div className="text-white text-sm mb-2">
                 {t('upgradeWithTokens')}
               </div>
-              <button
-                onClick={() => onNavigate('pro-subscription')}
-                className="w-full bg-yellow-500 text-navy py-2 rounded-lg hover:bg-yellow-400 transition-colors font-semibold"
-              >
+              <Button variant="brand" size="block" onClick={() => onNavigate('pro-subscription')}>
                 {t('becomePro')} (10 SPARK)
-              </button>
+              </Button>
               {availableBalance < 10 && (
                 <div className="text-yellow-400 text-xs mt-2 text-center">
                   {interpolate(t('needMoreTokens'), { amount: (10 - availableBalance).toFixed(1) })}

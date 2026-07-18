@@ -1,4 +1,5 @@
-import { ArrowLeft } from 'lucide-react';
+import {  } from 'lucide-react';
+import { BackButton } from './ui/back-button';
 import { Brand } from './ui/logo';
 import { useLanguage } from '../contexts/LanguageContext';
 import { APP_VERSION, APP_IS_BETA } from '../config';
@@ -14,9 +15,7 @@ export function About({ onBack }: AboutProps) {
     <div className="min-h-screen bg-gray-100">
       <div className="bg-navy px-4 py-4 sticky top-0 z-10">
         <div className="flex items-center gap-3">
-          <button onClick={onBack} className="p-2 -ml-2 hover:bg-navy-light rounded-lg transition-colors">
-            <ArrowLeft className="w-6 h-6 text-white" />
-          </button>
+          <BackButton onClick={onBack} aria-label={t('back')} />
           <h1 className="text-white text-xl">{t('about')}</h1>
         </div>
       </div>

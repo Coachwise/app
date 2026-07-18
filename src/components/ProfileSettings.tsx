@@ -1,4 +1,6 @@
-import { ArrowLeft, User, Mail, Phone, Calendar, Briefcase, Instagram, Globe, Camera, Save } from 'lucide-react';
+import { User, Mail, Phone, Calendar, Briefcase, Instagram, Globe, Camera, Save } from 'lucide-react';
+import { Button } from './ui/button';
+import { BackButton } from './ui/back-button';
 import { useState, useRef, useEffect } from 'react';
 import { useLanguage } from '../contexts/LanguageContext';
 import type { UserRole } from '../App';
@@ -147,22 +149,15 @@ export function ProfileSettings({ onBack }: ProfileSettingsProps) {
       <div className="bg-navy px-4 py-4 sticky top-0 z-10">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <button onClick={onBack} className="p-2 -ml-2 hover:bg-navy-light rounded-lg transition-colors">
-              <ArrowLeft className="w-6 h-6 text-white" />
-            </button>
+            <BackButton onClick={onBack} aria-label={t('back')} />
             <div className="flex items-center gap-2">
               <User className="w-6 h-6 text-yellow-500" />
               <h1 className="text-white text-xl">{t('profileSettings')}</h1>
             </div>
           </div>
-          <button
-            onClick={handleSave}
-            disabled={saving}
-            className="flex items-center gap-2 px-4 py-2 bg-yellow-500 text-navy rounded-lg hover:bg-yellow-400 transition-colors disabled:opacity-60"
-          >
-            <Save className="w-4 h-4" />
-            <span className="text-sm">{saving ? t('saving') : t('save')}</span>
-          </button>
+          <Button variant="brand" size="sm" icon={<Save />} loading={saving} onClick={handleSave}>
+            {t('save')}
+          </Button>
         </div>
       </div>
 
@@ -263,13 +258,9 @@ export function ProfileSettings({ onBack }: ProfileSettingsProps) {
             </div>
           </div>
 
-          <button
-            onClick={handleSave}
-            disabled={saving}
-            className="w-full py-3 bg-navy text-white rounded-lg hover:bg-navy-light transition-colors disabled:opacity-60"
-          >
-            {saving ? t('saving') : t('saveChanges')}
-          </button>
+          <Button variant="brand" size="block" loading={saving} onClick={handleSave}>
+            {t('saveChanges')}
+          </Button>
         </div>
       </div>
     </div>

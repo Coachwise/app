@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { ArrowLeft, Plus, GripVertical, Trash2, RefreshCw, Search, Dumbbell } from 'lucide-react';
+import { Plus, GripVertical, Trash2, RefreshCw, Search, Dumbbell, Save } from 'lucide-react';
+import { BackButton } from './ui/back-button';
+import { Button } from './ui/button';
 import type { Exercise, ExerciseCategory, ExerciseSportType } from '../api/types';
 import * as ExercisesAPI from '../api/exercises';
 import * as PlansAPI from '../api/plans';
@@ -303,20 +305,14 @@ export function PlanBuilder({ onCancel, onSave, planId }: PlanBuilderProps) {
       {/* Header */}
       <div className="bg-navy px-4 py-4 sticky top-0 z-10">
         <div className="flex items-center justify-between">
-          <button onClick={onCancel} className="p-2 -ml-2 hover:bg-navy-light rounded-lg transition-colors">
-            <ArrowLeft className="w-6 h-6 text-white" />
-          </button>
+          <BackButton onClick={onCancel} aria-label={t('back')} />
           <h2 className="text-white">{planId ? (isOwner ? t('editPlan') : t('viewPlan')) : t('createPlan')}</h2>
           {readOnly ? (
             <div className="w-10" />
           ) : (
-            <button
-              onClick={handleSave}
-              disabled={!planName.trim() || exercises.length === 0 || saving}
-              className="px-4 py-2 bg-yellow-500 text-navy rounded-lg hover:bg-yellow-400 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
-            >
-              {saving ? t('saving') : t('save')}
-            </button>
+            <Button variant="brand" size="sm" icon={<Save />} loading={saving} disabled={!planName.trim() || exercises.length === 0} onClick={handleSave}>
+              {t('save')}
+            </Button>
           )}
         </div>
       </div>
@@ -386,13 +382,9 @@ export function PlanBuilder({ onCancel, onSave, planId }: PlanBuilderProps) {
                 >
                   <RefreshCw className={`w-4 h-4 ${loadingExercises ? 'animate-spin' : ''}`} />
                 </button>
-                <button
-                  onClick={() => setShowExerciseBuilder(true)}
-                  className="px-3 py-2 bg-yellow-500 text-navy rounded-lg hover:bg-yellow-400 flex items-center gap-2 text-sm font-medium"
-                >
-                  <Plus className="w-4 h-4" />
+                <Button variant="brand" size="sm" icon={<Plus />} onClick={() => setShowExerciseBuilder(true)}>
                   {t('newLabel')}
-                </button>
+                </Button>
               </div>
 
               {/* Sport selector (first level) */}

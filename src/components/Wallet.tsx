@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { ArrowLeft, ArrowDownLeft, ArrowUpRight, Loader2, Clock, Wallet as WalletIcon, Send, CreditCard, Pencil, Plus } from 'lucide-react';
+import { Button } from './ui/button';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useRealtimeRefetch } from '../contexts/RealtimeContext';
@@ -97,13 +98,9 @@ export function Wallet({ onBack }: WalletProps) {
         )}
 
         <div className="mt-5 flex gap-2">
-          <button
-            onClick={() => setTopUpOpen(true)}
-            className="flex-1 flex items-center justify-center gap-2 bg-yellow-500 text-navy py-2.5 rounded-lg hover:bg-yellow-400 font-medium"
-          >
-            <Plus className="w-4 h-4" />
+          <Button variant="brand" icon={<Plus />} onClick={() => setTopUpOpen(true)} className="flex-1">
             {t('addFunds')}
-          </button>
+          </Button>
           {isCoach && (
             <button
               onClick={() => (payoutAccount ? setPayoutOpen(true) : setAccountOpen(true))}
@@ -306,14 +303,9 @@ function PayoutSheet({ balance, onClose, onDone }: { balance: WalletBalance; onC
           </span>
         </div>
         {error && <div className="bg-red-50 text-red-700 border border-red-200 rounded-lg p-3 text-sm">{error}</div>}
-        <button
-          onClick={submit}
-          disabled={submitting}
-          className="w-full flex items-center justify-center gap-2 bg-yellow-500 text-navy py-3 rounded-lg hover:bg-yellow-400 disabled:opacity-50 font-medium"
-        >
-          {submitting ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-4 h-4" />}
+        <Button variant="brand" size="block" icon={<Send />} loading={submitting} onClick={submit}>
           {t('requestPayout')}
-        </button>
+        </Button>
       </div>
     </div>
   );
@@ -390,14 +382,9 @@ function PayoutAccountSheet({
               />
             </div>
             {error && <div className="bg-red-50 text-red-700 border border-red-200 rounded-lg p-3 text-sm">{error}</div>}
-            <button
-              onClick={submit}
-              disabled={submitting || card.length !== 16}
-              className="w-full flex items-center justify-center gap-2 bg-yellow-500 text-navy py-3 rounded-lg hover:bg-yellow-400 disabled:opacity-50 font-medium"
-            >
-              {submitting ? <Loader2 className="w-5 h-5 animate-spin" /> : <CreditCard className="w-4 h-4" />}
+            <Button variant="brand" size="block" icon={<CreditCard />} loading={submitting} disabled={card.length !== 16} onClick={submit}>
               {t('save')}
-            </button>
+            </Button>
           </>
         ) : (
           <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 text-center text-gray-500 text-sm">
@@ -502,14 +489,9 @@ function TopUpSheet({ currency, onClose }: { currency: string; onClose: () => vo
         )}
 
         {error && <div className="bg-red-50 text-red-700 border border-red-200 rounded-lg p-3 text-sm">{error}</div>}
-        <button
-          onClick={submit}
-          disabled={submitting}
-          className="w-full flex items-center justify-center gap-2 bg-yellow-500 text-navy py-3 rounded-lg hover:bg-yellow-400 disabled:opacity-50 font-medium"
-        >
-          {submitting ? <Loader2 className="w-5 h-5 animate-spin" /> : <Plus className="w-4 h-4" />}
+        <Button variant="brand" size="block" icon={<Plus />} loading={submitting} onClick={submit}>
           {t('addFunds')}
-        </button>
+        </Button>
       </div>
     </div>
   );

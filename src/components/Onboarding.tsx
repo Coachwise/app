@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Camera, User as UserIcon, AtSign, Loader2, Check, X } from 'lucide-react';
+import { Button } from './ui/button';
 import { Brand } from './ui/logo';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -208,9 +209,9 @@ export function Onboarding({ onDone }: OnboardingProps) {
               )}
             </div>
 
-            <button type="submit" disabled={saving || uploading || usernameStatus === 'taken' || usernameStatus === 'checking'} className="w-full bg-yellow-500 text-navy py-3 rounded-lg hover:bg-yellow-400 transition-colors shadow-md disabled:opacity-50 font-medium">
+            <Button type="submit" variant="brand" size="block" loading={saving} disabled={uploading || usernameStatus === 'taken' || usernameStatus === 'checking'}>
               {saving ? t('pleaseWait') : t('continueLabel')}
-            </button>
+            </Button>
           </form>
         </div>
       </div>

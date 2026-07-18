@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { ArrowLeft, Check, TrendingUp } from 'lucide-react';
+import { Check, TrendingUp } from 'lucide-react';
+import { BackButton } from './ui/back-button';
 import type { SubscriptionTier } from './SubscriptionTierBuilder';
 import { useLanguage } from '../contexts/LanguageContext';
 
@@ -136,9 +137,7 @@ export function TierComparison({ onCancel, coachName }: TierComparisonProps) {
       {/* Header */}
       <div className="bg-navy px-4 py-4 sticky top-0 z-10">
         <div className="flex items-center justify-between">
-          <button onClick={onCancel} className="p-2 -ml-2 hover:bg-navy-light rounded-lg transition-colors">
-            <ArrowLeft className="w-6 h-6 text-white" />
-          </button>
+          <BackButton onClick={onCancel} aria-label={t('back')} />
           <h2 className="text-white">{t('chooseYourPlan')}</h2>
           <div className="w-10"></div>
         </div>

@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
-import { ArrowLeft, ClipboardList } from 'lucide-react';
+import { ClipboardList, Save } from 'lucide-react';
+import { Button } from './ui/button';
+import { BackButton } from './ui/back-button';
 import { useLanguage } from '../contexts/LanguageContext';
 import { localized } from '../lib/localize';
 import { TestsAPI } from '../api';
@@ -78,17 +80,11 @@ export function RunAssessment({ token, protocolId, onCancel, onSaved }: RunAsses
     <div className="min-h-screen bg-gray-100">
       <div className="bg-navy px-4 py-4 sticky top-0 z-10">
         <div className="flex items-center justify-between">
-          <button onClick={onCancel} className="p-2 -ml-2 hover:bg-navy-light rounded-lg transition-colors">
-            <ArrowLeft className="w-6 h-6 text-white" />
-          </button>
+          <BackButton onClick={onCancel} aria-label={t('back')} />
           <h2 className="text-white truncate px-2">{protocol?.name || t('newRun')}</h2>
-          <button
-            onClick={save}
-            disabled={saving || loading}
-            className="px-4 py-2 bg-yellow-500 text-navy rounded-lg hover:bg-yellow-400 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
-          >
-            {saving ? t('saving') : t('save')}
-          </button>
+          <Button variant="brand" size="sm" icon={<Save />} loading={saving} disabled={loading} onClick={save}>
+            {t('save')}
+          </Button>
         </div>
       </div>
 

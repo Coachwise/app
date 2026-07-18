@@ -1,5 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
-import { ArrowLeft, Play, Pause, Clock, Check, ChevronDown, ChevronUp, Plus, Minus, Search, X } from 'lucide-react';
+import { Play, Pause, Clock, Check, ChevronDown, ChevronUp, Plus, Minus, Search, X, Zap } from 'lucide-react';
+import { BackButton } from './ui/back-button';
+import { Button } from './ui/button';
+import { GradeSelect } from './ui/grade-select';
+import { GuidedWorkout, type GuidedSetValues } from './GuidedWorkout';
 import { ProUpgradeModal } from './ProUpgradeModal';
 import { useAuth } from '../contexts/AuthContext';
 import * as SessionsAPI from '../api/sessions';
@@ -21,17 +25,32 @@ interface WorkoutSessionProps {
   onNavigate?: (view: string) => void;
 }
 
-interface ExerciseSet {
+export interface ExerciseSet {
+  // 'time' sets are held for a duration (seconds); 'reps' sets count repetitions.
+  type: 'reps' | 'time';
   reps: number;
+  duration: number; // seconds (for time sets)
   weight: number;
+  distance: number; // metres
+  height: number; // cm
+  grade: string; // climbing grade (V / Font)
+  restSeconds: number;
   completed: boolean;
 }
 
-interface SessionExercise {
+export interface ExerciseMetrics {
+  weight: boolean;
+  distance: boolean;
+  grade: boolean;
+  height: boolean;
+}
+
+export interface SessionExercise {
   id: string;
   name: string;
   exerciseId?: string; // Actual exercise ID from exercises table
   mediaUrl?: string | null;
+  metrics: ExerciseMetrics;
   sets: ExerciseSet[];
   targetSets: number;
   targetReps: number;
@@ -39,6 +58,38 @@ interface SessionExercise {
 }
 
 const SESSION_KEY = 'coachwise-active-session';
+
+// Set durations/rest come from the API as nanoseconds (Go time.Duration).
+const nsToSeconds = (value?: number | null) => Math.max(0, Math.round((value ?? 0) / 1e9));
+
+type TrackFlags = { track_weight?: boolean; track_distance?: boolean; track_grade?: boolean; track_height?: boolean };
+const metricsOf = (ex?: TrackFlags | null): ExerciseMetrics => ({
+  weight: ex?.track_weight !== false, // defaults on
+  distance: !!ex?.track_distance,
+  grade: !!ex?.track_grade,
+  height: !!ex?.track_height,
+});
+
+// Only send the metrics this exercise actually tracks (grade only when set).
+const metricValues = (ex: SessionExercise, set: ExerciseSet) => ({
+  weight: ex.metrics.weight ? set.weight : undefined,
+  distance: ex.metrics.distance ? set.distance : undefined,
+  height: ex.metrics.height ? set.height : undefined,
+  grade: ex.metrics.grade && set.grade ? set.grade : undefined,
+});
+
+type SetTemplate = { rep_count?: number | null; duration?: number | null; rest_time: number };
+const makeSet = (s: SetTemplate): ExerciseSet => ({
+  type: s.duration ? 'time' : 'reps',
+  reps: s.rep_count || 10,
+  duration: nsToSeconds(s.duration),
+  weight: 0,
+  distance: 0,
+  height: 0,
+  grade: '',
+  restSeconds: nsToSeconds(s.rest_time),
+  completed: false,
+});
 
 export function WorkoutSession({ planId, scheduleId, onBack, onEndSession, isPro = true, onNavigate }: WorkoutSessionProps) {
   const { tokens } = useAuth();
@@ -59,6 +110,7 @@ export function WorkoutSession({ planId, scheduleId, onBack, onEndSession, isPro
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   const [exercises, setExercises] = useState<SessionExercise[]>([]);
+  const [guidedOpen, setGuidedOpen] = useState(false);
 
   // Timer effect
   useEffect(() => {
@@ -123,14 +175,11 @@ export function WorkoutSession({ planId, scheduleId, onBack, onEndSession, isPro
               name: localized(pe.exercise?.name_i18n, pe.exercise?.name || `Exercise ${idx + 1}`, language),
               exerciseId: pe.exercise_id,
               mediaUrl: pe.exercise?.media?.url,
+              metrics: metricsOf(pe.exercise),
               targetSets: exerciseSets.length || 3,
               targetReps: exerciseSets[0]?.rep_count || 10,
               targetWeight: 0,
-              sets: (exerciseSets.length > 0 ? exerciseSets : [{ rep_count: 10, rest_time: 60 }]).map(s => ({
-                reps: s.rep_count || 10,
-                weight: 0,
-                completed: false,
-              })),
+              sets: (exerciseSets.length > 0 ? exerciseSets : [{ rep_count: 10, rest_time: 60e9 }]).map(makeSet),
             };
           });
 
@@ -144,7 +193,16 @@ export function WorkoutSession({ planId, scheduleId, onBack, onEndSession, isPro
                 sets: ex.sets.map((s, i) => {
                   const log = logs.find((l) => l.exercise_id === ex.exerciseId && l.set_number === i + 1);
                   return log
-                    ? { reps: log.reps ?? s.reps, weight: Number(log.weight ?? s.weight), completed: !!log.completed }
+                    ? {
+                        ...s,
+                        reps: log.reps ?? s.reps,
+                        duration: log.duration_seconds ?? s.duration,
+                        weight: Number(log.weight ?? s.weight),
+                        distance: Number(log.distance ?? s.distance),
+                        height: Number(log.height ?? s.height),
+                        grade: log.grade ?? s.grade,
+                        completed: !!log.completed,
+                      }
                     : s;
                 }),
               }));
@@ -157,6 +215,11 @@ export function WorkoutSession({ planId, scheduleId, onBack, onEndSession, isPro
           // Expand the first exercise that still has work left.
           const firstIncomplete = restored.find((ex) => ex.sets.some((s) => !s.completed)) || restored[0];
           if (firstIncomplete) setExpandedExercise(firstIncomplete.id);
+          // Workouts are guided by default: if there's work left, drop straight
+          // into the guided run rather than making the athlete tap Start.
+          if (restored.some((ex) => ex.sets.some((s) => !s.completed))) {
+            setGuidedOpen(true);
+          }
         }
 
         setLoading(false);
@@ -206,8 +269,9 @@ export function WorkoutSession({ planId, scheduleId, onBack, onEndSession, isPro
           exercise_name: exercise.name,
           exercise_id: exercise.exerciseId, // Use the actual exercise_id from exercises table
           set_number: setIndex + 1,
-          reps: set.reps,
-          weight: set.weight,
+          reps: set.type === 'reps' ? set.reps : undefined,
+          duration_seconds: set.type === 'time' ? set.duration : undefined,
+          ...metricValues(exercise, set),
           completed: true,
         });
       } catch (err) {
@@ -217,7 +281,58 @@ export function WorkoutSession({ planId, scheduleId, onBack, onEndSession, isPro
     }
   };
 
-  const updateSet = (exerciseIndex: number, setIndex: number, field: 'reps' | 'weight', change: number) => {
+  // Guided run logs each set as it finishes: apply the actual values and persist.
+  const handleGuidedLog = async (exerciseIndex: number, setIndex: number, values: GuidedSetValues) => {
+    setExercises(prev =>
+      prev.map((ex, i) =>
+        i !== exerciseIndex
+          ? ex
+          : {
+              ...ex,
+              sets: ex.sets.map((s, j) =>
+                j !== setIndex
+                  ? s
+                  : {
+                      ...s,
+                      reps: values.reps ?? s.reps,
+                      duration: values.duration ?? s.duration,
+                      weight: values.weight ?? s.weight,
+                      distance: values.distance ?? s.distance,
+                      height: values.height ?? s.height,
+                      grade: values.grade ?? s.grade,
+                      completed: true,
+                    },
+              ),
+            },
+      ),
+    );
+    if (!tokens?.access_token || !sessionId) return;
+    const ex = exercises[exerciseIndex];
+    try {
+      await SessionsAPI.createWorkoutLog(tokens.access_token, {
+        session_id: sessionId,
+        exercise_name: ex.name,
+        exercise_id: ex.exerciseId,
+        set_number: setIndex + 1,
+        reps: values.reps,
+        duration_seconds: values.duration,
+        weight: values.weight,
+        distance: values.distance,
+        height: values.height,
+        grade: values.grade || undefined,
+        completed: true,
+      });
+    } catch (err) {
+      console.error('Failed to save workout log:', err);
+    }
+  };
+
+  const updateSet = (
+    exerciseIndex: number,
+    setIndex: number,
+    field: 'reps' | 'weight' | 'duration' | 'distance' | 'height',
+    change: number,
+  ) => {
     setExercises(prev =>
       prev.map((exercise, exIdx) => {
         if (exIdx !== exerciseIndex) return exercise;
@@ -228,6 +343,16 @@ export function WorkoutSession({ planId, scheduleId, onBack, onEndSession, isPro
         });
         return { ...exercise, sets: updatedSets };
       })
+    );
+  };
+
+  const updateGrade = (exerciseIndex: number, setIndex: number, grade: string) => {
+    setExercises(prev =>
+      prev.map((exercise, exIdx) =>
+        exIdx !== exerciseIndex
+          ? exercise
+          : { ...exercise, sets: exercise.sets.map((s, i) => (i === setIndex ? { ...s, grade } : s)) },
+      ),
     );
   };
 
@@ -271,9 +396,18 @@ export function WorkoutSession({ planId, scheduleId, onBack, onEndSession, isPro
     setExercises(prev =>
       prev.map(exercise => {
         if (exercise.id !== exerciseId) return exercise;
+        // Mirror the exercise's existing sets (a new hangboard set is timed, a
+        // new bench set is reps) so an added set matches the rest.
+        const template = exercise.sets[exercise.sets.length - 1];
         const newSet: ExerciseSet = {
-          reps: exercise.targetReps,
-          weight: exercise.targetWeight,
+          type: template?.type ?? 'reps',
+          reps: template?.reps ?? exercise.targetReps,
+          duration: template?.duration ?? 0,
+          weight: template?.weight ?? exercise.targetWeight,
+          distance: template?.distance ?? 0,
+          height: template?.height ?? 0,
+          grade: template?.grade ?? '',
+          restSeconds: template?.restSeconds ?? 60,
           completed: false,
         };
         return { ...exercise, sets: [...exercise.sets, newSet] };
@@ -309,16 +443,18 @@ export function WorkoutSession({ planId, scheduleId, onBack, onEndSession, isPro
   };
 
   const handleAddExercise = (exercise: Exercise) => {
-    const defaultReps = exercise.sets[0]?.rep_count || 10;
+    const templates = exercise.sets?.length ? exercise.sets : [{ rep_count: 10, rest_time: 60e9 }];
+    const sets: ExerciseSet[] = templates.map(makeSet);
     const newExercise: SessionExercise = {
       id: `${exercise.id}-${Date.now()}`,
       name: localized(exercise.name_i18n, exercise.name, language),
       exerciseId: exercise.id,
       mediaUrl: exercise.media?.url ?? null,
-      targetSets: 3,
-      targetReps: defaultReps,
+      metrics: metricsOf(exercise),
+      targetSets: sets.length,
+      targetReps: sets[0]?.reps ?? 10,
       targetWeight: 0,
-      sets: [{ reps: defaultReps, weight: 0, completed: false }],
+      sets,
     };
     setExercises(prev => [...prev, newExercise]);
     setExpandedExercise(newExercise.id);
@@ -352,9 +488,7 @@ export function WorkoutSession({ planId, scheduleId, onBack, onEndSession, isPro
           </div>
         )}
         <div className="flex items-center justify-between mb-4">
-          <button onClick={onBack} className="p-2 -ml-2 hover:bg-navy-light rounded-lg transition-colors">
-            <ArrowLeft className="w-6 h-6 text-white" />
-          </button>
+          <BackButton onClick={onBack} aria-label={t('back')} />
           <div className="flex flex-col items-center">
             <h2 className="text-white font-bold">{planId ? t('workoutSession') : t('freestyleWorkout')}</h2>
             <div className="flex items-center gap-2 text-yellow-500 text-sm font-mono bg-navy-light px-3 py-0.5 rounded-full mt-1">
@@ -379,6 +513,21 @@ export function WorkoutSession({ planId, scheduleId, onBack, onEndSession, isPro
       </div>
 
       <div className="p-4 space-y-4">
+        {exercises.some((e) => e.sets.some((s) => !s.completed)) && (
+          <Button
+            variant="brand"
+            size="block"
+            icon={<Zap className="size-5" />}
+            onClick={() => {
+              if (!isPro) { setShowProModal(true); return; }
+              setGuidedOpen(true);
+            }}
+            className="rounded-xl font-bold shadow-md"
+          >
+            {t('startGuided')}
+          </Button>
+        )}
+
         {!planId && exercises.length === 0 && (
           <div className="flex flex-col items-center justify-center py-16 text-center">
             <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mb-4">
@@ -476,24 +625,27 @@ export function WorkoutSession({ planId, scheduleId, onBack, onEndSession, isPro
                         <span className="text-sm font-bold text-navy">{setIndex + 1}</span>
                       </div>
 
-                      <div className="flex-1 grid grid-cols-2 gap-3">
-                        <div className="bg-gray-50 rounded-lg p-1.5 flex flex-col items-center border border-gray-200">
-                           <span className="text-[10px] text-gray-500 font-bold mb-1">{t('kg')}</span>
-                           <div className="flex items-center gap-2 w-full justify-between px-1">
-                             <button onClick={() => updateSet(exerciseIndex, setIndex, 'weight', -2.5)} className="text-gray-400 hover:text-navy"><Minus className="w-3 h-3" /></button>
-                             <span className="font-bold text-navy">{set.weight}</span>
-                             <button onClick={() => updateSet(exerciseIndex, setIndex, 'weight', 2.5)} className="text-gray-400 hover:text-navy"><Plus className="w-3 h-3" /></button>
-                           </div>
-                        </div>
-
-                        <div className="bg-gray-50 rounded-lg p-1.5 flex flex-col items-center border border-gray-200">
-                           <span className="text-[10px] text-gray-500 font-bold mb-1">{t('repsUpper')}</span>
-                           <div className="flex items-center gap-2 w-full justify-between px-1">
-                             <button onClick={() => updateSet(exerciseIndex, setIndex, 'reps', -1)} className="text-gray-400 hover:text-navy"><Minus className="w-3 h-3" /></button>
-                             <span className="font-bold text-navy">{set.reps}</span>
-                             <button onClick={() => updateSet(exerciseIndex, setIndex, 'reps', 1)} className="text-gray-400 hover:text-navy"><Plus className="w-3 h-3" /></button>
-                           </div>
-                        </div>
+                      <div className="flex-1 grid grid-cols-2 gap-2">
+                        {set.type === 'time' ? (
+                          <StepTile label={t('secUpper')} value={set.duration} onDec={() => updateSet(exerciseIndex, setIndex, 'duration', -5)} onInc={() => updateSet(exerciseIndex, setIndex, 'duration', 5)} />
+                        ) : (
+                          <StepTile label={t('repsUpper')} value={set.reps} onDec={() => updateSet(exerciseIndex, setIndex, 'reps', -1)} onInc={() => updateSet(exerciseIndex, setIndex, 'reps', 1)} />
+                        )}
+                        {exercise.metrics.weight && (
+                          <StepTile label={t('kg')} value={set.weight} onDec={() => updateSet(exerciseIndex, setIndex, 'weight', -2.5)} onInc={() => updateSet(exerciseIndex, setIndex, 'weight', 2.5)} />
+                        )}
+                        {exercise.metrics.distance && (
+                          <StepTile label={t('distanceUpper')} value={set.distance} onDec={() => updateSet(exerciseIndex, setIndex, 'distance', -10)} onInc={() => updateSet(exerciseIndex, setIndex, 'distance', 10)} />
+                        )}
+                        {exercise.metrics.height && (
+                          <StepTile label={t('heightUpper')} value={set.height} onDec={() => updateSet(exerciseIndex, setIndex, 'height', -5)} onInc={() => updateSet(exerciseIndex, setIndex, 'height', 5)} />
+                        )}
+                        {exercise.metrics.grade && (
+                          <div className="bg-gray-50 rounded-lg p-1.5 flex flex-col items-center border border-gray-200">
+                            <span className="text-[10px] text-gray-500 font-bold mb-1">{t('gradeUpper')}</span>
+                            <GradeSelect value={set.grade} onChange={(g) => updateGrade(exerciseIndex, setIndex, g)} placeholder="—" className="w-full border-0 bg-transparent px-0 py-0 text-center font-bold" />
+                          </div>
+                        )}
                       </div>
 
                       <button
@@ -626,12 +778,36 @@ export function WorkoutSession({ planId, scheduleId, onBack, onEndSession, isPro
         feature="log"
       />
 
+      <GuidedWorkout
+        open={guidedOpen}
+        exercises={exercises}
+        onLogSet={handleGuidedLog}
+        onClose={() => setGuidedOpen(false)}
+        onFinish={() => {
+          setGuidedOpen(false);
+          handleFinishWorkout();
+        }}
+      />
+
       <SessionFeedbackDialog
         isOpen={showFeedbackDialog}
         onClose={() => setShowFeedbackDialog(false)}
         onSubmit={handleFeedbackSubmit}
         loading={finishingSession}
       />
+    </div>
+  );
+}
+
+function StepTile({ label, value, onDec, onInc }: { label: string; value: number; onDec: () => void; onInc: () => void }) {
+  return (
+    <div className="bg-gray-50 rounded-lg p-1.5 flex flex-col items-center border border-gray-200">
+      <span className="text-[10px] text-gray-500 font-bold mb-1">{label}</span>
+      <div className="flex items-center gap-2 w-full justify-between px-1">
+        <button onClick={onDec} className="text-gray-400 hover:text-navy"><Minus className="w-3 h-3" /></button>
+        <span className="font-bold text-navy">{value}</span>
+        <button onClick={onInc} className="text-gray-400 hover:text-navy"><Plus className="w-3 h-3" /></button>
+      </div>
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Globe, KeyRound, Smartphone, ArrowLeft, ChevronDown } from 'lucide-react';
+import { Button } from './ui/button';
 import { Brand } from './ui/logo';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -186,9 +187,9 @@ export function Auth({ onLogin }: AuthProps) {
                 </div>
               )}
 
-              <button type="submit" disabled={loading} className="w-full bg-yellow-500 text-navy py-3 rounded-lg hover:bg-yellow-400 transition-colors shadow-md disabled:opacity-50 font-medium">
+              <Button type="submit" variant="brand" size="block" loading={loading}>
                 {submitLabel}
-              </button>
+              </Button>
             </form>
           </div>
 

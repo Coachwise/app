@@ -37,6 +37,7 @@ import { useAuth } from './contexts/AuthContext';
 import * as SessionsAPI from './api/sessions';
 import { FEATURES } from './config';
 import { setReportView } from './lib/report';
+import { initAudio } from './lib/sound';
 
 const SESSION_KEY = 'coachwise-active-session';
 // Where the app lands after login / when returning "home". Feed can be hidden
@@ -122,6 +123,18 @@ export default function App() {
     // Tell the crash reporter which screen we're on, so an alert can name it.
     setReportView(currentView);
   }, [currentView, viewingUserId]);
+
+  // Unlock audio on the first interaction so the guided-workout countdown beeps
+  // can play later (even hands-off), since browsers gate audio behind a gesture.
+  useEffect(() => {
+    const unlock = () => initAudio();
+    window.addEventListener('pointerdown', unlock, { once: true });
+    window.addEventListener('keydown', unlock, { once: true });
+    return () => {
+      window.removeEventListener('pointerdown', unlock);
+      window.removeEventListener('keydown', unlock);
+    };
+  }, []);
 
   const handleLogin = () => {
     if (user?.pro) {
@@ -466,7 +479,7 @@ export default function App() {
         <Onboarding onDone={refreshUser} />
       ) : (
         <>
-          <div className="min-h-screen bg-gray-100 flex flex-col max-w-md mx-auto">
+          <div className="h-dvh bg-gray-100 flex flex-col max-w-md mx-auto">
             <div className="flex-1 overflow-auto pb-16">
               {renderView()}
             </div>

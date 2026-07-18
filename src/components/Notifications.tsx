@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
-import { ArrowLeft, Bell, UserPlus, CheckCircle2, ClipboardList, Send, Award, Package, Dumbbell, CheckCheck, LifeBuoy } from 'lucide-react';
+import { Bell, UserPlus, CheckCircle2, ClipboardList, Send, Award, Package, Dumbbell, CheckCheck, LifeBuoy } from 'lucide-react';
+import { BackButton } from './ui/back-button';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useRealtimeRefetch } from '../contexts/RealtimeContext';
@@ -210,9 +211,7 @@ export function Notifications({ onBack, onNavigate, onViewProfile, onOpenSupport
     <div className="min-h-screen bg-gray-100">
       <div className="bg-navy px-4 py-4 sticky top-0 z-10 shadow-sm">
         <div className="flex items-center justify-between gap-2">
-          <button onClick={onBack} className="p-2 -ms-2 hover:bg-navy-light rounded-lg transition-colors shrink-0">
-            <ArrowLeft className="w-6 h-6 text-white" />
-          </button>
+          <BackButton onClick={onBack} aria-label={t('back')} />
           <div className="flex items-center gap-2 min-w-0">
             <h1 className="text-white text-xl truncate">{t('notifications')}</h1>
             {unreadCount > 0 && (

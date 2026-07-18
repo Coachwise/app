@@ -1,4 +1,5 @@
 import { X, Crown, Calendar, TrendingUp, Users, CheckCircle } from 'lucide-react';
+import { Button } from './ui/button';
 import { useLanguage } from '../contexts/LanguageContext';
 
 interface ProUpgradeModalProps {
@@ -113,13 +114,9 @@ export function ProUpgradeModal({ isOpen, onClose, onUpgrade, feature }: ProUpgr
 
           {/* Action Buttons */}
           <div className="flex flex-col gap-3">
-            <button
-              onClick={onUpgrade}
-              className="w-full bg-yellow-500 text-navy py-3 rounded-lg hover:bg-yellow-400 transition-colors flex items-center justify-center gap-2"
-            >
-              <Crown className="w-5 h-5" />
-              <span>{t('subscribeToCoach')}</span>
-            </button>
+            <Button variant="brand" size="block" icon={<Crown className="size-5" />} onClick={onUpgrade}>
+              {t('subscribeToCoach')}
+            </Button>
             <button
               onClick={onClose}
               className="w-full bg-gray-200 text-gray-700 py-3 rounded-lg hover:bg-gray-300 transition-colors"
