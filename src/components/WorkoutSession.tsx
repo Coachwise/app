@@ -773,7 +773,7 @@ export function WorkoutSession({ planId, scheduleId, onBack, onEndSession, isPro
         onClose={() => setShowProModal(false)}
         onUpgrade={() => {
           setShowProModal(false);
-          if (onNavigate) onNavigate('coach-marketplace');
+          if (onNavigate) onNavigate('athlete-search');
         }}
         feature="log"
       />

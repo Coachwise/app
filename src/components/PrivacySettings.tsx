@@ -20,9 +20,8 @@ export function PrivacySettings({ onBack }: PrivacySettingsProps) {
   const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
   const [showBlockedUsers, setShowBlockedUsers] = useState(false);
 
-  const blockedUsers = [
-    { id: '1', name: 'John Doe', username: '@johndoe', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop' },
-  ];
+  // No block API yet — show a real (empty) list rather than a mock user.
+  const blockedUsers: { id: string; name: string; username: string; avatar: string }[] = [];
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20">

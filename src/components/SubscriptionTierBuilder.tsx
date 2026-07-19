@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Plus, Trash2, Check, Save } from 'lucide-react';
 import { BackButton } from './ui/back-button';
 import { Button } from './ui/button';
+import { NumberInput } from './ui/number-input';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
 import { PackagesAPI, PlansAPI } from '../api';
@@ -15,34 +16,9 @@ interface SubscriptionTierBuilderProps {
   packageId?: string; // when set, edit an existing package
 }
 
-// Kept for back-compat with the (still-mock) marketplace TierComparison.
-export interface SubscriptionTier {
-  id: string;
-  name: string;
-  description: string;
-  pricing: {
-    monthly?: number;
-    annual?: number;
-    oneTime?: number;
-  };
-  features: {
-    plansIncluded: number;
-    checkInFrequency: string;
-    videoAccess: boolean;
-    nutritionGuides: boolean;
-    customFeatures: string[];
-  };
-  trialDays: number;
-  isActive: boolean;
-  popular?: boolean;
-}
-
 const TOTAL_STEPS = 4;
 
-const toIntOrNull = (v: string): number | null => {
-  const n = parseInt(v, 10);
-  return Number.isFinite(n) ? n : null;
-};
+const toIntOrNull = (v: number): number | null => (v > 0 ? v : null);
 
 export function SubscriptionTierBuilder({ onCancel, onSave, token, packageId }: SubscriptionTierBuilderProps) {
   const { t } = useLanguage();
@@ -50,14 +26,14 @@ export function SubscriptionTierBuilder({ onCancel, onSave, token, packageId }: 
   const [step, setStep] = useState(1);
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
-  const [monthlyPrice, setMonthlyPrice] = useState('');
-  const [annualPrice, setAnnualPrice] = useState('');
-  const [oneTimePrice, setOneTimePrice] = useState('');
+  const [monthlyPrice, setMonthlyPrice] = useState(0);
+  const [annualPrice, setAnnualPrice] = useState(0);
+  const [oneTimePrice, setOneTimePrice] = useState(0);
   const [checkInFrequency, setCheckInFrequency] = useState('weekly');
   const [videoAccess, setVideoAccess] = useState(false);
   const [nutritionGuides, setNutritionGuides] = useState(false);
   const [customFeatures, setCustomFeatures] = useState<string[]>([]);
-  const [trialDays, setTrialDays] = useState('0');
+  const [trialDays, setTrialDays] = useState(0);
   const [popular, setPopular] = useState(false);
   const [newFeature, setNewFeature] = useState('');
 
@@ -83,14 +59,14 @@ export function SubscriptionTierBuilder({ onCancel, onSave, token, packageId }: 
         if (!active) return;
         setName(pkg.name);
         setDescription(pkg.description || '');
-        setMonthlyPrice(pkg.price_monthly != null ? String(pkg.price_monthly) : '');
-        setAnnualPrice(pkg.price_annual != null ? String(pkg.price_annual) : '');
-        setOneTimePrice(pkg.price_one_time != null ? String(pkg.price_one_time) : '');
+        setMonthlyPrice(pkg.price_monthly ?? 0);
+        setAnnualPrice(pkg.price_annual ?? 0);
+        setOneTimePrice(pkg.price_one_time ?? 0);
         setCheckInFrequency(pkg.check_in_frequency || 'weekly');
         setVideoAccess(pkg.video_access);
         setNutritionGuides(pkg.nutrition_guides);
         setCustomFeatures(pkg.custom_features || []);
-        setTrialDays(String(pkg.trial_days));
+        setTrialDays(pkg.trial_days);
         setPopular(pkg.popular);
         setSelectedPlanIds((pkg.plans || []).map((p) => p.id));
       } catch (e) {
@@ -140,7 +116,7 @@ export function SubscriptionTierBuilder({ onCancel, onSave, token, packageId }: 
       price_monthly: toIntOrNull(monthlyPrice),
       price_annual: toIntOrNull(annualPrice),
       price_one_time: toIntOrNull(oneTimePrice),
-      trial_days: parseInt(trialDays, 10) || 0,
+      trial_days: trialDays || 0,
       check_in_frequency: checkInFrequency,
       video_access: videoAccess,
       nutrition_guides: nutritionGuides,
@@ -278,45 +254,29 @@ export function SubscriptionTierBuilder({ onCancel, onSave, token, packageId }: 
           <>
             <div>
               <label className="block text-sm text-gray-600 mb-1">{t('monthlyPrice')}</label>
-              <input
-                type="number" value={monthlyPrice} onChange={(e) => setMonthlyPrice(e.target.value)}
-                placeholder="300000" min="0" step="1"
-                className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
+              <NumberInput noStepper min={0} value={monthlyPrice} onChange={setMonthlyPrice} className="w-full" />
             </div>
             <div>
               <label className="block text-sm text-gray-600 mb-1">{t('annualPrice')}</label>
-              <input
-                type="number" value={annualPrice} onChange={(e) => setAnnualPrice(e.target.value)}
-                placeholder="3000000" min="0" step="1"
-                className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-              {annualPrice && monthlyPrice && (
+              <NumberInput noStepper min={0} value={annualPrice} onChange={setAnnualPrice} className="w-full" />
+              {annualPrice > 0 && monthlyPrice > 0 && (
                 <p className="text-green-600 text-sm mt-1">
-                  {t('savePerYear', { amount: ((Number(monthlyPrice) * 12) - Number(annualPrice)).toLocaleString() })}
+                  {t('savePerYear', { amount: ((monthlyPrice * 12) - annualPrice).toLocaleString() })}
                 </p>
               )}
             </div>
             <div>
               <label className="block text-sm text-gray-600 mb-1">{t('oneTimePurchase')}</label>
-              <input
-                type="number" value={oneTimePrice} onChange={(e) => setOneTimePrice(e.target.value)}
-                placeholder="1500000" min="0" step="1"
-                className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
+              <NumberInput noStepper min={0} value={oneTimePrice} onChange={setOneTimePrice} className="w-full" />
             </div>
             <div>
               <label className="block mb-2 text-gray-900">{t('freeTrialDays')}</label>
-              <input
-                type="number" value={trialDays} onChange={(e) => setTrialDays(e.target.value)}
-                placeholder="7" min="0"
-                className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
+              <NumberInput min={0} max={365} value={trialDays} onChange={setTrialDays} className="w-full" />
               <div className="mt-2 flex gap-2">
                 {[0, 7, 14, 30].map((days) => (
                   <button
                     key={days}
-                    onClick={() => setTrialDays(days.toString())}
+                    onClick={() => setTrialDays(days)}
                     className="px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded-lg hover:bg-gray-200 transition-colors"
                   >
                     {days === 0 ? t('none') : `${days}${t('daysSuffix')}`}
@@ -398,14 +358,14 @@ export function SubscriptionTierBuilder({ onCancel, onSave, token, packageId }: 
                 <h3 className="text-gray-900 mb-2">{name || t('tierName')}</h3>
                 <p className="text-gray-600 text-sm mb-3">{description || t('descriptionLabel')}</p>
                 <div className="flex gap-2 mb-3 flex-wrap">
-                  {monthlyPrice && (
+                  {monthlyPrice > 0 && (
                     <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded text-sm">
-                      {Number(monthlyPrice).toLocaleString()}{t('perMoShort')}
+                      {monthlyPrice.toLocaleString()}{t('perMoShort')}
                     </span>
                   )}
-                  {annualPrice && (
+                  {annualPrice > 0 && (
                     <span className="px-3 py-1 bg-green-100 text-green-700 rounded text-sm">
-                      {Number(annualPrice).toLocaleString()}{t('perYrShort')}
+                      {annualPrice.toLocaleString()}{t('perYrShort')}
                     </span>
                   )}
                 </div>

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Upload, CheckCircle2, Clock, XCircle } from 'lucide-react';
 import { Button } from './ui/button';
+import { NumberInput } from './ui/number-input';
 import { BackButton } from './ui/back-button';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -18,7 +19,7 @@ export function CoachApplication({ onCancel, onSubmit }: CoachApplicationProps) 
   const [formData, setFormData] = useState({
     fullName: '',
     specialty: '',
-    experience: '',
+    experience: 0,
     certifications: '',
     bio: '',
     website: '',
@@ -68,7 +69,7 @@ export function CoachApplication({ onCancel, onSubmit }: CoachApplicationProps) 
       const created = await CoachesAPI.applyCoach(token, {
         full_name: formData.fullName.trim(),
         specialty: formData.specialty,
-        experience_years: formData.experience ? Number(formData.experience) : 0,
+        experience_years: formData.experience || 0,
         certifications: formData.certifications.trim(),
         bio: formData.bio.trim() || undefined,
         website: formData.website.trim() || undefined,
@@ -184,13 +185,11 @@ export function CoachApplication({ onCancel, onSubmit }: CoachApplicationProps) 
             {/* Experience */}
             <div>
               <label className="block mb-2 text-gray-900">{t('yearsCoachingExp')}</label>
-              <input
-                type="number"
+              <NumberInput
+                min={0}
                 value={formData.experience}
-                onChange={(e) => setFormData({ ...formData, experience: e.target.value })}
-                placeholder={t('eg5')}
-                min="0"
-                className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                onChange={(v) => setFormData({ ...formData, experience: v })}
+                className="w-full"
               />
             </div>
 

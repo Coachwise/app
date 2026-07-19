@@ -55,6 +55,7 @@ export const translations = {
     noAssignedPlans: 'No Assigned Plans',
     noAssignedPlansDesc: 'Your coach hasn\'t assigned you any workout plans yet',
     findACoach: 'Find a Coach',
+    allSports: 'All',
     backToThisWeek: 'Back to This Week',
     
     // Days of week
@@ -115,6 +116,7 @@ export const translations = {
     clients: 'Clients',
     plans: 'Plans',
     analytics: 'Analytics',
+    myTrainingAnalytics: 'My training analytics',
     activeClients: 'Active Clients',
     totalRevenue: 'Total Revenue',
     assignPlan: 'Assign Plan',
@@ -1279,6 +1281,7 @@ export const translations = {
     noAssignedPlans: 'برنامه اختصاص داده نشده',
     noAssignedPlansDesc: 'مربی شما هنوز برنامه تمرینی به شما اختصاص نداده است',
     findACoach: 'پیدا کردن مربی',
+    allSports: 'همه',
     backToThisWeek: 'بازگشت به این هفته',
     
     // Days of week
@@ -1340,6 +1343,7 @@ export const translations = {
     clients: 'مشتریان',
     plans: 'برنامه‌ها',
     analytics: 'تحلیل‌ها',
+    myTrainingAnalytics: 'تحلیل تمرین‌های من',
     activeClients: 'مشتریان فعال',
     totalRevenue: 'درآمد کل',
     assignPlan: 'اختصاص برنامه',

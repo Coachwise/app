@@ -43,12 +43,14 @@ export function Navigation({ currentView, onNavigate, userRole }: NavigationProp
     ...(FEATURES.feed ? [{ id: 'feed' as ViewType, icon: Home, label: t('feed') }] : []),
     { id: 'athlete-search' as ViewType, icon: Compass, label: t('discover') },
     { id: 'workouts-home' as ViewType, icon: Dumbbell, label: t('workouts') },
-    { id: 'analytics' as ViewType, icon: Activity, label: t('analytics') },
+    // Athletes get a top-level Analytics tab. Coaches don't (it would be a 5th
+    // tab) — their personal analytics live inside the dashboard's Analytics section.
     ...(userRole === 'coach' ? [
       { id: 'messages' as ViewType, icon: MessageCircle, label: t('messages') },
-      { id: 'coach-dashboard' as ViewType, icon: LayoutDashboard, label: t('dashboard') }
+      { id: 'coach-dashboard' as ViewType, icon: LayoutDashboard, label: t('dashboard') },
     ] : [
-      { id: 'messages' as ViewType, icon: MessageCircle, label: t('messages') }
+      { id: 'analytics' as ViewType, icon: Activity, label: t('analytics') },
+      { id: 'messages' as ViewType, icon: MessageCircle, label: t('messages') },
     ]),
   ];
 

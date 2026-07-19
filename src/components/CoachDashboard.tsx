@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Users, Calendar, TrendingUp, DollarSign, Package, CheckCircle, Plus, Trash2, Lock, Globe, UserPlus, Search, ClipboardList, Send, Award, LineChart, Pencil, Dumbbell, ChevronRight } from 'lucide-react';
+import { Users, Calendar, TrendingUp, DollarSign, Package, CheckCircle, Plus, Trash2, Lock, Globe, UserPlus, Search, ClipboardList, Send, Award, LineChart, Pencil, Dumbbell, ChevronRight, Activity } from 'lucide-react';
 import { BackButton } from './ui/back-button';
 import { Button } from './ui/button';
 import { HamburgerMenu } from './HamburgerMenu';
@@ -828,6 +828,18 @@ export function CoachDashboard({ onBack, onNavigate, userRole = 'coach', isPro =
         {/* ANALYTICS SECTION (static placeholder until the payments phase) */}
         {!loading && activeSection === 'analytics' && (
           <div className="grid grid-cols-2 gap-4">
+            {/* The coach's own training analytics (no separate bottom tab for coaches). */}
+            <button
+              onClick={() => onNavigate?.('analytics')}
+              className="col-span-2 bg-navy text-white rounded-lg p-4 shadow-md flex items-center justify-between hover:bg-navy-light transition-colors"
+            >
+              <span className="flex items-center gap-2">
+                <Activity className="w-5 h-5 text-yellow-400" />
+                <span className="font-medium">{t('myTrainingAnalytics')}</span>
+              </span>
+              <ChevronRight className="w-5 h-5 text-white/70" />
+            </button>
+
             <div className="bg-white rounded-lg p-5 shadow-md border border-gray-200">
               <div className="flex items-center gap-2 mb-2">
                 <Users className="w-5 h-5 text-yellow-600" />

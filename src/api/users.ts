@@ -8,11 +8,13 @@ export interface UserListResponse {
 
 export function listUsers(
   token: string,
-  params?: { search?: string; coachOnly?: boolean; page?: number; limit?: number }
+  params?: { search?: string; coachOnly?: boolean; sport?: string; page?: number; limit?: number }
 ) {
   const q = new URLSearchParams();
   if (params?.search) q.set("search", params.search);
   if (params?.coachOnly) q.set("coach_only", "true");
+  // Sport filter matches coaches by specialty (FITNESS | CLIMBING | THERAPEUTIC).
+  if (params?.sport) q.set("sport", params.sport);
   if (params?.page) q.set("page", String(params.page));
   if (params?.limit) q.set("limit", String(params.limit));
   const query = q.toString() ? `?${q.toString()}` : "";

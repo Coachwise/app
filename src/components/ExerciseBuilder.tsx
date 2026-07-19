@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState, useRef } from 'react';
 import { Plus, Trash2, Loader2, Eye, Upload, X, Copy, Save } from 'lucide-react';
 import { Button } from './ui/button';
 import { BackButton } from './ui/back-button';
+import { NumberInput } from './ui/number-input';
 import * as ExercisesAPI from '../api/exercises';
 import * as MediaAPI from '../api/media';
 import type { Exercise, ExerciseSportType } from '../api/types';
@@ -341,13 +342,7 @@ export function ExerciseBuilder({ onCancel, onSaved, exercise }: ExerciseBuilder
             <div className="flex flex-wrap items-end gap-2">
               <div>
                 <label className="block text-xs text-gray-700 mb-1">{t('countLabel')}</label>
-                <input
-                  type="number"
-                  min={1}
-                  value={bulkCount}
-                  onChange={(e) => setBulkCount(Number(e.target.value))}
-                  className="w-16 px-2 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
-                />
+                <NumberInput min={1} value={bulkCount} onChange={setBulkCount} className="w-24" />
               </div>
               <div className="flex gap-1 pb-[1px]">
                 <button
@@ -365,23 +360,11 @@ export function ExerciseBuilder({ onCancel, onSaved, exercise }: ExerciseBuilder
               </div>
               <div>
                 <label className="block text-xs text-gray-700 mb-1">{bulkType === 'reps' ? t('repsLabel') : t('durationSec')}</label>
-                <input
-                  type="number"
-                  min={0}
-                  value={bulkValue}
-                  onChange={(e) => setBulkValue(Number(e.target.value))}
-                  className="w-20 px-2 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
-                />
+                <NumberInput min={0} value={bulkValue} onChange={setBulkValue} className="w-24" />
               </div>
               <div>
                 <label className="block text-xs text-gray-700 mb-1">{t('restSecondsLabel')}</label>
-                <input
-                  type="number"
-                  min={0}
-                  value={bulkRest}
-                  onChange={(e) => setBulkRest(Number(e.target.value))}
-                  className="w-20 px-2 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
-                />
+                <NumberInput min={0} value={bulkRest} onChange={setBulkRest} className="w-24" />
               </div>
               <button
                 onClick={addBulkSets}
@@ -431,13 +414,13 @@ export function ExerciseBuilder({ onCancel, onSaved, exercise }: ExerciseBuilder
                   </div>
                   <div>
                     <label className="block text-sm text-gray-700 mb-1">{t('restSecondsLabel')}</label>
-                    <input
-                      type="number"
+                    <NumberInput
                       min={0}
+                      step={5}
                       value={index === sets.length - 1 ? 0 : set.restSeconds}
                       disabled={index === sets.length - 1}
-                      onChange={(e) => updateSet(set.id, { restSeconds: Number(e.target.value) })}
-                      className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:text-gray-400"
+                      onChange={(v) => updateSet(set.id, { restSeconds: v })}
+                      className="w-full"
                     />
                     {index === sets.length - 1 && (
                       <p className="mt-1 text-xs text-gray-500">{t('lastSetNoRest')}</p>
@@ -471,12 +454,11 @@ export function ExerciseBuilder({ onCancel, onSaved, exercise }: ExerciseBuilder
                     <label className="block text-sm text-gray-700 mb-1">
                       {set.type === 'reps' ? t('repsLabel') : t('durationSec')}
                     </label>
-                    <input
-                      type="number"
+                    <NumberInput
                       min={0}
                       value={set.value}
-                      onChange={(e) => updateSet(set.id, { value: Number(e.target.value) })}
-                      className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      onChange={(v) => updateSet(set.id, { value: v })}
+                      className="w-full"
                     />
                   </div>
                 </div>

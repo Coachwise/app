@@ -21,6 +21,8 @@ interface AthleteSearchProps {
   onViewProfile: (userId: string) => void;
   activeTab?: Tab;
   onTabChange?: (tab: Tab) => void;
+  /** Start the Discover tab pre-filtered to coaches (the "find a coach" intent). */
+  initialCoachesOnly?: boolean;
 }
 
 const displayName = (u: User) => {
@@ -34,7 +36,7 @@ function Avatar({ user, onClick }: { user: User; onClick?: () => void }) {
   );
 }
 
-export function AthleteSearch({ userRole, onNavigate, onViewProfile, activeTab: controlledTab, onTabChange }: AthleteSearchProps) {
+export function AthleteSearch({ userRole, onNavigate, onViewProfile, activeTab: controlledTab, onTabChange, initialCoachesOnly }: AthleteSearchProps) {
   const { t, isRTL, language } = useLanguage();
   const { tokens } = useAuth();
   const token = tokens?.access_token;
@@ -50,7 +52,8 @@ export function AthleteSearch({ userRole, onNavigate, onViewProfile, activeTab: 
 
   // Discover tab
   const [searchQuery, setSearchQuery] = useState('');
-  const [filterCoachesOnly, setFilterCoachesOnly] = useState(false);
+  const [filterCoachesOnly, setFilterCoachesOnly] = useState(!!initialCoachesOnly);
+  const [sportFilter, setSportFilter] = useState<'' | 'FITNESS' | 'CLIMBING'>(''); // filters coaches by sport specialty
   const [results, setResults] = useState<User[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -90,6 +93,7 @@ export function AthleteSearch({ userRole, onNavigate, onViewProfile, activeTab: 
         const res = await UsersAPI.listUsers(token, {
           search: searchQuery.trim() || undefined,
           coachOnly: filterCoachesOnly || undefined,
+          sport: sportFilter || undefined,
           limit: 50,
         });
         setResults(res.items);
@@ -102,7 +106,7 @@ export function AthleteSearch({ userRole, onNavigate, onViewProfile, activeTab: 
     }, 300);
     return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchQuery, filterCoachesOnly, token, activeTab]);
+  }, [searchQuery, filterCoachesOnly, sportFilter, token, activeTab]);
 
   const loadConnections = useCallback(async () => {
     if (!token) return;
@@ -293,15 +297,33 @@ export function AthleteSearch({ userRole, onNavigate, onViewProfile, activeTab: 
                 className={`w-full bg-white border-0 rounded-lg py-3 ${isRTL ? 'pr-10 pl-4' : 'pl-10 pr-4'} text-navy focus:outline-none focus:ring-2 focus:ring-yellow-500`}
               />
             </div>
-            <button
-              onClick={() => setFilterCoachesOnly(!filterCoachesOnly)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
-                filterCoachesOnly ? 'bg-yellow-500 text-navy' : 'bg-white/10 text-white border border-white/20'
-              }`}
-            >
-              <CheckCircle2 className="w-4 h-4" />
-              <span className="text-sm">{t('findACoach')}</span>
-            </button>
+            <div className="flex items-center gap-2 flex-wrap">
+              <button
+                onClick={() => setFilterCoachesOnly(!filterCoachesOnly)}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+                  filterCoachesOnly ? 'bg-yellow-500 text-navy' : 'bg-white/10 text-white border border-white/20'
+                }`}
+              >
+                <CheckCircle2 className="w-4 h-4" />
+                <span className="text-sm">{t('findACoach')}</span>
+              </button>
+              {/* Sport filter (matches coaches by specialty). */}
+              {([
+                ['', t('allSports')],
+                ['FITNESS', t('sportFitness')],
+                ['CLIMBING', t('sportClimbing')],
+              ] as const).map(([value, label]) => (
+                <button
+                  key={value || 'all'}
+                  onClick={() => setSportFilter(value)}
+                  className={`px-3 py-2 rounded-lg text-sm transition-colors ${
+                    sportFilter === value ? 'bg-yellow-500 text-navy' : 'bg-white/10 text-white border border-white/20'
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
           </>
         )}
       </div>

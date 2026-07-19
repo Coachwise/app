@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Plus, GripVertical, Trash2, RefreshCw, Search, Dumbbell, Save } from 'lucide-react';
 import { BackButton } from './ui/back-button';
 import { Button } from './ui/button';
+import { NumberInput } from './ui/number-input';
 import type { Exercise, ExerciseCategory, ExerciseSportType } from '../api/types';
 import * as ExercisesAPI from '../api/exercises';
 import * as PlansAPI from '../api/plans';
@@ -145,8 +146,9 @@ export function PlanBuilder({ onCancel, onSave, planId }: PlanBuilderProps) {
     }
   };
 
-  // Load categories, derive the available sports, and auto-select the first sport
-  // (which triggers the initial exercise load for that sport).
+  // Load categories and derive the sport filter chips. Exercises themselves load
+  // via the effect below (unconditionally), so an empty/odd category list can't
+  // leave the picker blank.
   useEffect(() => {
     if (!tokens?.access_token) return;
     ExercisesAPI.listExerciseCategories(tokens.access_token)
@@ -156,7 +158,6 @@ export function PlanBuilder({ onCancel, onSave, planId }: PlanBuilderProps) {
           new Set(res.items.map((c) => c.sport_type).filter((s): s is string => !!s)),
         );
         setSports(derived);
-        if (derived.length > 0) selectSport(derived[0]);
       })
       .catch(() => {});
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -206,9 +207,10 @@ export function PlanBuilder({ onCancel, onSave, planId }: PlanBuilderProps) {
     setShowExerciseSelector(false);
   };
 
-  // Debounced search: reload page 1 once a sport is selected.
+  // Load exercises on open and whenever the search changes (debounced) — no sport
+  // required, so the list always populates without a manual refresh.
   useEffect(() => {
-    if (!tokens?.access_token || !sport) return;
+    if (!tokens?.access_token) return;
     const timer = window.setTimeout(() => {
       loadExercises({ page: 1 });
     }, 300);
@@ -376,12 +378,6 @@ export function PlanBuilder({ onCancel, onSave, planId }: PlanBuilderProps) {
                     className="w-full pl-9 pr-3 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent text-sm"
                   />
                 </div>
-                <button
-                  onClick={() => loadExercises({ page: 1 })}
-                  className="px-3 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 flex items-center gap-2 text-sm"
-                >
-                  <RefreshCw className={`w-4 h-4 ${loadingExercises ? 'animate-spin' : ''}`} />
-                </button>
                 <Button variant="brand" size="sm" icon={<Plus />} onClick={() => setShowExerciseBuilder(true)}>
                   {t('newLabel')}
                 </Button>
@@ -548,12 +544,12 @@ export function PlanBuilder({ onCancel, onSave, planId }: PlanBuilderProps) {
                               {t('restBetweenSets')}
                             </label>
                             <div className="flex items-center gap-2">
-                              <input
-                                type="number"
+                              <NumberInput
                                 min={0}
+                                step={5}
                                 value={exercise.restInterval}
-                                onChange={(e) => updateRest(exercise.key, Number(e.target.value))}
-                                className="w-20 px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                                onChange={(v) => updateRest(exercise.key, v)}
+                                className="w-32"
                               />
                               <span className="text-sm text-gray-600">{t('secondsUnit')}</span>
                             </div>

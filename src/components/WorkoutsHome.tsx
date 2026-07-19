@@ -13,6 +13,7 @@ import type { Plan, PlanSchedule, Session } from '../api/types';
 interface WorkoutsHomeProps {
   onStartSession: (planId?: string, scheduleId?: string) => void;
   onCreatePlan: () => void;
+  onFindCoach?: () => void; // open Discover pre-filtered to coaches
   onViewPlan?: (planId: string) => void;
   userRole: UserRole;
   onNavigate: (view: string) => void;
@@ -91,7 +92,7 @@ const windowKey = (center: Date) => {
   return `${dateKey(start)}:${dateKey(end)}`;
 };
 
-export function WorkoutsHome({ onStartSession, onCreatePlan, onViewPlan, userRole, onNavigate, onResumeSession, onDiscardSession, isPro = true, refreshTrigger }: WorkoutsHomeProps) {
+export function WorkoutsHome({ onStartSession, onCreatePlan, onFindCoach, onViewPlan, userRole, onNavigate, onResumeSession, onDiscardSession, isPro = true, refreshTrigger }: WorkoutsHomeProps) {
   const { t, language, isRTL } = useLanguage();
 
   // An in-progress session (started then left) that can be resumed or discarded.
@@ -360,7 +361,7 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, onViewPlan, userRol
     }
   };
 
-  const handleStartScheduledWorkout = async (instanceId: string, planId: string) => {
+  const handleStartScheduledWorkout = async (instanceId: string, planId?: string) => {
     if (!canStartToday) {
       setScheduleError(t('onlyStartTodayError'));
       return;
@@ -390,6 +391,7 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, onViewPlan, userRol
         };
         return {
           ...plan,
+          planId: session.planId, // real plan id (undefined for freestyle) — NOT plan.id, which falls back to session.id
           instanceId: session.id,
           completed: true,
           status: session.status,
@@ -421,6 +423,7 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, onViewPlan, userRol
         };
         return {
           ...plan,
+          planId: session.planId, // real plan id (undefined for freestyle) — NOT plan.id, which falls back to session.id
           instanceId: session.id,
           completed: true,
           status: session.status,
@@ -435,6 +438,7 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, onViewPlan, userRol
           const plan = getPlanInfo(item.planId);
           return {
             ...plan,
+            planId: item.planId,
             instanceId: item.id,
             completed: false, // Schedules are never completed, only sessions are
             status: item.status,
@@ -449,6 +453,7 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, onViewPlan, userRol
         const plan = getPlanInfo(item.planId);
         return {
           ...plan,
+          planId: item.planId,
           instanceId: item.id,
           completed: false, // Schedules are never completed, only sessions are
           status: item.status,
@@ -902,7 +907,7 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, onViewPlan, userRol
                       <div className="flex gap-2">
                         {isCompleted && isToday ? (
                           <button
-                            onClick={() => handleStartScheduledWorkout(workout.instanceId, workout.id)}
+                            onClick={() => handleStartScheduledWorkout(workout.instanceId, workout.planId)}
                             className="flex-1 py-3 rounded-xl font-bold transition-all flex items-center justify-center gap-2 shadow-lg shadow-green-500/10 text-sm bg-green-600 text-white hover:bg-green-700"
                           >
                             <Play className="w-4 h-4 fill-current" />
@@ -910,7 +915,7 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, onViewPlan, userRol
                           </button>
                         ) : !isCompleted ? (
                           <button
-                            onClick={() => handleStartScheduledWorkout(workout.instanceId, workout.id)}
+                            onClick={() => handleStartScheduledWorkout(workout.instanceId, workout.planId)}
                             disabled={!canStartToday || scheduleLoading}
                             className={`flex-1 py-3 rounded-xl font-bold transition-all flex items-center justify-center gap-2 shadow-lg shadow-navy/10 text-sm ${
                               !canStartToday || scheduleLoading
@@ -1047,8 +1052,8 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, onViewPlan, userRol
               <p className="text-xs text-gray-500 mt-1">{t('buildCustomRoutine')}</p>
             </button>
 
-            <button 
-              onClick={() => onNavigate('coach-marketplace')}
+            <button
+              onClick={() => (onFindCoach ? onFindCoach() : onNavigate('athlete-search'))}
               className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all text-left group"
             >
               <div className="w-10 h-10 bg-purple-50 rounded-full flex items-center justify-center mb-3 group-hover:bg-purple-100 transition-colors">

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { ClipboardList, Save } from 'lucide-react';
 import { Button } from './ui/button';
+import { NumberInput } from './ui/number-input';
 import { BackButton } from './ui/back-button';
 import { useLanguage } from '../contexts/LanguageContext';
 import { localized } from '../lib/localize';
@@ -25,7 +26,7 @@ const METRIC_FIELDS: { field: 'reps' | 'weight' | 'time'; track: keyof TestItem;
 export function RunAssessment({ token, protocolId, onCancel, onSaved }: RunAssessmentProps) {
   const { t, language } = useLanguage();
   const [protocol, setProtocol] = useState<Test | null>(null);
-  const [values, setValues] = useState<Record<string, string>>({});
+  const [values, setValues] = useState<Record<string, number>>({});
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
 
@@ -54,7 +55,7 @@ export function RunAssessment({ token, protocolId, onCancel, onSaved }: RunAsses
       let any = false;
       for (const f of METRIC_FIELDS) {
         if (it[f.track] && values[`${it.id}:${f.field}`]) {
-          rec[f.field] = Number(values[`${it.id}:${f.field}`]);
+          rec[f.field] = values[`${it.id}:${f.field}`];
           any = true;
         }
       }
@@ -109,13 +110,12 @@ export function RunAssessment({ token, protocolId, onCancel, onSaved }: RunAsses
                       <div className="flex gap-2">
                         {fields.map((f) => (
                           <div key={f.field} className="flex-1">
-                            <input
-                              type="number"
-                              inputMode="decimal"
-                              value={values[`${it.id}:${f.field}`] ?? ''}
-                              onChange={(e) => setValues({ ...values, [`${it.id}:${f.field}`]: e.target.value })}
-                              placeholder={t(f.unitKey)}
-                              className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent text-navy text-center"
+                            <NumberInput
+                              allowDecimal
+                              min={0}
+                              value={values[`${it.id}:${f.field}`] ?? 0}
+                              onChange={(v) => setValues({ ...values, [`${it.id}:${f.field}`]: v })}
+                              className="w-full"
                             />
                             <div className="text-[10px] text-gray-400 text-center mt-0.5">{t(f.unitKey)}</div>
                           </div>

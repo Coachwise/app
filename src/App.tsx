@@ -12,9 +12,7 @@ import { PostCreation } from './components/PostCreation';
 import { Exercises } from './components/Exercises';
 import { PlanBuilder } from './components/PlanBuilder';
 import { CoachApplication } from './components/CoachApplication';
-import { CoachMarketplace } from './components/CoachMarketplace';
 import { SubscriptionTierBuilder } from './components/SubscriptionTierBuilder';
-import { TierComparison } from './components/TierComparison';
 import { Navigation } from './components/Navigation';
 import { CoachDashboard } from './components/CoachDashboard';
 import { TestBuilder } from './components/TestBuilder';
@@ -48,7 +46,7 @@ const DEFAULT_VIEW: ViewType = FEATURES.feed ? 'feed' : 'workouts-home';
 export type SportType = 'fitness' | 'climbing';
 export type UserRole = 'athlete' | 'coach';
 export type UserTier = 'free' | 'pro';
-export type ViewType = 'sport-selection' | 'logging' | 'feed' | 'profile' | 'coach-dashboard' | 'post-creation' | 'exercise-builder' | 'plan-builder' | 'coach-application' | 'coach-marketplace' | 'tier-builder' | 'tier-comparison' | 'test-builder' | 'athlete-tests' | 'assessment-run' | 'assessment-history' | 'workouts-home' | 'workout-session' | 'analytics' | 'athlete-search' | 'athletes-coaches' | 'messages' | 'message-thread' | 'channel-view' | 'privacy-settings' | 'profile-settings' | 'notifications' | 'wallet' | 'about' | 'support';
+export type ViewType = 'sport-selection' | 'logging' | 'feed' | 'profile' | 'coach-dashboard' | 'post-creation' | 'exercise-builder' | 'plan-builder' | 'coach-application' | 'tier-builder' | 'test-builder' | 'athlete-tests' | 'assessment-run' | 'assessment-history' | 'workouts-home' | 'workout-session' | 'analytics' | 'athlete-search' | 'athletes-coaches' | 'messages' | 'message-thread' | 'channel-view' | 'privacy-settings' | 'profile-settings' | 'notifications' | 'wallet' | 'about' | 'support';
 
 export default function App() {
   const { isAuthenticated, user, tokens, refreshUser } = useAuth();
@@ -63,6 +61,14 @@ export default function App() {
   const [viewingUserId, setViewingUserId] = useState<string | null>(null); // Track which user profile we're viewing
   const [profileReturnView, setProfileReturnView] = useState<ViewType>(DEFAULT_VIEW); // Where "back" returns from a viewed profile
   const [discoveryTab, setDiscoveryTab] = useState<'discover' | 'network' | 'requests'>('discover'); // Persist Discovery tab across profile visits
+  const [discoverCoachesOnly, setDiscoverCoachesOnly] = useState(false); // pre-filter Discover to coaches (e.g. from "Find a coach")
+
+  // Open the Discover tab pre-filtered to coaches — the "find a coach" intent.
+  const openCoachDiscovery = () => {
+    setDiscoveryTab('discover');
+    setDiscoverCoachesOnly(true);
+    setCurrentView('athlete-search');
+  };
   const [currentConversationId, setCurrentConversationId] = useState<string | null>(null); // Track current message thread
   const [currentChannelId, setCurrentChannelId] = useState<string | null>(null); // Track current channel
   const [messagesActiveTab, setMessagesActiveTab] = useState<'dms' | 'channels'>('dms'); // Track active tab in Messages
@@ -173,6 +179,11 @@ export default function App() {
     if (view === 'analytics') {
       setAnalyticsAthleteId(null);
       setAnalyticsClientName(null);
+    }
+    // Opening Discover from the nav shows everyone; the coaches pre-filter only
+    // applies when arriving via openCoachDiscovery ("find a coach").
+    if (view === 'athlete-search') {
+      setDiscoverCoachesOnly(false);
     }
     // Remember where we opened notifications from, so "back" returns there.
     if (view === 'notifications') {
@@ -387,8 +398,6 @@ export default function App() {
           onCancel={() => setCurrentView('profile')} 
           onSubmit={handleCoachApplicationSubmit} 
         />; 
-      case 'coach-marketplace':
-        return <CoachMarketplace onBack={() => setCurrentView('profile')} onViewProfile={handleViewProfile} />;
       case 'tier-builder':
         return <SubscriptionTierBuilder
           token={tokens?.access_token || ''}
@@ -396,8 +405,6 @@ export default function App() {
           onCancel={() => { setBuilderPackageId(null); setCurrentView('coach-dashboard'); }}
           onSave={handleTierSaved}
         />;
-      case 'tier-comparison':
-        return <TierComparison onCancel={() => setCurrentView('coach-marketplace')} coachName="Sarah Martinez" />;
       case 'analytics':
         return <AnalyticsDashboard
           token={tokens?.access_token || ''}
@@ -406,11 +413,13 @@ export default function App() {
           clientName={analyticsClientName || undefined}
           onBack={() => {
             if (analyticsAthleteId) {
+              // A coach viewing a client's analytics → back to the dashboard.
               setAnalyticsAthleteId(null);
               setAnalyticsClientName(null);
               setCurrentView('coach-dashboard');
             } else {
-              setCurrentView('workouts-home');
+              // Own analytics: coaches reach it from the dashboard, athletes from the tab.
+              setCurrentView(userRole === 'coach' ? 'coach-dashboard' : 'workouts-home');
             }
           }}
           onViewAssessments={analyticsAthleteId ? undefined : () => setCurrentView('athlete-tests')}
@@ -425,6 +434,7 @@ export default function App() {
             setCurrentView('workout-session');
           }}
           onCreatePlan={() => { setBuilderPlanId(null); setCurrentView('plan-builder'); }}
+          onFindCoach={openCoachDiscovery}
           onViewPlan={(planId: string) => { setBuilderPlanId(planId); setCurrentView('plan-builder'); }}
           onResumeSession={handleResumeSession}
           onDiscardSession={handleDiscardSession}
@@ -456,6 +466,7 @@ export default function App() {
           onViewProfile={handleViewProfile}
           activeTab={discoveryTab}
           onTabChange={setDiscoveryTab}
+          initialCoachesOnly={discoverCoachesOnly}
         />;
       case 'messages':
         return <MessagesWithChannels 

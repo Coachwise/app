@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Plus, Trash2, Play, Pause, RotateCcw } from 'lucide-react';
 import { BackButton } from './ui/back-button';
 import { Button } from './ui/button';
+import { NumberInput } from './ui/number-input';
 import type { SportType } from '../App';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -15,9 +16,9 @@ interface WorkoutLoggingProps {
 }
 
 interface FitnessSet {
-  weight: string;
-  reps: string;
-  rpe: string;
+  weight: number;
+  reps: number;
+  rpe: number;
 }
 
 interface ClimbingAttempt {
@@ -29,7 +30,7 @@ export function WorkoutLogging({ sport, sessionId, onBack }: WorkoutLoggingProps
   const { tokens } = useAuth();
   const { t } = useLanguage();
   const [exercise, setExercise] = useState('');
-  const [sets, setSets] = useState<FitnessSet[]>([{ weight: '', reps: '', rpe: '' }]);
+  const [sets, setSets] = useState<FitnessSet[]>([{ weight: 0, reps: 0, rpe: 0 }]);
   const [climbingAttempts, setClimbingAttempts] = useState<ClimbingAttempt[]>([{ grade: '', sendType: '' }]);
   const [notes, setNotes] = useState('');
   const [timer, setTimer] = useState(0);
@@ -40,14 +41,14 @@ export function WorkoutLogging({ sport, sessionId, onBack }: WorkoutLoggingProps
   const [finishingSession, setFinishingSession] = useState(false);
 
   const addSet = () => {
-    setSets([...sets, { weight: '', reps: '', rpe: '' }]);
+    setSets([...sets, { weight: 0, reps: 0, rpe: 0 }]);
   };
 
   const removeSet = (index: number) => {
     setSets(sets.filter((_, i) => i !== index));
   };
 
-  const updateSet = (index: number, field: keyof FitnessSet, value: string) => {
+  const updateSet = (index: number, field: keyof FitnessSet, value: number) => {
     const newSets = [...sets];
     newSets[index][field] = value;
     setSets(newSets);
@@ -105,9 +106,9 @@ export function WorkoutLogging({ sport, sessionId, onBack }: WorkoutLoggingProps
             session_id: sessionId,
             exercise_name: exercise.trim(),
             set_number: i + 1,
-            reps: set.reps ? parseInt(set.reps) : undefined,
-            weight: set.weight ? parseFloat(set.weight) : undefined,
-            rpe: set.rpe ? parseFloat(set.rpe) : undefined,
+            reps: set.reps || undefined,
+            weight: set.weight || undefined,
+            rpe: set.rpe || undefined,
             completed: true,
             notes: i === sets.length - 1 && notes.trim() ? notes.trim() : undefined,
           });
@@ -131,7 +132,7 @@ export function WorkoutLogging({ sport, sessionId, onBack }: WorkoutLoggingProps
 
       // Clear form
       setExercise('');
-      setSets([{ weight: '', reps: '', rpe: '' }]);
+      setSets([{ weight: 0, reps: 0, rpe: 0 }]);
       setClimbingAttempts([{ grade: '', sendType: '' }]);
       setNotes('');
 
@@ -270,35 +271,15 @@ export function WorkoutLogging({ sport, sessionId, onBack }: WorkoutLoggingProps
                   <div className="grid grid-cols-3 gap-3">
                     <div>
                       <label className="block text-xs text-gray-600 mb-1">{t('weightKg')}</label>
-                      <input
-                        type="number"
-                        value={set.weight}
-                        onChange={(e) => updateSet(index, 'weight', e.target.value)}
-                        placeholder="100"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      />
+                      <NumberInput allowDecimal min={0} step={2.5} value={set.weight} onChange={(v) => updateSet(index, 'weight', v)} className="w-full" />
                     </div>
                     <div>
                       <label className="block text-xs text-gray-600 mb-1">{t('repsLabel')}</label>
-                      <input
-                        type="number"
-                        value={set.reps}
-                        onChange={(e) => updateSet(index, 'reps', e.target.value)}
-                        placeholder="8"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      />
+                      <NumberInput min={0} value={set.reps} onChange={(v) => updateSet(index, 'reps', v)} className="w-full" />
                     </div>
                     <div>
                       <label className="block text-xs text-gray-600 mb-1">{t('rpe')}</label>
-                      <input
-                        type="number"
-                        value={set.rpe}
-                        onChange={(e) => updateSet(index, 'rpe', e.target.value)}
-                        placeholder="7"
-                        min="1"
-                        max="10"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      />
+                      <NumberInput allowDecimal min={0} max={10} value={set.rpe} onChange={(v) => updateSet(index, 'rpe', v)} className="w-full" />
                     </div>
                   </div>
                 </div>
