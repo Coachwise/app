@@ -26,21 +26,21 @@ export function PrivacySettings({ onBack }: PrivacySettingsProps) {
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
       {/* Header */}
-      <div className="bg-navy px-4 py-4 sticky top-0 z-10">
+      <div className="bg-card border-b border-border px-4 py-4 sticky top-0 z-10">
         <div className="flex items-center gap-3">
           <BackButton onClick={onBack} aria-label={t('back')} />
           <div className="flex items-center gap-2">
-            <Shield className="w-6 h-6 text-yellow-500" />
-            <h1 className="text-white text-xl">{t('privacySecurity')}</h1>
+            <Shield className="w-6 h-6 text-tint-ink" />
+            <h1 className="text-foreground text-xl">{t('privacySecurity')}</h1>
           </div>
         </div>
       </div>
 
       <div className="max-w-2xl mx-auto p-4 space-y-6">
         {/* Account Privacy Section */}
-        <div className="bg-white rounded-lg shadow-sm">
+        <div className="bg-card rounded-lg shadow-sm">
           <div className="p-4 border-b border-gray-200">
-            <h2 className="text-navy flex items-center gap-2">
+            <h2 className="text-foreground flex items-center gap-2">
               <Lock className="w-5 h-5" />
               {t('accountPrivacy')}
             </h2>
@@ -103,7 +103,7 @@ export function PrivacySettings({ onBack }: PrivacySettingsProps) {
                   }`}
                 >
                   <div
-                    className={`absolute top-1 left-1 w-6 h-6 bg-white rounded-full transition-transform ${
+                    className={`absolute top-1 left-1 w-6 h-6 bg-card rounded-full transition-transform ${
                       showEmail ? 'translate-x-6' : 'translate-x-0'
                     }`}
                   />
@@ -129,7 +129,7 @@ export function PrivacySettings({ onBack }: PrivacySettingsProps) {
                   }`}
                 >
                   <div
-                    className={`absolute top-1 left-1 w-6 h-6 bg-white rounded-full transition-transform ${
+                    className={`absolute top-1 left-1 w-6 h-6 bg-card rounded-full transition-transform ${
                       showPhone ? 'translate-x-6' : 'translate-x-0'
                     }`}
                   />
@@ -155,7 +155,7 @@ export function PrivacySettings({ onBack }: PrivacySettingsProps) {
                   }`}
                 >
                   <div
-                    className={`absolute top-1 left-1 w-6 h-6 bg-white rounded-full transition-transform ${
+                    className={`absolute top-1 left-1 w-6 h-6 bg-card rounded-full transition-transform ${
                       showActivity ? 'translate-x-6' : 'translate-x-0'
                     }`}
                   />
@@ -166,9 +166,9 @@ export function PrivacySettings({ onBack }: PrivacySettingsProps) {
         </div>
 
         {/* Interactions Section */}
-        <div className="bg-white rounded-lg shadow-sm">
+        <div className="bg-card rounded-lg shadow-sm">
           <div className="p-4 border-b border-gray-200">
-            <h2 className="text-navy flex items-center gap-2">
+            <h2 className="text-foreground flex items-center gap-2">
               <Users className="w-5 h-5" />
               {t('interactions')}
             </h2>
@@ -212,7 +212,7 @@ export function PrivacySettings({ onBack }: PrivacySettingsProps) {
                   }`}
                 >
                   <div
-                    className={`absolute top-1 left-1 w-6 h-6 bg-white rounded-full transition-transform ${
+                    className={`absolute top-1 left-1 w-6 h-6 bg-card rounded-full transition-transform ${
                       allowTagging ? 'translate-x-6' : 'translate-x-0'
                     }`}
                   />
@@ -238,7 +238,7 @@ export function PrivacySettings({ onBack }: PrivacySettingsProps) {
                   }`}
                 >
                   <div
-                    className={`absolute top-1 left-1 w-6 h-6 bg-white rounded-full transition-transform ${
+                    className={`absolute top-1 left-1 w-6 h-6 bg-card rounded-full transition-transform ${
                       allowFollowRequests ? 'translate-x-6' : 'translate-x-0'
                     }`}
                   />
@@ -249,9 +249,9 @@ export function PrivacySettings({ onBack }: PrivacySettingsProps) {
         </div>
 
         {/* Security Section */}
-        <div className="bg-white rounded-lg shadow-sm">
+        <div className="bg-card rounded-lg shadow-sm">
           <div className="p-4 border-b border-gray-200">
-            <h2 className="text-navy flex items-center gap-2">
+            <h2 className="text-foreground flex items-center gap-2">
               <Shield className="w-5 h-5" />
               {t('security')}
             </h2>
@@ -261,7 +261,7 @@ export function PrivacySettings({ onBack }: PrivacySettingsProps) {
             {/* Change Password */}
             <button className="w-full flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition-colors">
               <div className="flex items-center gap-3">
-                <Lock className="w-5 h-5 text-navy" />
+                <Lock className="w-5 h-5 text-foreground" />
                 <div className="text-left">
                   <p className="text-gray-900">{t('changePassword')}</p>
                   <p className="text-sm text-gray-600">{t('changePasswordDesc')}</p>
@@ -274,7 +274,7 @@ export function PrivacySettings({ onBack }: PrivacySettingsProps) {
             <div className="pt-4 border-t border-gray-200">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3 flex-1">
-                  <Shield className="w-5 h-5 text-navy" />
+                  <Shield className="w-5 h-5 text-foreground" />
                   <div>
                     <label className="block text-gray-900">
                       {t('twoFactorAuth')}
@@ -291,7 +291,7 @@ export function PrivacySettings({ onBack }: PrivacySettingsProps) {
                   }`}
                 >
                   <div
-                    className={`absolute top-1 left-1 w-6 h-6 bg-white rounded-full transition-transform ${
+                    className={`absolute top-1 left-1 w-6 h-6 bg-card rounded-full transition-transform ${
                       twoFactorEnabled ? 'translate-x-6' : 'translate-x-0'
                     }`}
                   />
@@ -302,7 +302,7 @@ export function PrivacySettings({ onBack }: PrivacySettingsProps) {
             {/* Login Activity */}
             <button className="w-full flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition-colors border-t border-gray-200 pt-4">
               <div className="flex items-center gap-3">
-                <Eye className="w-5 h-5 text-navy" />
+                <Eye className="w-5 h-5 text-foreground" />
                 <div className="text-left">
                   <p className="text-gray-900">{t('loginActivity')}</p>
                   <p className="text-sm text-gray-600">{t('loginActivityDesc')}</p>
@@ -314,12 +314,12 @@ export function PrivacySettings({ onBack }: PrivacySettingsProps) {
         </div>
 
         {/* Blocked Users Section */}
-        <div className="bg-white rounded-lg shadow-sm">
+        <div className="bg-card rounded-lg shadow-sm">
           <button
             onClick={() => setShowBlockedUsers(!showBlockedUsers)}
             className="w-full p-4 border-b border-gray-200 flex items-center justify-between"
           >
-            <h2 className="text-navy flex items-center gap-2">
+            <h2 className="text-foreground flex items-center gap-2">
               <UserX className="w-5 h-5" />
               {t('blockedUsers', { count: blockedUsers.length })}
             </h2>
@@ -345,7 +345,7 @@ export function PrivacySettings({ onBack }: PrivacySettingsProps) {
                           <p className="text-sm text-gray-600">{user.username}</p>
                         </div>
                       </div>
-                      <button className="px-4 py-2 bg-navy text-white rounded-lg hover:bg-navy-light transition-colors text-sm">
+                      <button className="px-4 py-2 bg-tint text-tint-fg rounded-lg hover:bg-tint-2 transition-colors text-sm">
                         {t('unblock')}
                       </button>
                     </div>
@@ -357,9 +357,9 @@ export function PrivacySettings({ onBack }: PrivacySettingsProps) {
         </div>
 
         {/* Data & Account Section */}
-        <div className="bg-white rounded-lg shadow-sm">
+        <div className="bg-card rounded-lg shadow-sm">
           <div className="p-4 border-b border-gray-200">
-            <h2 className="text-navy flex items-center gap-2">
+            <h2 className="text-foreground flex items-center gap-2">
               <Globe className="w-5 h-5" />
               {t('dataAccount')}
             </h2>

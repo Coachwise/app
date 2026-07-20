@@ -60,18 +60,18 @@ export function SessionFeedbackDialog({
 
       {/* Dialog */}
       <div className="fixed inset-0 flex items-center justify-center p-4" style={{ zIndex: 9999 }}>
-        <div className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+        <div className="bg-card rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
           {/* Header */}
-          <div className="flex items-center justify-between p-4 bg-navy rounded-t-lg">
-            <h2 className="text-lg font-semibold text-white">
+          <div className="flex items-center justify-between p-4 bg-card border-b border-border rounded-t-lg">
+            <h2 className="text-lg font-semibold text-foreground">
               {t('sessionFeedback')}
             </h2>
             <button
               onClick={onClose}
-              className="p-1 hover:bg-navy-light rounded-lg transition-colors"
+              className="p-1 hover:bg-tint-2 rounded-lg transition-colors"
               disabled={loading}
             >
-              <X className="w-5 h-5 text-white" />
+              <X className="w-5 h-5 text-foreground" />
             </button>
           </div>
 

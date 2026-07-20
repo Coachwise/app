@@ -128,10 +128,10 @@ export function Exercises({ onBack }: ExercisesProps) {
 
   return (
     <div className="min-h-screen bg-gray-100">
-      <div className="bg-navy px-4 py-4 sticky top-0 z-10">
+      <div className="bg-card border-b border-border px-4 py-4 sticky top-0 z-10">
         <div className="flex items-center justify-between">
           <BackButton onClick={onBack} aria-label={t('back')} />
-          <h2 className="text-white flex items-center gap-2">
+          <h2 className="text-foreground flex items-center gap-2">
             <Dumbbell className="w-5 h-5" />
             {t('exercisesLabel')}
           </h2>
@@ -144,7 +144,7 @@ export function Exercises({ onBack }: ExercisesProps) {
       <div className="p-4 space-y-4">
         {error && <div className="p-3 bg-red-100 text-red-800 rounded">{error}</div>}
 
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 space-y-3">
+        <div className="bg-card rounded-lg shadow-sm border border-gray-200 p-4 space-y-3">
           <div className="flex gap-2">
             <div className="flex-1 relative">
               <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
@@ -153,7 +153,7 @@ export function Exercises({ onBack }: ExercisesProps) {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder={t('searchExercisesByName')}
-                className="w-full pl-9 pr-3 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full pl-9 pr-3 py-2 bg-card border border-gray-300 rounded-lg focus:ring-2 focus:ring-tint focus:border-transparent"
               />
             </div>
             <button
@@ -173,7 +173,7 @@ export function Exercises({ onBack }: ExercisesProps) {
                 setPublicOnly(next);
                 fetchExercises({ publicOnly: next });
               }}
-              className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+              className="w-4 h-4 text-tint-ink border-gray-300 rounded focus:ring-tint"
             />
             {t('showPublicOnly')}
           </label>
@@ -183,7 +183,7 @@ export function Exercises({ onBack }: ExercisesProps) {
               <button
                 onClick={() => selectCategory('')}
                 className={`shrink-0 px-3 py-1.5 rounded-full text-sm transition-colors ${
-                  category === '' ? 'bg-navy text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  category === '' ? 'bg-tint text-tint-fg' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
                 {t('allCategories')}
@@ -193,7 +193,7 @@ export function Exercises({ onBack }: ExercisesProps) {
                   key={c.id}
                   onClick={() => selectCategory(c.slug)}
                   className={`shrink-0 px-3 py-1.5 rounded-full text-sm transition-colors ${
-                    category === c.slug ? 'bg-navy text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    category === c.slug ? 'bg-tint text-tint-fg' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}
                 >
                   {localized(c.name_i18n, c.slug, language)}
@@ -208,7 +208,7 @@ export function Exercises({ onBack }: ExercisesProps) {
             <div className="text-gray-600 text-sm">{t('loadingExercises')}</div>
           )}
           {!loading && exercises.length === 0 && (
-            <div className="bg-white border border-dashed border-gray-300 rounded-lg p-6 text-center text-gray-600">
+            <div className="bg-card border border-dashed border-gray-300 rounded-lg p-6 text-center text-gray-600">
               {t('noExercisesTryCreate')}
             </div>
           )}
@@ -217,7 +217,7 @@ export function Exercises({ onBack }: ExercisesProps) {
               const name = localized(exercise.name_i18n, exercise.name, language);
               const description = localized(exercise.description_i18n, exercise.description, language);
               return (
-              <div key={exercise.id} className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+              <div key={exercise.id} className="bg-card border border-gray-200 rounded-lg p-4 shadow-sm">
                 <div className="flex items-start gap-3">
                   {exercise.media?.url && (
                     <div className="flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden bg-gray-100">
@@ -282,7 +282,7 @@ export function Exercises({ onBack }: ExercisesProps) {
           {!loading && exercises.length > 0 && exercises.length < total && (
             <button
               onClick={() => fetchExercises({ page: page + 1, append: true })}
-              className="w-full py-2.5 text-sm text-navy bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+              className="w-full py-2.5 text-sm text-foreground bg-card border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
             >
               {t('loadMore')} ({exercises.length}/{total})
             </button>

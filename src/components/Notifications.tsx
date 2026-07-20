@@ -18,12 +18,12 @@ interface NotificationsProps {
 
 // Icon + tint per notification type (fallback for actors without an avatar).
 const TYPE_META: Record<string, { icon: typeof Bell; cls: string }> = {
-  CONNECTION_REQUEST: { icon: UserPlus, cls: 'bg-blue-100 text-blue-600' },
+  CONNECTION_REQUEST: { icon: UserPlus, cls: 'bg-tint-soft text-tint-ink' },
   CONNECTION_ACCEPTED: { icon: CheckCircle2, cls: 'bg-green-100 text-green-600' },
   ASSESSMENT_ASSIGNED: { icon: ClipboardList, cls: 'bg-yellow-100 text-yellow-700' },
   ASSESSMENT_SUBMITTED: { icon: Send, cls: 'bg-yellow-100 text-yellow-700' },
   BADGE_GRANTED: { icon: Award, cls: 'bg-yellow-100 text-yellow-700' },
-  PACKAGE_SUBSCRIBED: { icon: Package, cls: 'bg-navy/10 text-navy' },
+  PACKAGE_SUBSCRIBED: { icon: Package, cls: 'bg-tint-soft text-tint-ink' },
   PACKAGE_ASSIGNED: { icon: Package, cls: 'bg-green-100 text-green-600' },
   PACKAGE_REMOVED: { icon: Package, cls: 'bg-gray-100 text-gray-500' },
   PLAN_ASSIGNED: { icon: Dumbbell, cls: 'bg-green-100 text-green-600' },
@@ -165,7 +165,7 @@ export function Notifications({ onBack, onNavigate, onViewProfile, onOpenSupport
         onClick={() => open(n)}
         className={`relative w-full text-start flex items-start gap-3 p-3.5 rounded-2xl border overflow-hidden transition-colors ${
           n.read
-            ? 'bg-white border-gray-100 shadow-sm hover:bg-gray-50'
+            ? 'bg-card border-gray-100 shadow-sm hover:bg-gray-50'
             : 'bg-yellow-50 border-yellow-200 shadow hover:bg-yellow-100/70'
         }`}
       >
@@ -195,7 +195,7 @@ export function Notifications({ onBack, onNavigate, onViewProfile, onOpenSupport
         )}
 
         <div className="flex-1 min-w-0 py-0.5">
-          <p className={`text-sm leading-snug ${n.read ? 'text-gray-700' : 'text-navy'}`}>{message(n)}</p>
+          <p className={`text-sm leading-snug ${n.read ? 'text-gray-700' : 'text-foreground'}`}>{message(n)}</p>
           <p className="text-gray-400 text-xs mt-1">{relativeTime(n.created_at)}</p>
         </div>
 
@@ -209,13 +209,13 @@ export function Notifications({ onBack, onNavigate, onViewProfile, onOpenSupport
 
   return (
     <div className="min-h-screen bg-gray-100">
-      <div className="bg-navy px-4 py-4 sticky top-0 z-10 shadow-sm">
+      <div className="bg-card border-b border-border px-4 py-4 sticky top-0 z-10 shadow-sm">
         <div className="flex items-center justify-between gap-2">
           <BackButton onClick={onBack} aria-label={t('back')} />
           <div className="flex items-center gap-2 min-w-0">
-            <h1 className="text-white text-xl truncate">{t('notifications')}</h1>
+            <h1 className="text-foreground text-xl truncate">{t('notifications')}</h1>
             {unreadCount > 0 && (
-              <span className="bg-yellow-500 text-navy text-xs font-semibold rounded-full px-2 py-0.5 shrink-0">
+              <span className="bg-yellow-500 text-foreground text-xs font-semibold rounded-full px-2 py-0.5 shrink-0">
                 {unreadCount}
               </span>
             )}
@@ -225,7 +225,7 @@ export function Notifications({ onBack, onNavigate, onViewProfile, onOpenSupport
               onClick={markAll}
               title={t('markAllRead')}
               aria-label={t('markAllRead')}
-              className="p-2 -me-2 text-white/90 hover:bg-navy-light rounded-lg transition-colors shrink-0"
+              className="p-2 -me-2 text-muted-foreground hover:bg-tint-2 rounded-lg transition-colors shrink-0"
             >
               <CheckCheck className="w-5 h-5" />
             </button>
@@ -239,7 +239,7 @@ export function Notifications({ onBack, onNavigate, onViewProfile, onOpenSupport
         {loading && <div className="text-center text-gray-500 py-8">{t('loading')}</div>}
 
         {!loading && items.length === 0 && (
-          <div className="bg-white rounded-2xl p-10 text-center border border-gray-100 shadow-sm mt-6">
+          <div className="bg-card rounded-2xl p-10 text-center border border-gray-100 shadow-sm mt-6">
             <div className="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center mx-auto mb-4">
               <Bell className="w-8 h-8 text-gray-300" />
             </div>

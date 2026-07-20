@@ -418,8 +418,8 @@ export default function App() {
               setAnalyticsClientName(null);
               setCurrentView('coach-dashboard');
             } else {
-              // Own analytics: coaches reach it from the dashboard, athletes from the tab.
-              setCurrentView(userRole === 'coach' ? 'coach-dashboard' : 'workouts-home');
+              // Own training analytics — reached from the side menu by both roles.
+              setCurrentView('workouts-home');
             }
           }}
           onViewAssessments={analyticsAthleteId ? undefined : () => setCurrentView('athlete-tests')}

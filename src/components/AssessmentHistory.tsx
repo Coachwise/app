@@ -53,7 +53,7 @@ function Sparkline({ values }: { values: number[] }) {
   return (
     <svg viewBox={`0 0 ${w} ${h}`} className="w-full h-11" preserveAspectRatio="none">
       <polyline points={line} fill="none" style={{ stroke: 'var(--brand-yellow)' }} strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" />
-      <circle cx={lx} cy={ly} r={3.5} style={{ fill: 'var(--brand-navy)' }} />
+      <circle cx={lx} cy={ly} r={3.5} style={{ fill: 'var(--tint)' }} />
     </svg>
   );
 }
@@ -107,12 +107,12 @@ export function AssessmentHistory({ token, protocolId, onBack, onRun, athleteId,
 
   return (
     <div className="min-h-screen bg-gray-100">
-      <div className="bg-navy px-4 py-4 sticky top-0 z-10">
+      <div className="bg-card border-b border-border px-4 py-4 sticky top-0 z-10">
         <div className="flex items-center justify-between">
           <BackButton onClick={onBack} aria-label={t('back')} />
           <div className="min-w-0 text-center px-2">
-            <h1 className="text-white text-lg truncate">{protocol?.name || t('history')}</h1>
-            {clientName && <p className="text-white/60 text-xs truncate">{clientName}</p>}
+            <h1 className="text-foreground text-lg truncate">{protocol?.name || t('history')}</h1>
+            {clientName && <p className="text-muted-foreground text-xs truncate">{clientName}</p>}
           </div>
           {onRun ? (
             <Button variant="brand" size="sm" icon={<Plus />} onClick={onRun}>
@@ -128,7 +128,7 @@ export function AssessmentHistory({ token, protocolId, onBack, onRun, athleteId,
         {loading && <div className="text-center text-gray-500 py-8">{t('loading')}</div>}
 
         {!loading && runs.length === 0 && (
-          <div className="bg-white rounded-2xl p-10 text-center border border-gray-100 shadow-sm">
+          <div className="bg-card rounded-2xl p-10 text-center border border-gray-100 shadow-sm">
             <LineChart className="w-10 h-10 text-gray-200 mx-auto mb-3" />
             <p className="text-gray-500 text-sm">{athleteId ? t('clientNoRuns') : t('noRunsYet')}</p>
             {onRun && (
@@ -142,8 +142,8 @@ export function AssessmentHistory({ token, protocolId, onBack, onRun, athleteId,
         {/* Progress per exercise */}
         {!loading && runs.length > 0 && (
           <div>
-            <h3 className="text-navy font-medium mb-3 flex items-center gap-2">
-              <TrendingUp className="w-5 h-5 text-yellow-500" />
+            <h3 className="text-foreground font-medium mb-3 flex items-center gap-2">
+              <TrendingUp className="w-5 h-5 text-tint-ink" />
               {t('progress')}
             </h3>
             <div className="space-y-3">
@@ -155,14 +155,14 @@ export function AssessmentHistory({ token, protocolId, onBack, onRun, athleteId,
                 const Arrow = delta > 0 ? TrendingUp : delta < 0 ? TrendingDown : Minus;
                 const deltaCls = delta > 0 ? 'text-green-600' : delta < 0 ? 'text-red-500' : 'text-gray-400';
                 return (
-                  <div key={item.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
+                  <div key={item.id} className="bg-card rounded-2xl border border-gray-100 shadow-sm p-4">
                     <div className="flex items-start justify-between gap-2 mb-1">
                       <div className="min-w-0">
-                        <div className="text-navy font-medium truncate">{localized(item.exercise_name_i18n, item.exercise_name, language)}</div>
+                        <div className="text-foreground font-medium truncate">{localized(item.exercise_name_i18n, item.exercise_name, language)}</div>
                         <div className="text-[11px] text-gray-400">{t('latest')}</div>
                       </div>
                       <div className="text-end shrink-0">
-                        <div className="text-xl font-semibold text-navy tabular-nums leading-none">
+                        <div className="text-xl font-semibold text-foreground tabular-nums leading-none">
                           {fmtVal(latest, metric.unitKey)}
                         </div>
                         {points.length > 1 && (
@@ -187,19 +187,19 @@ export function AssessmentHistory({ token, protocolId, onBack, onRun, athleteId,
         {/* Every recorded run */}
         {!loading && runs.length > 0 && (
           <div>
-            <h3 className="text-navy font-medium mb-3 flex items-center gap-2">
-              <History className="w-5 h-5 text-yellow-500" />
+            <h3 className="text-foreground font-medium mb-3 flex items-center gap-2">
+              <History className="w-5 h-5 text-tint-ink" />
               {t('runHistory')}
             </h3>
             <div className="space-y-3">
               {runs.map((run) => (
-                <div key={run.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
-                  <div className="text-navy text-sm font-medium mb-2">{fmtDate(run)}</div>
+                <div key={run.id} className="bg-card rounded-2xl border border-gray-100 shadow-sm p-4">
+                  <div className="text-foreground text-sm font-medium mb-2">{fmtDate(run)}</div>
                   <div className="space-y-1.5">
                     {run.records.map((r, i) => (
                       <div key={i} className="flex items-center justify-between gap-2 text-sm">
                         <span className="text-gray-600 truncate">{localized(r.exercise_name_i18n, r.exercise_name ?? '', language)}</span>
-                        <span className="text-navy tabular-nums shrink-0">
+                        <span className="text-foreground tabular-nums shrink-0">
                           {[
                             r.weight != null ? `${r.weight} ${t('unitKg')}` : null,
                             r.reps != null ? `${r.reps} ${t('unitReps')}` : null,

@@ -126,10 +126,10 @@ export function AvatarCropper({ image, busy, onCancel, onDone }: AvatarCropperPr
   const working = busy || cropping;
 
   return (
-    <div className="fixed inset-0 z-50 bg-navy/95 flex flex-col items-center justify-center p-6 gap-6">
+    <div className="fixed inset-0 z-50 bg-black/90 flex flex-col items-center justify-center p-6 gap-6">
       <div className="text-center">
-        <h2 className="text-white text-lg font-semibold">{t('adjustPhoto')}</h2>
-        <p className="text-white/60 text-sm mt-1">{t('adjustPhotoHint')}</p>
+        <h2 className="text-foreground text-lg font-semibold">{t('adjustPhoto')}</h2>
+        <p className="text-muted-foreground text-sm mt-1">{t('adjustPhotoHint')}</p>
       </div>
 
       {/* The crop window. The photo is only visible through it. */}
@@ -162,7 +162,7 @@ export function AvatarCropper({ image, busy, onCancel, onDone }: AvatarCropperPr
       </div>
 
       <div className="w-full max-w-xs flex items-center gap-3">
-        <ZoomIn className="w-5 h-5 text-white/70 shrink-0" />
+        <ZoomIn className="w-5 h-5 text-muted-foreground shrink-0" />
         <input
           type="range"
           min={1}

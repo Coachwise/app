@@ -206,13 +206,13 @@ export function PurchaseSheet({ open, onClose, kind, pkg, onSuccess }: PurchaseS
   return (
     <div className="fixed inset-0 z-50 bg-black/40 flex items-end justify-center" onClick={onClose}>
       <div
-        className="bg-white w-full max-w-md rounded-t-2xl flex flex-col max-h-[92vh] overflow-hidden shadow-2xl"
+        className="bg-card w-full max-w-md rounded-t-2xl flex flex-col max-h-[92vh] overflow-hidden shadow-2xl"
         onClick={(e) => e.stopPropagation()}
         dir={isRTL ? 'rtl' : 'ltr'}
       >
         <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 shrink-0">
-          <h3 className="text-navy font-medium">{title}</h3>
-          <button type="button" onClick={onClose} className="p-1 text-gray-400 hover:text-navy"><X className="w-5 h-5" /></button>
+          <h3 className="text-foreground font-medium">{title}</h3>
+          <button type="button" onClick={onClose} className="p-1 text-gray-400 hover:text-foreground"><X className="w-5 h-5" /></button>
         </div>
 
         <div className="flex-1 min-h-0 overflow-y-auto p-4 space-y-5">
@@ -223,7 +223,7 @@ export function PurchaseSheet({ open, onClose, kind, pkg, onSuccess }: PurchaseS
           ) : (
             <>
               {isOneTime && (
-                <div className="flex items-center gap-2 bg-yellow-50 border border-yellow-200 rounded-lg p-3 text-sm text-navy">
+                <div className="flex items-center gap-2 bg-yellow-50 border border-yellow-200 rounded-lg p-3 text-sm text-foreground">
                   <ShieldCheck className="w-4 h-4 text-yellow-600 shrink-0" />
                   {t('oneTimeLifetimeHint')}
                 </div>
@@ -270,7 +270,7 @@ export function PurchaseSheet({ open, onClose, kind, pkg, onSuccess }: PurchaseS
                     >
                       <span className="flex items-center gap-2 min-w-0">
                         {p.logo && <img src={p.logo} alt="" className="w-6 h-6 object-contain shrink-0" />}
-                        <span className="text-navy text-sm truncate">{p.title}</span>
+                        <span className="text-foreground text-sm truncate">{p.title}</span>
                       </span>
                       {p.name === provider && <Check className="w-4 h-4 text-yellow-600 shrink-0" />}
                     </button>
@@ -311,7 +311,7 @@ export function PurchaseSheet({ open, onClose, kind, pkg, onSuccess }: PurchaseS
           <div className="p-4 border-t border-gray-100 shrink-0">
             {waiting ? (
               <div className="space-y-3">
-                <div className="flex items-center gap-2 text-navy text-sm">
+                <div className="flex items-center gap-2 text-foreground text-sm">
                   <Loader2 className="w-4 h-4 animate-spin text-yellow-600" />
                   {t('waitingForPayment')}
                 </div>
@@ -319,7 +319,7 @@ export function PurchaseSheet({ open, onClose, kind, pkg, onSuccess }: PurchaseS
                 <button
                   type="button"
                   onClick={onWalletChanged}
-                  className="w-full flex items-center justify-center gap-2 border border-gray-200 text-navy py-2.5 rounded-lg hover:bg-gray-50 text-sm font-medium"
+                  className="w-full flex items-center justify-center gap-2 border border-gray-200 text-foreground py-2.5 rounded-lg hover:bg-gray-50 text-sm font-medium"
                 >
                   {t('checkPaymentStatus')}
                 </button>
@@ -347,7 +347,7 @@ export function PurchaseSheet({ open, onClose, kind, pkg, onSuccess }: PurchaseS
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <p className="text-navy text-sm mb-2">{label}</p>
+      <p className="text-foreground text-sm mb-2">{label}</p>
       {children}
     </div>
   );
@@ -358,7 +358,7 @@ function Chip({ active, onClick, children }: { active: boolean; onClick: () => v
     <button
       type="button"
       onClick={onClick}
-      className={`px-3 py-2 rounded-lg border text-sm transition-colors ${active ? 'border-yellow-500 bg-yellow-50 text-navy' : 'border-gray-200 text-gray-600 hover:bg-gray-50'}`}
+      className={`px-3 py-2 rounded-lg border text-sm transition-colors ${active ? 'border-yellow-500 bg-yellow-50 text-foreground' : 'border-gray-200 text-gray-600 hover:bg-gray-50'}`}
     >
       {children}
     </button>
@@ -368,8 +368,8 @@ function Chip({ active, onClick, children }: { active: boolean; onClick: () => v
 function Row({ label, value, bold, green }: { label: string; value: string; bold?: boolean; green?: boolean }) {
   return (
     <div className="flex items-center justify-between">
-      <span className={bold ? 'text-navy' : 'text-gray-500'}>{label}</span>
-      <span className={`${bold ? 'text-navy font-medium' : green ? 'text-green-600' : 'text-navy'}`} dir="ltr">{value}</span>
+      <span className={bold ? 'text-foreground' : 'text-gray-500'}>{label}</span>
+      <span className={`${bold ? 'text-foreground font-medium' : green ? 'text-green-600' : 'text-foreground'}`} dir="ltr">{value}</span>
     </div>
   );
 }

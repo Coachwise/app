@@ -7,6 +7,7 @@ import type { UserRole } from '../App';
 import { useAuth } from '../contexts/AuthContext';
 import * as UsersAPI from '../api/users';
 import * as MediaAPI from '../api/media';
+import type { Gender } from '../api/types';
 import { prepareImage, UnsupportedImageError, type PreparedImage } from '../lib/image';
 import { AvatarCropper } from './AvatarCropper';
 
@@ -40,6 +41,7 @@ export function ProfileSettings({ onBack }: ProfileSettingsProps) {
   const [jobTitle, setJobTitle] = useState('');
   const [bio, setBio] = useState('');
   const [birthday, setBirthday] = useState('');
+  const [gender, setGender] = useState<Gender>('UNSPECIFIED');
   const [website, setWebsite] = useState('');
   const [instagram, setInstagram] = useState('');
 
@@ -60,6 +62,7 @@ export function ProfileSettings({ onBack }: ProfileSettingsProps) {
     setJobTitle(user.job_title || '');
     setBio(user.bio || '');
     setBirthday(user.birthday ? user.birthday.slice(0, 10) : '');
+    setGender(user.gender ?? 'UNSPECIFIED');
     setWebsite(user.website || '');
     setInstagram(user.instagram || '');
   }, [user]);
@@ -125,6 +128,7 @@ export function ProfileSettings({ onBack }: ProfileSettingsProps) {
         website: website.trim(),
         instagram: instagram.replace(/^@/, '').trim(),
         birthday, // "YYYY-MM-DD" or "" to clear
+        gender,
         avatar_id: avatarId || undefined,
       });
       await refreshUser();
@@ -146,13 +150,13 @@ export function ProfileSettings({ onBack }: ProfileSettingsProps) {
       )}
 
       {/* Header */}
-      <div className="bg-navy px-4 py-4 sticky top-0 z-10">
+      <div className="bg-card border-b border-border px-4 py-4 sticky top-0 z-10">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <BackButton onClick={onBack} aria-label={t('back')} />
             <div className="flex items-center gap-2">
-              <User className="w-6 h-6 text-yellow-500" />
-              <h1 className="text-white text-xl">{t('profileSettings')}</h1>
+              <User className="w-6 h-6 text-tint-ink" />
+              <h1 className="text-foreground text-xl">{t('profileSettings')}</h1>
             </div>
           </div>
           <Button variant="brand" size="sm" icon={<Save />} loading={saving} onClick={handleSave}>
@@ -172,14 +176,14 @@ export function ProfileSettings({ onBack }: ProfileSettingsProps) {
                 className="w-28 h-28 rounded-full border-4 border-white object-cover shadow"
               />
             ) : (
-              <div className="w-28 h-28 rounded-full border-4 border-white bg-navy/10 flex items-center justify-center text-navy font-bold text-xl shadow">
+              <div className="w-28 h-28 rounded-full border-4 border-white bg-tint-soft flex items-center justify-center text-tint-ink font-bold text-xl shadow">
                 {initials}
               </div>
             )}
             <button
               onClick={() => fileInputRef.current?.click()}
               disabled={uploadingImage}
-              className="absolute bottom-0 right-0 p-2 bg-navy text-white rounded-full hover:bg-navy-light transition-colors border-2 border-white disabled:opacity-60"
+              className="absolute bottom-0 right-0 p-2 bg-tint text-tint-fg rounded-full hover:bg-tint-2 transition-colors border-2 border-white disabled:opacity-60"
             >
               <Camera className="w-4 h-4" />
             </button>
@@ -192,9 +196,9 @@ export function ProfileSettings({ onBack }: ProfileSettingsProps) {
           {error && <div className="p-3 bg-red-100 text-red-800 rounded">{error}</div>}
 
           {/* Basic Information */}
-          <div className="bg-white rounded-lg shadow-sm">
+          <div className="bg-card rounded-lg shadow-sm">
             <div className="p-4 border-b border-gray-200">
-              <h2 className="text-navy">{t('basicInformation')}</h2>
+              <h2 className="text-foreground">{t('basicInformation')}</h2>
             </div>
             <div className="p-4 space-y-4">
               <Field label={t('firstName')}>
@@ -225,13 +229,32 @@ export function ProfileSettings({ onBack }: ProfileSettingsProps) {
               <Field label={t('birthday')} icon={<Calendar className="w-4 h-4" />}>
                 <input type="date" value={birthday} onChange={(e) => setBirthday(e.target.value)} className={inputCls} />
               </Field>
+              <Field label={t('gender')} icon={<User className="w-4 h-4" />}>
+                <div className="grid grid-cols-2 gap-3">
+                  {([['MALE', 'genderMale'], ['FEMALE', 'genderFemale']] as const).map(([g, key]) => (
+                    <button
+                      key={g}
+                      type="button"
+                      onClick={() => setGender(g)}
+                      aria-pressed={gender === g}
+                      className={`py-2.5 rounded-lg border text-sm font-medium transition-colors ${
+                        gender === g
+                          ? 'bg-tint text-tint-fg border-tint'
+                          : 'bg-gray-50 text-foreground border-gray-200 hover:border-gray-300'
+                      }`}
+                    >
+                      {t(key)}
+                    </button>
+                  ))}
+                </div>
+              </Field>
             </div>
           </div>
 
           {/* Contact */}
-          <div className="bg-white rounded-lg shadow-sm">
+          <div className="bg-card rounded-lg shadow-sm">
             <div className="p-4 border-b border-gray-200">
-              <h2 className="text-navy">{t('contactInformation')}</h2>
+              <h2 className="text-foreground">{t('contactInformation')}</h2>
             </div>
             <div className="p-4 space-y-4">
               <Field label={t('email')} icon={<Mail className="w-4 h-4" />}>
@@ -244,9 +267,9 @@ export function ProfileSettings({ onBack }: ProfileSettingsProps) {
           </div>
 
           {/* Social Links */}
-          <div className="bg-white rounded-lg shadow-sm">
+          <div className="bg-card rounded-lg shadow-sm">
             <div className="p-4 border-b border-gray-200">
-              <h2 className="text-navy">{t('socialLinks')}</h2>
+              <h2 className="text-foreground">{t('socialLinks')}</h2>
             </div>
             <div className="p-4 space-y-4">
               <Field label={t('website')} icon={<Globe className="w-4 h-4" />}>

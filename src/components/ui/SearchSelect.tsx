@@ -104,13 +104,13 @@ export function SearchSelect<T>({
   return (
     <div className="fixed inset-0 z-50 bg-black/40 flex justify-center" onClick={onClose}>
       <div
-        className="bg-white w-full max-w-md h-full flex flex-col overflow-hidden shadow-2xl"
+        className="bg-card w-full max-w-md h-full flex flex-col overflow-hidden shadow-2xl"
         onClick={(e) => e.stopPropagation()}
         dir={isRTL ? 'rtl' : 'ltr'}
       >
         <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 shrink-0">
-          <h3 className="text-navy font-medium">{title}</h3>
-          <button type="button" onClick={onClose} className="p-1 text-gray-400 hover:text-navy"><X className="w-5 h-5" /></button>
+          <h3 className="text-foreground font-medium">{title}</h3>
+          <button type="button" onClick={onClose} className="p-1 text-gray-400 hover:text-foreground"><X className="w-5 h-5" /></button>
         </div>
         <div className="p-3 border-b border-gray-100 shrink-0">
           <div className="relative">
@@ -120,7 +120,7 @@ export function SearchSelect<T>({
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder={placeholder ?? t('search')}
-              className={`w-full bg-gray-50 border border-gray-200 rounded-lg py-2.5 ${isRTL ? 'pr-9 pl-3' : 'pl-9 pr-3'} text-navy focus:outline-none focus:ring-2 focus:ring-yellow-500`}
+              className={`w-full bg-gray-50 border border-gray-200 rounded-lg py-2.5 ${isRTL ? 'pr-9 pl-3' : 'pl-9 pr-3'} text-foreground focus:outline-none focus:ring-2 focus:ring-yellow-500`}
             />
           </div>
         </div>

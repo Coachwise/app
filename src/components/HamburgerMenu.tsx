@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Menu, X, Bell, Shield, LogOut, Settings, Users, DollarSign, Globe, User, Crown, Coins, ClipboardList, Info, LifeBuoy } from 'lucide-react';
+import { Menu, X, Bell, Shield, LogOut, Settings, Users, DollarSign, Globe, User, Crown, Coins, ClipboardList, Info, LifeBuoy, Sun, Moon, Palette, Activity } from 'lucide-react';
+import { getTheme, setTheme } from '../lib/theme';
 import { APP_VERSION, APP_IS_BETA } from '../config';
 import type { UserRole } from '../App';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -31,6 +32,7 @@ export function HamburgerMenu({
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { t, language, setLanguage, isRTL } = useLanguage();
   const [showLanguageSelector, setShowLanguageSelector] = useState(false);
+  const [theme, setThemePref] = useState(getTheme());
   const [unread, setUnread] = useState(0);
 
   // Unread count for the bell badge. Fetched on mount and refreshed live by the
@@ -85,20 +87,20 @@ export function HamburgerMenu({
       {/* Slide-out Menu — opens from the same edge the trigger sits on, which
           follows the global language direction (right in LTR, left in RTL). */}
       <div
-        className={`fixed top-0 ${isRTL ? 'left-0' : 'right-0'} h-full w-80 bg-white shadow-2xl z-50 transform transition-transform duration-300 ${
+        className={`fixed top-0 ${isRTL ? 'left-0' : 'right-0'} h-full w-80 bg-card shadow-2xl z-50 transform transition-transform duration-300 ${
           isMenuOpen ? 'translate-x-0' : isRTL ? '-translate-x-full' : 'translate-x-full'
         }`}
       >
         <div className="flex flex-col h-full">
           {/* Menu Header */}
-          <div className="bg-navy px-4 py-6">
+          <div className="bg-card border-b border-border px-4 py-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-white text-lg">{t('menu')}</h2>
+              <h2 className="text-foreground text-lg">{t('menu')}</h2>
               <button 
                 onClick={() => setIsMenuOpen(false)}
-                className="p-2 hover:bg-navy-light rounded-lg transition-colors"
+                className="p-2 hover:bg-tint-2 rounded-lg transition-colors"
               >
-                <X className="w-6 h-6 text-white" />
+                <X className="w-6 h-6 text-foreground" />
               </button>
             </div>
             {/* User Info in Menu */}
@@ -107,22 +109,22 @@ export function HamburgerMenu({
                 onNavigate('profile');
                 setIsMenuOpen(false);
               }}
-              className="flex items-center gap-3 w-full hover:bg-navy-light p-2 rounded-lg transition-colors"
+              className="flex items-center gap-3 w-full hover:bg-tint-2 p-2 rounded-lg transition-colors"
             >
               {avatarUrl ? (
                 <img 
                   src={avatarUrl} 
                   alt={displayName}
-                  className="w-12 h-12 rounded-full object-cover border-2 border-white"
+                  className="w-12 h-12 rounded-full object-cover border-2 border-tint-fg/30"
                 />
               ) : (
-                <div className="w-12 h-12 rounded-full bg-white/20 border-2 border-white flex items-center justify-center text-white font-bold">
+                <div className="w-12 h-12 rounded-full bg-tint-soft border-2 border-tint/20 flex items-center justify-center text-tint-ink font-bold">
                   {initials}
                 </div>
               )}
               <div className="text-left">
-                <p className="text-white font-medium">{displayName}</p>
-                <p className="text-gray-300 text-sm">{displayHandle}</p>
+                <p className="text-foreground font-medium">{displayName}</p>
+                <p className="text-muted-foreground text-sm">{displayHandle}</p>
               </div>
             </button>
           </div>
@@ -136,14 +138,14 @@ export function HamburgerMenu({
                 <>
                   <div className="w-full p-4 bg-gradient-to-r from-yellow-500 to-yellow-400 rounded-xl border-2 border-yellow-600 shadow-lg">
                     <div className="flex items-center gap-3">
-                      <div className="bg-navy rounded-full p-2">
-                        <Crown className="w-6 h-6 text-yellow-500" />
+                      <div className="bg-tint rounded-full p-2">
+                        <Crown className="w-6 h-6 text-tint-ink" />
                       </div>
                       <div className="flex-1">
-                        <div className="text-navy font-bold text-lg">{t('proMember')}</div>
-                        <div className="text-navy/70 text-xs">{t('allFeaturesUnlocked')}</div>
+                        <div className="text-foreground font-bold text-lg">{t('proMember')}</div>
+                        <div className="text-foreground/70 text-xs">{t('allFeaturesUnlocked')}</div>
                       </div>
-                      <div className="bg-navy text-yellow-500 px-3 py-1 rounded-full text-xs font-semibold">
+                      <div className="bg-tint text-tint-fg px-3 py-1 rounded-full text-xs font-semibold">
                         {t('activeStatus')}
                       </div>
                     </div>
@@ -158,14 +160,14 @@ export function HamburgerMenu({
                       onNavigate('pro-subscription');
                       setIsMenuOpen(false);
                     }}
-                    className="w-full flex items-center gap-3 p-4 bg-gradient-to-r from-yellow-500 to-yellow-400 text-navy rounded-xl hover:from-yellow-400 hover:to-yellow-300 transition-all shadow-lg border-2 border-yellow-600"
+                    className="w-full flex items-center gap-3 p-4 bg-gradient-to-r from-yellow-500 to-yellow-400 text-foreground rounded-xl hover:from-yellow-400 hover:to-yellow-300 transition-all shadow-lg border-2 border-yellow-600"
                   >
-                    <div className="bg-navy rounded-lg p-1.5">
-                      <Crown className="w-5 h-5 text-yellow-500" />
+                    <div className="bg-tint rounded-lg p-1.5">
+                      <Crown className="w-5 h-5 text-tint-ink" />
                     </div>
                     <div className="flex-1 text-left">
                       <span className="font-semibold block">{t('becomePro')}</span>
-                      <span className="text-xs text-navy/70">{t('unlockAllFeatures')}</span>
+                      <span className="text-xs text-foreground/70">{t('unlockAllFeatures')}</span>
                     </div>
                   </button>
                   <div className="border-t border-gray-200 my-2"></div>
@@ -196,7 +198,7 @@ export function HamburgerMenu({
                       onNavigate('coach-dashboard');
                       setIsMenuOpen(false);
                     }}
-                    className="w-full flex items-center gap-3 p-3 bg-navy text-white rounded-lg hover:bg-navy-light transition-colors"
+                    className="w-full flex items-center gap-3 p-3 bg-tint text-tint-fg rounded-lg hover:bg-tint-2 transition-colors"
                   >
                     <Users className="w-5 h-5" />
                     <span>{t('dashboard')}</span>
@@ -209,7 +211,7 @@ export function HamburgerMenu({
                     className="w-full flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg transition-colors"
                   >
                     <DollarSign className="w-5 h-5 text-gray-600" />
-                    <span className="text-navy">{t('createSubscriptionTier')}</span>
+                    <span className="text-foreground">{t('createSubscriptionTier')}</span>
                   </button>
                   <div className="border-t border-gray-200 my-2"></div>
                 </>
@@ -226,14 +228,14 @@ export function HamburgerMenu({
                     className="w-full flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg transition-colors text-left"
                   >
                     <ClipboardList className="w-5 h-5 text-gray-600" />
-                    <span className="text-navy">{t('myAssessments')}</span>
+                    <span className="text-foreground">{t('myAssessments')}</span>
                   </button>
                   <button
                     onClick={() => {
                       onNavigate('coach-application');
                       setIsMenuOpen(false);
                     }}
-                    className="w-full flex items-center gap-3 p-3 border-2 border-gray-300 text-navy rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-colors"
+                    className="w-full flex items-center gap-3 p-3 border-2 border-gray-300 text-foreground rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-colors"
                   >
                     <Users className="w-5 h-5" />
                     <span>{t('becomeACoach')}</span>
@@ -243,14 +245,28 @@ export function HamburgerMenu({
               )}
 
               {/* General actions for all users */}
+              {/* My Training Analytics — personal workout analytics for BOTH roles;
+                  lives here (not the bottom nav) so a coach's own training stays
+                  separate from their coaching/business dashboard. */}
+              <button
+                onClick={() => {
+                  onNavigate('analytics');
+                  setIsMenuOpen(false);
+                }}
+                className="w-full flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg transition-colors text-left"
+              >
+                <Activity className="w-5 h-5 text-gray-600" />
+                <span className="text-foreground">{t('myTrainingAnalytics')}</span>
+              </button>
+
               <button
                 onClick={openNotifications}
                 className="w-full flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg transition-colors text-left"
               >
                 <Bell className="w-5 h-5 text-gray-600" />
-                <span className="text-navy flex-1 text-start">{t('notifications')}</span>
+                <span className="text-foreground flex-1 text-start">{t('notifications')}</span>
                 {unread > 0 && (
-                  <span className="min-w-[20px] h-5 px-1.5 flex items-center justify-center bg-yellow-500 text-navy text-xs font-bold rounded-full tabular-nums">
+                  <span className="min-w-[20px] h-5 px-1.5 flex items-center justify-center bg-yellow-500 text-foreground text-xs font-bold rounded-full tabular-nums">
                     {unread > 99 ? '99+' : unread}
                   </span>
                 )}
@@ -264,7 +280,7 @@ export function HamburgerMenu({
                 className="w-full flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg transition-colors text-left"
               >
                 <DollarSign className="w-5 h-5 text-gray-600" />
-                <span className="text-navy">{t('wallet')}</span>
+                <span className="text-foreground">{t('wallet')}</span>
               </button>
 
               <button
@@ -275,7 +291,7 @@ export function HamburgerMenu({
                 className="w-full flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg transition-colors text-left"
               >
                 <Shield className="w-5 h-5 text-gray-600" />
-                <span className="text-navy">{t('privacySecurity')}</span>
+                <span className="text-foreground">{t('privacySecurity')}</span>
               </button>
 
               <button
@@ -286,7 +302,7 @@ export function HamburgerMenu({
                 className="w-full flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg transition-colors text-left"
               >
                 <LifeBuoy className="w-5 h-5 text-gray-600" />
-                <span className="text-navy">{t('support')}</span>
+                <span className="text-foreground">{t('support')}</span>
               </button>
 
               {/* Language Selector */}
@@ -295,7 +311,7 @@ export function HamburgerMenu({
                 className="w-full flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg transition-colors text-left"
               >
                 <Globe className="w-5 h-5 text-gray-600" />
-                <span className="text-navy flex-1 text-start">{t('language')}</span>
+                <span className="text-foreground flex-1 text-start">{t('language')}</span>
                 <span className="text-gray-500 text-sm">{language === 'en' ? 'EN' : 'فا'}</span>
               </button>
 
@@ -307,7 +323,7 @@ export function HamburgerMenu({
                       setShowLanguageSelector(false);
                     }}
                     className={`w-full text-left px-3 py-2 rounded transition-colors ${
-                      language === 'en' ? 'bg-yellow-500 text-navy' : 'hover:bg-gray-200 text-navy'
+                      language === 'en' ? 'bg-yellow-500 text-foreground' : 'hover:bg-gray-200 text-foreground'
                     }`}
                   >
                     {t('english')}
@@ -318,7 +334,7 @@ export function HamburgerMenu({
                       setShowLanguageSelector(false);
                     }}
                     className={`w-full text-left px-3 py-2 rounded transition-colors ${
-                      language === 'fa' ? 'bg-yellow-500 text-navy' : 'hover:bg-gray-200 text-navy'
+                      language === 'fa' ? 'bg-yellow-500 text-foreground' : 'hover:bg-gray-200 text-foreground'
                     }`}
                   >
                     {t('persian')}
@@ -326,11 +342,45 @@ export function HamburgerMenu({
                 </div>
               )}
 
+              {/* Appearance — colour mode + accent */}
+              <div className="p-3">
+                <div className="flex items-center gap-3 mb-3">
+                  <Palette className="w-5 h-5 text-gray-600" />
+                  <span className="text-foreground flex-1 text-start">{t('appearance')}</span>
+                </div>
+                <div className="flex gap-2 mb-2">
+                  {([['light', t('themeLight'), Sun], ['dark', t('themeDark'), Moon]] as const).map(([m, label, Ic]) => (
+                    <button
+                      key={m}
+                      onClick={() => setThemePref(setTheme({ mode: m }))}
+                      className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-medium border transition-colors ${
+                        theme.mode === m ? 'bg-tint text-tint-fg border-tint' : 'bg-card text-gray-600 border-gray-300'
+                      }`}
+                    >
+                      <Ic className="w-4 h-4" />{label}
+                    </button>
+                  ))}
+                </div>
+                <div className="flex gap-2">
+                  {([['azure', '#0097e6', 'Azure'], ['pink', '#fda7df', 'Pink']] as const).map(([a, color, label]) => (
+                    <button
+                      key={a}
+                      onClick={() => setThemePref(setTheme({ accent: a }))}
+                      className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-medium border transition-colors ${
+                        theme.accent === a ? 'border-tint bg-tint-soft text-tint-ink' : 'bg-card text-gray-600 border-gray-300'
+                      }`}
+                    >
+                      <span className="w-3.5 h-3.5 rounded-full" style={{ background: color }} />{label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
               <div className="border-t border-gray-200 my-2"></div>
 
               <button
                 onClick={() => { onNavigate('about'); setIsMenuOpen(false); }}
-                className="w-full flex items-center gap-3 p-3 hover:bg-gray-100 rounded-lg transition-colors text-navy text-left"
+                className="w-full flex items-center gap-3 p-3 hover:bg-gray-100 rounded-lg transition-colors text-foreground text-left"
               >
                 <Info className="w-5 h-5" />
                 <span>{t('about')}</span>
@@ -365,27 +415,27 @@ export function HamburgerMenu({
       {/* Beta flag + Bell + Hamburger triggers */}
       <div className="flex items-center gap-1">
         {APP_IS_BETA && (
-          <span className="mr-1 px-1.5 py-0.5 rounded bg-yellow-500 text-navy text-[10px] font-bold tracking-wide leading-none">
+          <span className="mr-1 px-1.5 py-0.5 rounded bg-yellow-500 text-foreground text-[10px] font-bold tracking-wide leading-none">
             {t('beta')}
           </span>
         )}
         <button
           onClick={openNotifications}
           aria-label={t('notifications')}
-          className="relative p-2 hover:bg-navy-light rounded-lg transition-colors"
+          className="relative p-2 hover:bg-tint-2 rounded-lg transition-colors"
         >
-          <Bell className="w-6 h-6 text-white" />
+          <Bell className="w-6 h-6 text-foreground" />
           {unread > 0 && (
-            <span className="absolute top-1 right-1 min-w-[16px] h-4 px-1 flex items-center justify-center bg-yellow-500 text-navy text-[10px] font-bold rounded-full tabular-nums">
+            <span className="absolute top-1 right-1 min-w-[16px] h-4 px-1 flex items-center justify-center bg-yellow-500 text-foreground text-[10px] font-bold rounded-full tabular-nums">
               {unread > 9 ? '9+' : unread}
             </span>
           )}
         </button>
         <button
           onClick={() => setIsMenuOpen(true)}
-          className="p-2 hover:bg-navy-light rounded-lg transition-colors"
+          className="p-2 hover:bg-tint-2 rounded-lg transition-colors"
         >
-          <Menu className="w-6 h-6 text-white" />
+          <Menu className="w-6 h-6 text-foreground" />
         </button>
       </div>
     </>

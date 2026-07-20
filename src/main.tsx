@@ -5,7 +5,11 @@ import { RealtimeProvider } from "./contexts/RealtimeContext.tsx";
 import { ErrorBoundary } from "./components/ErrorBoundary.tsx";
 import { initNative } from "./lib/platform.ts";
 import { installGlobalHandlers } from "./lib/report.ts";
+import { initTheme } from "./lib/theme.ts";
 import "./styles/globals.css";
+
+// Apply the saved colour mode + accent before first paint (no flash of default).
+initTheme();
 
 // Configure the native shell (status bar, splash) when running under Capacitor.
 initNative();

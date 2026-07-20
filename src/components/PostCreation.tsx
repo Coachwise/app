@@ -41,10 +41,10 @@ export function PostCreation({ onCancel, onPost }: PostCreationProps) {
   return (
     <div className="min-h-screen bg-gray-100">
       {/* Header */}
-      <div className="bg-navy px-4 py-4 sticky top-0 z-10">
+      <div className="bg-card border-b border-border px-4 py-4 sticky top-0 z-10">
         <div className="flex items-center justify-between">
           <BackButton onClick={onCancel} aria-label={t('back')} />
-          <h2 className="text-white">{t('createPost')}</h2>
+          <h2 className="text-foreground">{t('createPost')}</h2>
           <Button variant="brand" size="sm" disabled={!content.trim()} onClick={handlePost}>
             {t('post')}
           </Button>
@@ -53,12 +53,12 @@ export function PostCreation({ onCancel, onPost }: PostCreationProps) {
 
       <div className="p-4 space-y-4">
         {/* Post Content */}
-        <div className="bg-white rounded-lg p-4 shadow-md border border-gray-200">
+        <div className="bg-card rounded-lg p-4 shadow-md border border-gray-200">
           <textarea
             value={content}
             onChange={(e) => setContent(e.target.value)}
             placeholder={t('shareProgressPlaceholder')}
-            className="w-full h-32 p-3 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent text-navy"
+            className="w-full h-32 p-3 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent text-foreground"
           />
 
           {/* Media Preview */}
@@ -72,7 +72,7 @@ export function PostCreation({ onCancel, onPost }: PostCreationProps) {
               {mediaType === 'video' && (
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div className="w-12 h-12 bg-white/90 rounded-full flex items-center justify-center">
-                    <Video className="w-6 h-6 text-navy" />
+                    <Video className="w-6 h-6 text-foreground" />
                   </div>
                 </div>
               )}
@@ -90,8 +90,8 @@ export function PostCreation({ onCancel, onPost }: PostCreationProps) {
         </div>
 
         {/* Media & Tags */}
-        <div className="bg-white rounded-lg p-4 shadow-md border border-gray-200">
-          <h3 className="text-navy mb-3">{t('addToYourPost')}</h3>
+        <div className="bg-card rounded-lg p-4 shadow-md border border-gray-200">
+          <h3 className="text-foreground mb-3">{t('addToYourPost')}</h3>
           <div className="space-y-3">
             <button 
               onClick={() => handleMediaSelect('image')}
@@ -105,7 +105,7 @@ export function PostCreation({ onCancel, onPost }: PostCreationProps) {
               }`}
             >
               <Image className="w-5 h-5 text-yellow-600" />
-              <span className="text-navy">{t('addPhoto')}</span>
+              <span className="text-foreground">{t('addPhoto')}</span>
             </button>
             <button 
               onClick={() => handleMediaSelect('video')}
@@ -119,34 +119,34 @@ export function PostCreation({ onCancel, onPost }: PostCreationProps) {
               }`}
             >
               <Video className="w-5 h-5 text-yellow-600" />
-              <span className="text-navy">{t('addVideo')}</span>
+              <span className="text-foreground">{t('addVideo')}</span>
             </button>
             <button className="w-full flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors border-2 border-transparent">
               <TrendingUp className="w-5 h-5 text-yellow-600" />
-              <span className="text-navy">{t('tagAsPR')}</span>
+              <span className="text-foreground">{t('tagAsPR')}</span>
             </button>
             <button className="w-full flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors border-2 border-transparent">
               <Tag className="w-5 h-5 text-yellow-600" />
-              <span className="text-navy">{t('addTags')}</span>
+              <span className="text-foreground">{t('addTags')}</span>
             </button>
           </div>
         </div>
 
         {/* Privacy Settings */}
-        <div className="bg-white rounded-lg p-4 shadow-md border border-gray-200">
-          <h3 className="text-navy mb-3">{t('whoCanSee')}</h3>
+        <div className="bg-card rounded-lg p-4 shadow-md border border-gray-200">
+          <h3 className="text-foreground mb-3">{t('whoCanSee')}</h3>
           <div className="space-y-3">
             <button
               onClick={() => setPrivacy('public')}
               className={`w-full flex items-center gap-3 p-3 rounded-lg transition-colors border-2 ${
                 privacy === 'public' 
                   ? 'border-yellow-500 bg-yellow-50' 
-                  : 'border-gray-200 bg-white hover:border-gray-300'
+                  : 'border-gray-200 bg-card hover:border-gray-300'
               }`}
             >
               <Globe className={`w-5 h-5 ${privacy === 'public' ? 'text-yellow-600' : 'text-gray-600'}`} />
               <div className="text-left">
-                <div className={`${privacy === 'public' ? 'text-navy' : 'text-gray-900'}`}>{t('publicLabel')}</div>
+                <div className={`${privacy === 'public' ? 'text-foreground' : 'text-gray-900'}`}>{t('publicLabel')}</div>
                 <div className="text-gray-600 text-sm">{t('anyoneCanSee')}</div>
               </div>
             </button>
@@ -155,12 +155,12 @@ export function PostCreation({ onCancel, onPost }: PostCreationProps) {
               className={`w-full flex items-center gap-3 p-3 rounded-lg transition-colors border-2 ${
                 privacy === 'followers' 
                   ? 'border-yellow-500 bg-yellow-50' 
-                  : 'border-gray-200 bg-white hover:border-gray-300'
+                  : 'border-gray-200 bg-card hover:border-gray-300'
               }`}
             >
               <Users className={`w-5 h-5 ${privacy === 'followers' ? 'text-yellow-600' : 'text-gray-600'}`} />
               <div className="text-left">
-                <div className={`${privacy === 'followers' ? 'text-navy' : 'text-gray-900'}`}>{t('followersOnly')}</div>
+                <div className={`${privacy === 'followers' ? 'text-foreground' : 'text-gray-900'}`}>{t('followersOnly')}</div>
                 <div className="text-gray-600 text-sm">{t('onlyFollowersSee')}</div>
               </div>
             </button>
@@ -176,7 +176,7 @@ export function PostCreation({ onCancel, onPost }: PostCreationProps) {
                 className="w-5 h-5 text-yellow-600 rounded border-gray-300 focus:ring-yellow-500"
               />
               <div>
-                <div className="text-navy">{t('addContentWarning')}</div>
+                <div className="text-foreground">{t('addContentWarning')}</div>
                 <div className="text-gray-600 text-sm">{t('forSensitiveContent')}</div>
               </div>
             </label>

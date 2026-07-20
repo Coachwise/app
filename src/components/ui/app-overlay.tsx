@@ -58,7 +58,7 @@ export function AppOverlay({
 
   return createPortal(
     <div
-      className={cn('fixed inset-0 z-[60] flex flex-col bg-navy/95 backdrop-blur-sm', backdropClassName)}
+      className={cn('fixed inset-0 z-[60] flex flex-col bg-black/90 backdrop-blur-sm', backdropClassName)}
       onClick={dismissible && onClose ? onClose : undefined}
     >
       <div
@@ -69,7 +69,7 @@ export function AppOverlay({
           <button
             onClick={onClose}
             aria-label="Close"
-            className="absolute top-4 right-4 z-10 p-2 rounded-full text-white/80 hover:text-white hover:bg-white/10 transition-colors"
+            className="absolute top-4 right-4 z-10 p-2 rounded-full text-muted-foreground hover:text-white hover:bg-white/10 transition-colors"
           >
             <X className="size-6" />
           </button>

@@ -9,6 +9,8 @@ import * as MediaAPI from '../api/media';
 import * as AuthAPI from '../api/auth';
 import { errorText } from '../api/errors';
 import { prepareImage, UnsupportedImageError, type PreparedImage } from '../lib/image';
+import { setTheme, accentForGender } from '../lib/theme';
+import type { Gender } from '../api/types';
 import { AvatarCropper } from './AvatarCropper';
 
 interface OnboardingProps {
@@ -35,6 +37,7 @@ export function Onboarding({ onDone }: OnboardingProps) {
   const [firstName, setFirstName] = useState(user?.first_name ?? '');
   const [lastName, setLastName] = useState(user?.last_name ?? '');
   const [username, setUsername] = useState(user?.username ?? '');
+  const [gender, setGender] = useState<Gender>(user?.gender ?? 'UNSPECIFIED');
   const [avatarId, setAvatarId] = useState<string | null>(user?.avatar_id ?? null);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(user?.avatar?.url ?? null);
   const [uploading, setUploading] = useState(false);
@@ -67,7 +70,7 @@ export function Onboarding({ onDone }: OnboardingProps) {
 
   const iconSide = isRTL ? 'right-3' : 'left-3';
   const inputPad = isRTL ? 'pr-10 pl-4' : 'pl-10 pr-4';
-  const inputCls = `w-full bg-gray-50 border border-gray-200 rounded-lg py-3 ${inputPad} text-navy focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent`;
+  const inputCls = `w-full bg-gray-50 border border-gray-200 rounded-lg py-3 ${inputPad} text-foreground focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent`;
 
   // Picking a photo opens the cropper; the upload happens once it's framed.
   const handleAvatar = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -85,6 +88,13 @@ export function Onboarding({ onDone }: OnboardingProps) {
   const closeCropper = () => {
     pending?.release();
     setPending(null);
+  };
+
+  // Picking gender previews the matching brand theme instantly (azure for men,
+  // pink for women); it's saved with the profile and changeable later in Appearance.
+  const chooseGender = (g: Gender) => {
+    setGender(g);
+    setTheme({ accent: accentForGender(g) });
   };
 
   const uploadAvatar = async (avatar: File) => {
@@ -119,6 +129,7 @@ export function Onboarding({ onDone }: OnboardingProps) {
         last_name: lastName.trim(),
         username: username.trim().replace(/^@/, ''),
         avatar_id: avatarId || undefined,
+        gender,
       });
       await refreshUser();
       onDone();
@@ -130,18 +141,18 @@ export function Onboarding({ onDone }: OnboardingProps) {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-navy to-navy-light flex items-center justify-center p-4">
+    <div className="min-h-screen bg-tint flex items-center justify-center p-4">
       {pending && (
         <AvatarCropper image={pending} busy={uploading} onCancel={closeCropper} onDone={uploadAvatar} />
       )}
       <div className="w-full max-w-md">
         <div className="text-center mb-6">
-          <Brand name={t('appName')} tile="yellow" size="sm" className="text-white mb-3" />
-          <h1 className="text-white text-2xl mb-1">{t('welcomeToCoachwise')}</h1>
-          <p className="text-white/80 text-sm">{t('completeProfileHint')}</p>
+          <Brand name={t('appName')} tile="yellow" size="sm" className="text-tint-fg mb-3" />
+          <h1 className="text-foreground text-2xl mb-1">{t('welcomeToCoachwise')}</h1>
+          <p className="text-muted-foreground text-sm">{t('completeProfileHint')}</p>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-2xl p-6">
+        <div className="bg-card rounded-2xl shadow-2xl p-6">
           <form onSubmit={handleSubmit} className="space-y-4">
             {error && <div className="bg-red-50 text-red-700 border border-red-200 rounded-lg p-3 text-sm">{error}</div>}
 
@@ -166,20 +177,42 @@ export function Onboarding({ onDone }: OnboardingProps) {
 
             <div className="flex gap-3">
               <div className="flex-1">
-                <label className="block text-navy text-sm mb-2">{t('firstName')}</label>
+                <label className="block text-foreground text-sm mb-2">{t('firstName')}</label>
                 <div className="relative">
                   <UserIcon className={`absolute top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 ${iconSide}`} />
                   <input value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder={t('firstNamePlaceholder')} className={inputCls} required autoFocus />
                 </div>
               </div>
               <div className="flex-1">
-                <label className="block text-navy text-sm mb-2">{t('lastName')}</label>
-                <input value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder={t('lastNamePlaceholder')} className="w-full bg-gray-50 border border-gray-200 rounded-lg py-3 px-4 text-navy focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent" required />
+                <label className="block text-foreground text-sm mb-2">{t('lastName')}</label>
+                <input value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder={t('lastNamePlaceholder')} className="w-full bg-gray-50 border border-gray-200 rounded-lg py-3 px-4 text-foreground focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent" required />
               </div>
             </div>
 
             <div>
-              <label className="block text-navy text-sm mb-2">{t('username')}</label>
+              <label className="block text-foreground text-sm mb-2">{t('gender')}</label>
+              <div className="grid grid-cols-2 gap-3">
+                {([['MALE', 'genderMale'], ['FEMALE', 'genderFemale']] as const).map(([g, key]) => (
+                  <button
+                    key={g}
+                    type="button"
+                    onClick={() => chooseGender(g)}
+                    aria-pressed={gender === g}
+                    className={`py-3 rounded-lg border text-sm font-medium transition-colors ${
+                      gender === g
+                        ? 'bg-tint text-tint-fg border-tint'
+                        : 'bg-gray-50 text-foreground border-gray-200 hover:border-gray-300'
+                    }`}
+                  >
+                    {t(key)}
+                  </button>
+                ))}
+              </div>
+              <p className="text-gray-400 text-xs mt-1.5">{t('genderHint')}</p>
+            </div>
+
+            <div>
+              <label className="block text-foreground text-sm mb-2">{t('username')}</label>
               <div className="relative">
                 <AtSign className={`absolute top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 ${iconSide}`} />
                 <input

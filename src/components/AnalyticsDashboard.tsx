@@ -121,12 +121,12 @@ export function AnalyticsDashboard({ token, selfId, athleteId, clientName, onBac
 
   return (
     <div className="min-h-screen bg-gray-50 pb-24">
-      <div className="bg-navy px-4 py-4 sticky top-0 z-10">
+      <div className="bg-card border-b border-border px-4 py-4 sticky top-0 z-10">
         <div className="flex items-center gap-3">
           <BackButton onClick={onBack} aria-label={t('back')} />
           <div className="flex items-center gap-2">
-            <Activity className="w-5 h-5 text-yellow-500" />
-            <h1 className="text-white text-xl">{clientName ? t('clientAnalytics', { name: clientName }) : t('analytics')}</h1>
+            <Activity className="w-5 h-5 text-tint-ink" />
+            <h1 className="text-foreground text-xl">{clientName ? t('clientAnalytics', { name: clientName }) : t('analytics')}</h1>
           </div>
         </div>
       </div>
@@ -146,8 +146,8 @@ export function AnalyticsDashboard({ token, selfId, athleteId, clientName, onBac
           </div>
 
           {/* Volume trend */}
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
-            <h3 className="text-navy font-medium mb-3">{t('volumeTrend')}</h3>
+          <div className="bg-card rounded-2xl border border-gray-100 shadow-sm p-4">
+            <h3 className="text-foreground font-medium mb-3">{t('volumeTrend')}</h3>
             {trend.length > 1 ? (
               <div className="h-48 -mx-2">
                 <ResponsiveContainer width="100%" height="100%">
@@ -172,8 +172,8 @@ export function AnalyticsDashboard({ token, selfId, athleteId, clientName, onBac
           </div>
 
           {/* Workout-days heatmap */}
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
-            <h3 className="text-navy font-medium mb-3">{t('workoutDays')}</h3>
+          <div className="bg-card rounded-2xl border border-gray-100 shadow-sm p-4">
+            <h3 className="text-foreground font-medium mb-3">{t('workoutDays')}</h3>
             <div className="flex gap-1 overflow-x-auto pb-1">
               {heatmap.weeks.map((week, wi) => (
                 <div key={wi} className="flex flex-col gap-1">
@@ -198,10 +198,10 @@ export function AnalyticsDashboard({ token, selfId, athleteId, clientName, onBac
           </div>
 
           {/* PRs + assessments */}
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
+          <div className="bg-card rounded-2xl border border-gray-100 shadow-sm p-4">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="text-navy font-medium flex items-center gap-2">
-                <Trophy className="w-4 h-4 text-yellow-500" />
+              <h3 className="text-foreground font-medium flex items-center gap-2">
+                <Trophy className="w-4 h-4 text-tint-ink" />
                 {t('personalRecords')}
               </h3>
               {onViewAssessments && (
@@ -217,8 +217,8 @@ export function AnalyticsDashboard({ token, selfId, athleteId, clientName, onBac
               <div className="space-y-2">
                 {records.slice(0, 6).map((r) => (
                   <div key={r.exercise_id} className="flex items-center justify-between text-sm">
-                    <span className="text-navy truncate pr-2">{r.exercise_name}</span>
-                    <span className="font-semibold text-navy tabular-nums whitespace-nowrap">{prValue(r)}</span>
+                    <span className="text-foreground truncate pr-2">{r.exercise_name}</span>
+                    <span className="font-semibold text-foreground tabular-nums whitespace-nowrap">{prValue(r)}</span>
                   </div>
                 ))}
               </div>
@@ -232,12 +232,12 @@ export function AnalyticsDashboard({ token, selfId, athleteId, clientName, onBac
 
 function StatTile({ icon, label, value }: { icon: React.ReactNode; label: string; value: string | number }) {
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-3">
+    <div className="bg-card rounded-2xl border border-gray-100 shadow-sm p-3">
       <div className="flex items-center gap-1.5 text-gray-400 text-xs mb-1">
         {icon}
         <span>{label}</span>
       </div>
-      <div className="text-navy text-xl font-bold tabular-nums">{value}</div>
+      <div className="text-foreground text-xl font-bold tabular-nums">{value}</div>
     </div>
   );
 }

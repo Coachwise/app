@@ -47,7 +47,7 @@ export class ErrorBoundary extends Component<Props, State> {
           gap: "1rem",
           padding: "2rem",
           textAlign: "center",
-          background: "#0E0E55",
+          background: "#0097e6",
           color: "#EEF2F7",
           fontFamily: "system-ui, sans-serif",
         }}
@@ -64,7 +64,7 @@ export class ErrorBoundary extends Component<Props, State> {
             borderRadius: "0.75rem",
             border: "none",
             background: "#eab308",
-            color: "#0E0E55",
+            color: "#0097e6",
             fontWeight: 600,
             cursor: "pointer",
           }}

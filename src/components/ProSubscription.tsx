@@ -40,11 +40,11 @@ export function ProSubscription({ onBack, entBalance, onNavigate }: ProSubscript
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="bg-navy px-4 py-4 sticky top-0 z-10">
+      <div className="bg-card border-b border-border px-4 py-4 sticky top-0 z-10">
         <div className="flex items-center gap-3">
           <BackButton onClick={onBack} aria-label={t('back')} />
-          <h1 className="text-white text-xl flex items-center gap-2">
-            <Crown className="w-6 h-6 text-yellow-500" />
+          <h1 className="text-foreground text-xl flex items-center gap-2">
+            <Crown className="w-6 h-6 text-tint-ink" />
             {t('becomePro')}
           </h1>
         </div>
@@ -52,34 +52,34 @@ export function ProSubscription({ onBack, entBalance, onNavigate }: ProSubscript
 
       <div className="p-4 pb-28">
         {/* Hero Section */}
-        <div className="bg-gradient-to-br from-navy to-navy-light rounded-2xl p-6 mb-6 text-white">
+        <div className="bg-tint rounded-2xl p-6 mb-6 text-tint-fg">
           <div className="flex items-center justify-center mb-4">
             <div className="bg-yellow-500 rounded-full p-4">
-              <Crown className="w-12 h-12 text-navy" />
+              <Crown className="w-12 h-12 text-foreground" />
             </div>
           </div>
           {isPro ? (
             <>
               <div className="flex items-center justify-center gap-2 mb-2">
                 <h2 className="text-center text-2xl">{t('proActiveTitle')}</h2>
-                <span className="bg-yellow-500 text-navy text-xs font-medium px-2 py-0.5 rounded-full">{t('activeStatus')}</span>
+                <span className="bg-yellow-500 text-foreground text-xs font-medium px-2 py-0.5 rounded-full">{t('activeStatus')}</span>
               </div>
-              <p className="text-center text-gray-300">
+              <p className="text-center text-tint-fg/70">
                 {proUntil ? t('proActiveUntil', { date: proUntil }) : t('allFeaturesUnlocked')}
               </p>
             </>
           ) : (
             <>
               <h2 className="text-center text-2xl mb-2">{t('unlockPotential')}</h2>
-              <p className="text-center text-gray-300">{t('getUnlimitedAccess')}</p>
+              <p className="text-center text-tint-fg/70">{t('getUnlimitedAccess')}</p>
             </>
           )}
         </div>
 
         {/* Pro Features */}
-        <div className="bg-white rounded-xl p-5 mb-6 shadow-sm">
-          <h3 className="text-navy mb-4 flex items-center gap-2">
-            <Zap className="w-5 h-5 text-yellow-500" />
+        <div className="bg-card rounded-xl p-5 mb-6 shadow-sm">
+          <h3 className="text-foreground mb-4 flex items-center gap-2">
+            <Zap className="w-5 h-5 text-tint-ink" />
             {t('proFeaturesTitle')}
           </h3>
           <div className="space-y-3">
@@ -87,7 +87,7 @@ export function ProSubscription({ onBack, entBalance, onNavigate }: ProSubscript
               <div key={index} className="flex items-start gap-3">
                 <div className="flex-shrink-0 mt-0.5">
                   <div className="bg-yellow-500 rounded-full p-0.5">
-                    <Check className="w-4 h-4 text-navy" />
+                    <Check className="w-4 h-4 text-foreground" />
                   </div>
                 </div>
                 <span className="text-gray-700">{feature}</span>
@@ -100,26 +100,26 @@ export function ProSubscription({ onBack, entBalance, onNavigate }: ProSubscript
         {FEATURES.spark && (<>
         <div className="bg-gradient-to-r from-yellow-500 to-yellow-400 rounded-xl p-5 mb-6 shadow-lg border-2 border-yellow-600">
           <div className="flex items-center gap-3 mb-4">
-            <div className="bg-navy rounded-full p-2">
-              <Coins className="w-6 h-6 text-yellow-500" />
+            <div className="bg-tint rounded-full p-2">
+              <Coins className="w-6 h-6 text-tint-ink" />
             </div>
             <div className="flex-1">
-              <h3 className="text-navy font-bold">{t('payWithTokens')}</h3>
-              <p className="text-navy/70 text-sm">{t('upgradeWithTokens')}</p>
+              <h3 className="text-foreground font-bold">{t('payWithTokens')}</h3>
+              <p className="text-foreground/70 text-sm">{t('upgradeWithTokens')}</p>
             </div>
           </div>
 
-          <div className="bg-navy rounded-lg p-4 mb-3">
+          <div className="bg-tint rounded-lg p-4 mb-3">
             <div className="flex items-center justify-between">
               <div>
-                <div className="text-white text-sm mb-1">{t('yourSparkBalance')}</div>
-                <div className="text-yellow-500 text-2xl font-bold">
+                <div className="text-tint-fg text-sm mb-1">{t('yourSparkBalance')}</div>
+                <div className="text-tint-ink text-2xl font-bold">
                   {entBalance !== undefined ? entBalance.toFixed(1) : '7.0'} SPARK
                 </div>
               </div>
               <div className="text-right">
-                <div className="text-white text-sm mb-1">{t('required')}</div>
-                <div className="text-yellow-400 text-2xl font-bold">10 SPARK</div>
+                <div className="text-tint-fg text-sm mb-1">{t('required')}</div>
+                <div className="text-tint-ink text-2xl font-bold">10 SPARK</div>
               </div>
             </div>
           </div>
@@ -127,7 +127,7 @@ export function ProSubscription({ onBack, entBalance, onNavigate }: ProSubscript
           {(entBalance !== undefined ? entBalance : 7.0) >= 10 ? (
             <button
               onClick={() => handleSelectPlan()}
-              className="w-full bg-navy text-yellow-500 py-3 rounded-lg hover:bg-navy-light transition-colors font-semibold"
+              className="w-full bg-tint text-tint-fg py-3 rounded-lg hover:bg-tint-2 transition-colors font-semibold"
             >
               {t('upgradeWithTokens')} ✨
             </button>
@@ -138,7 +138,7 @@ export function ProSubscription({ onBack, entBalance, onNavigate }: ProSubscript
               </div>
               <button
                 onClick={() => onNavigate?.('claim-ent')}
-                className="w-full bg-navy text-white py-3 rounded-lg hover:bg-navy-light transition-colors"
+                className="w-full bg-tint text-tint-fg py-3 rounded-lg hover:bg-tint-2 transition-colors"
               >
                 {t('earnTokens')}
               </button>

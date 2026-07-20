@@ -32,91 +32,152 @@
 
 :root {
   --font-size: 16px;
-  /* Brand Colors - Navy & Yellow Only. Change these to re-theme the whole app. */
-  --brand-yellow: #eab308;
-  --brand-yellow-light: #facc15;
-  --brand-yellow-dark: #ca8a04;
-  --brand-navy: #0E0E55;
-  --brand-navy-light: #1A1A6E;
-  --brand-ice: #EEF2F7;
-  --brand-gray-medium: #6B7280;
-  --brand-gray-light: #9CA3AF;
-  
-  /* App Background - Clean Gray */
-  --background: #F5F5F5;
-  --foreground: #1F1F1F;
+
+  /* Accent is the swappable BRAND: data-accent = azure (default) | pink, each with
+     a light + dark value (data-theme). --tint* are the brand tokens the whole app
+     resolves to (see docs/design-system.md). Base = Azure light.
+       --tint     brand fill              --tint-fg   ink ON a brand fill
+       --tint-ink brand as text on light  --tint-soft quiet accent chip
+       --tint-2   hover / pressed */
+  --tint: #0097e6;
+  --tint-2: #0086cc;
+  --tint-fg: #ffffff;
+  --tint-soft: #d9edfa;
+  --tint-ink: #0378b5;
+
+  /* Neutral scale (cool blue-grey) as runtime vars so gray-* / borders / muted
+     text flip in dark mode without touching components. */
+  --c-white: #ffffff;
+  --c-gray-50: #f4f6f9;
+  --c-gray-100: #e9edf2;
+  --c-gray-200: #d3dbe4;
+  --c-gray-300: #c0cad6;
+  --c-gray-400: #9aa8b6;
+  --c-gray-500: #5a6b7a;
+  --c-gray-600: #45535f;
+  --c-gray-700: #333f4a;
+  --c-gray-800: #222c36;
+  --c-gray-900: #16212c;
+
+  /* Legacy brand names → accent tint. Navy is retired: any stray navy resolves
+     to the neutral ink so nothing renders blue. */
+  --brand-yellow: var(--tint);
+  --brand-yellow-light: var(--tint-2);
+  --brand-yellow-dark: var(--tint-ink);
+  --brand-navy: #16212c;
+  --brand-navy-light: #333f4a;
+  --brand-ice: #e4e9ef;
+  --brand-gray-medium: #5a6b7a;
+  --brand-gray-light: #9aa8b6;
+
+  /* Cool page ground — not white, not grey. */
+  --background: #e9edf2;
+  /* Neutral ink (never navy). */
+  --foreground: #16212c;
   --card: #ffffff;
-  --card-foreground: #0E0E55;
+  --card-foreground: #16212c;
   --popover: #ffffff;
-  --popover-foreground: #1F1F1F;
-  --primary: #eab308;
-  --primary-foreground: #1F1F1F;
-  --secondary: #F5F5F5;
-  --secondary-foreground: #1F1F1F;
-  --muted: #F5F5F5;
-  --muted-foreground: #6B7280;
-  --accent: #eab308;
-  --accent-foreground: #1F1F1F;
-  --destructive: #ef4444;
+  --popover-foreground: #16212c;
+  --primary: var(--tint);
+  --primary-foreground: var(--tint-fg);
+  /* Mist secondary (#ced6e0): segmented tracks, secondary buttons, grouped sections. */
+  --secondary: #ced6e0;
+  --secondary-foreground: #3c4a58;
+  --muted: #e4e9ef;
+  --muted-foreground: #5a6b7a;
+  --accent: #e4e9ef;
+  --accent-foreground: #16212c;
+  --destructive: #e5484d;
   --destructive-foreground: #ffffff;
-  --border: #E5E5E5;
+  --border: #d3dbe4;
   --input: transparent;
   --input-background: #ffffff;
-  --switch-background: #D4D4D4;
+  --switch-background: #c0cad6;
   --font-weight-medium: 500;
   --font-weight-normal: 400;
-  --ring: #eab308;
-  --chart-1: #eab308;
-  --chart-2: #6B7280;
-  --chart-3: #9CA3AF;
-  --chart-4: #D4D4D4;
-  --chart-5: #f59e0b;
+  --ring: var(--tint);
+  --chart-1: var(--tint);
+  --chart-2: #5a6b7a;
+  --chart-3: #9aa8b6;
+  --chart-4: #c0cad6;
+  --chart-5: #dd8a1a;
   --radius: 0.5rem;
   --sidebar: #ffffff;
-  --sidebar-foreground: #1F1F1F;
-  --sidebar-primary: #eab308;
-  --sidebar-primary-foreground: #1F1F1F;
-  --sidebar-accent: #F5F5F5;
-  --sidebar-accent-foreground: #0E0E55;
-  --sidebar-border: #E5E5E5;
-  --sidebar-ring: #eab308;
+  --sidebar-foreground: #16212c;
+  --sidebar-primary: var(--tint);
+  --sidebar-primary-foreground: var(--tint-fg);
+  --sidebar-accent: #e4e9ef;
+  --sidebar-accent-foreground: #16212c;
+  --sidebar-border: #d3dbe4;
+  --sidebar-ring: var(--tint);
 }
 
+/* ---- Brand accent × theme. Root carries data-accent (azure|pink) and
+   data-theme (light|dark); default is azure + light. Neutrals live in :root
+   (light) and .dark (dark); these blocks only swap the five brand tokens. ---- */
+:root[data-accent="pink"] {
+  --tint: #fda7df; --tint-2: #f78ed3; --tint-fg: #4a1038; --tint-soft: #fde5f6; --tint-ink: #c53d97;
+}
+:root[data-theme="dark"] {
+  --tint: #26a9f0; --tint-2: #1f97d8; --tint-fg: #04202f; --tint-soft: #0f2c40; --tint-ink: #63c2f7;
+}
+:root[data-theme="dark"][data-accent="pink"] {
+  --tint: #fda7df; --tint-2: #f592d5; --tint-fg: #3a0b2b; --tint-soft: #3a2030; --tint-ink: #ffbfe9;
+}
+
+/* Dark neutrals (blue-charcoal) + gray scale — the single source of dark surface
+   colours; brand tokens come from [data-theme="dark"] above. Applied together with
+   data-theme="dark" (theme.ts sets both), and also drives the `dark:` variant. */
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.145 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.145 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.985 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.396 0.141 25.723);
-  --destructive-foreground: oklch(0.637 0.237 25.331);
-  --border: oklch(0.269 0 0);
-  --input: oklch(0.269 0 0);
-  --ring: oklch(0.439 0 0);
+  --background: #0c151e;
+  --foreground: #e6ebf1;
+  --card: #152030;
+  --card-foreground: #e6ebf1;
+  --popover: #152030;
+  --popover-foreground: #e6ebf1;
+  --primary: var(--tint);
+  --primary-foreground: var(--tint-fg);
+  --secondary: #243444;
+  --secondary-foreground: #c3cedb;
+  --muted: #1c2a38;
+  --muted-foreground: #8ea0b0;
+  --accent: #1c2a38;
+  --accent-foreground: #e6ebf1;
+  --destructive: #ff6369;
+  --destructive-foreground: #ffffff;
+  --border: #28394a;
+  --input: #28394a;
+  --input-background: #152030;
+  --switch-background: #2a3a4a;
+  --ring: var(--tint);
+  --chart-1: var(--tint);
+  --chart-2: #8ea0b0;
+  --chart-3: #6b7d8d;
+  --chart-4: #37485a;
+  --chart-5: #f0a53b;
   --font-weight-medium: 500;
   --font-weight-normal: 400;
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(0.269 0 0);
-  --sidebar-ring: oklch(0.439 0 0);
+
+  --c-white: #152030;
+  --c-gray-50: #16212e;
+  --c-gray-100: #0c151e;
+  --c-gray-200: #28394a;
+  --c-gray-300: #37485a;
+  --c-gray-400: #6b7d8d;
+  --c-gray-500: #8ea0b0;
+  --c-gray-600: #a7b6c4;
+  --c-gray-700: #c3cfda;
+  --c-gray-800: #dae2ea;
+  --c-gray-900: #e6ebf1;
+
+  --sidebar: #152030;
+  --sidebar-foreground: #e6ebf1;
+  --sidebar-primary: var(--tint);
+  --sidebar-primary-foreground: var(--tint-fg);
+  --sidebar-accent: #1c2a38;
+  --sidebar-accent-foreground: #e6ebf1;
+  --sidebar-border: #28394a;
+  --sidebar-ring: var(--tint);
 }
 
 @theme inline {
@@ -132,9 +193,38 @@
   --color-navy: var(--brand-navy);
   --color-navy-light: var(--brand-navy-light);
   --color-ice: var(--brand-ice);
+  /* Entire yellow scale retargeted to the accent so any legacy yellow utility is
+     brand-driven and no literal yellow leaks. Soft ends → tint-soft, deep → ink. */
+  --color-yellow-50: var(--tint-soft);
+  --color-yellow-100: var(--tint-soft);
+  --color-yellow-200: var(--tint-soft);
+  --color-yellow-300: var(--tint-2);
   --color-yellow-400: var(--brand-yellow-light);
   --color-yellow-500: var(--brand-yellow);
   --color-yellow-600: var(--brand-yellow-dark);
+  --color-yellow-700: var(--tint-ink);
+  --color-yellow-800: var(--tint-ink);
+  --color-yellow-900: var(--tint-ink);
+  /* Accent tint tokens for new/flat components: bg-tint, text-tint-fg,
+     bg-tint-soft, text-tint-ink. Swap with the app theme (aqua/bubblegum). */
+  --color-tint: var(--tint);
+  --color-tint-2: var(--tint-2);
+  --color-tint-fg: var(--tint-fg);
+  --color-tint-soft: var(--tint-soft);
+  --color-tint-ink: var(--tint-ink);
+  /* Neutral scale routed through runtime vars so it flips in dark mode. Note:
+     text-white deliberately stays pure white (on navy/accent) — only bg-white
+     (cards, migrated to bg-card via codemod) uses --c-white. */
+  --color-gray-50: var(--c-gray-50);
+  --color-gray-100: var(--c-gray-100);
+  --color-gray-200: var(--c-gray-200);
+  --color-gray-300: var(--c-gray-300);
+  --color-gray-400: var(--c-gray-400);
+  --color-gray-500: var(--c-gray-500);
+  --color-gray-600: var(--c-gray-600);
+  --color-gray-700: var(--c-gray-700);
+  --color-gray-800: var(--c-gray-800);
+  --color-gray-900: var(--c-gray-900);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);

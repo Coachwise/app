@@ -494,39 +494,39 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, onFindCoach, onView
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
-      <div className="bg-navy px-4 pt-6 pb-8 rounded-b-[2rem] shadow-xl">
+      <div className="bg-tint px-4 pt-6 pb-8 rounded-b-[2rem] shadow-xl">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h1 className="text-white text-2xl font-bold">{t('workouts')}</h1>
-            <p className="text-gray-300 text-sm">{t('swipeToBrowse')}</p>
+            <h1 className="text-foreground text-2xl font-bold">{t('workouts')}</h1>
+            <p className="text-tint-fg/70 text-sm">{t('swipeToBrowse')}</p>
           </div>
           <HamburgerMenu userRole={userRole} onNavigate={onNavigate} isPro={isPro} />
         </div>
 
-        <div className="flex items-center justify-between text-xs text-gray-300 mb-2">
+        <div className="flex items-center justify-between text-xs text-tint-fg/70 mb-2">
           <button
             onClick={() => shiftWindow(-3)}
-            className="p-2 rounded-lg bg-navy-light hover:bg-navy-light/80 text-white"
+            className="p-2 rounded-lg bg-tint-2 hover:bg-tint-2/80 text-tint-fg"
             aria-label={t('previousDays')}
           >
             {isRTL ? <ArrowRight className="w-4 h-4" /> : <ArrowLeft className="w-4 h-4" />}
           </button>
           <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-white">{rangeLabel}</span>
+            <span className="text-sm font-medium text-tint-fg">{rangeLabel}</span>
             <button
               onClick={() => {
                 const today = normalizeDate(new Date());
                 setCenterDate(today);
                 setSelectedDate(today);
               }}
-              className="px-3 py-1 rounded-lg bg-yellow-500 hover:bg-yellow-400 text-navy text-xs font-bold transition-colors"
+              className="px-3 py-1 rounded-lg bg-yellow-500 hover:bg-yellow-400 text-foreground text-xs font-bold transition-colors"
             >
               {t('today')}
             </button>
           </div>
           <button
             onClick={() => shiftWindow(3)}
-            className="p-2 rounded-lg bg-navy-light hover:bg-navy-light/80 text-white"
+            className="p-2 rounded-lg bg-tint-2 hover:bg-tint-2/80 text-tint-fg"
             aria-label={t('nextDays')}
           >
             {isRTL ? <ArrowLeft className="w-4 h-4" /> : <ArrowRight className="w-4 h-4" />}
@@ -534,7 +534,7 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, onFindCoach, onView
         </div>
 
         <div
-          className="flex items-center gap-2 overflow-x-auto p-2 bg-navy-light rounded-2xl select-none"
+          className="flex items-center gap-2 overflow-x-auto p-2 bg-tint-2 rounded-2xl select-none"
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
           onMouseDown={handleMouseDown}
@@ -557,13 +557,13 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, onFindCoach, onView
             // - Otherwise default dark background
             let buttonClasses = 'flex flex-col items-center justify-center w-12 h-16 rounded-xl transition-all ';
             if (isToday) {
-              buttonClasses += 'bg-yellow-500 text-navy shadow-lg font-bold';
+              buttonClasses += 'bg-yellow-500 text-foreground shadow-lg font-bold';
             } else if (selected) {
-              buttonClasses += 'text-white bg-[#141457] border-2 border-yellow-500 scale-105';
+              buttonClasses += 'text-tint-fg bg-tint border-2 border-yellow-500 scale-105';
             } else if (isScheduling && !isPast) {
-              buttonClasses += 'text-gray-300 hover:text-white bg-[#141457] border-2 border-orange-500';
+              buttonClasses += 'text-tint-fg/70 hover:text-tint-fg bg-tint border-2 border-orange-500';
             } else {
-              buttonClasses += 'text-gray-300 hover:text-white bg-[#141457]';
+              buttonClasses += 'text-tint-fg/70 hover:text-tint-fg bg-tint';
             }
 
             return (
@@ -579,7 +579,7 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, onFindCoach, onView
                   {date.toLocaleDateString(dateLocale, { day: 'numeric' })}
                 </span>
                 {hasData ? (
-                  <div className={`w-1.5 h-1.5 rounded-full mt-1 ${isToday ? 'bg-navy' : isPast ? 'bg-green-500' : 'bg-yellow-500'}`} />
+                  <div className={`w-1.5 h-1.5 rounded-full mt-1 ${isToday ? 'bg-tint' : isPast ? 'bg-green-500' : 'bg-yellow-500'}`} />
                 ) : null}
               </button>
             );
@@ -589,14 +589,14 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, onFindCoach, onView
 
       <div className="p-4 -mt-4 space-y-6">
         {activeSession && (
-          <div className="bg-navy text-white rounded-2xl p-4 flex items-center justify-between gap-3 shadow-sm">
+          <div className="bg-tint text-tint-fg rounded-2xl p-4 flex items-center justify-between gap-3 shadow-sm">
             <div className="flex items-center gap-3 min-w-0">
-              <div className="w-10 h-10 rounded-full bg-yellow-500 text-navy flex items-center justify-center flex-shrink-0">
+              <div className="w-10 h-10 rounded-full bg-yellow-500 text-foreground flex items-center justify-center flex-shrink-0">
                 <Play className="w-5 h-5 ml-0.5" />
               </div>
               <div className="min-w-0">
                 <p className="font-semibold truncate">{t('sessionInProgress')}</p>
-                <p className="text-xs text-white/70 truncate">{t('resumeOrDiscardSession')}</p>
+                <p className="text-xs text-muted-foreground truncate">{t('resumeOrDiscardSession')}</p>
               </div>
             </div>
             <div className="flex items-center gap-2 flex-shrink-0">
@@ -606,7 +606,7 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, onFindCoach, onView
               <button
                 onClick={onDiscardSession}
                 aria-label={t('discardSession')}
-                className="p-2 bg-white/10 rounded-lg hover:bg-white/20 transition-colors"
+                className="p-2 bg-black/10 rounded-lg hover:bg-black/20 transition-colors"
               >
                 <Trash2 className="w-4 h-4" />
               </button>
@@ -620,7 +620,7 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, onFindCoach, onView
         )}
 
         {scheduleLoading && (
-          <div className="bg-white border border-gray-200 rounded-lg p-3 text-sm text-gray-600">
+          <div className="bg-card border border-gray-200 rounded-lg p-3 text-sm text-gray-600">
             {t('refreshingSchedule')}
           </div>
         )}
@@ -651,14 +651,14 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, onFindCoach, onView
                const isToday = dateKey(selectedDate) === dateKey(new Date());
 
                return (
-                <div key={workout.instanceId} className="bg-white rounded-2xl p-1 shadow-lg border border-gray-100 relative overflow-hidden group">
+                <div key={workout.instanceId} className="bg-card rounded-2xl p-1 shadow-lg border border-gray-100 relative overflow-hidden group">
                   <div className={`absolute top-0 left-0 w-1.5 h-full ${isCompleted ? 'bg-green-500' : 'bg-yellow-500'}`}></div>
 
                   <div className="p-5 pl-7">
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center gap-2">
                         {workout.source === 'assigned' ? (
-                          <span className="flex items-center gap-1 text-xs text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md font-medium">
+                          <span className="flex items-center gap-1 text-xs text-tint-ink bg-tint-soft px-2 py-0.5 rounded-md font-medium">
                             <User className="w-3 h-3" /> {t('assigned')}
                           </span>
                         ) : (
@@ -686,7 +686,7 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, onFindCoach, onView
                       </div>
                     </div>
 
-                    <h2 className="text-xl text-navy font-bold mb-3">{workout.name}</h2>
+                    <h2 className="text-xl text-foreground font-bold mb-3">{workout.name}</h2>
                     {workout.coachName && <p className="text-sm text-gray-500 mb-3">{t('byCoach', { coach: workout.coachName })}</p>}
 
                     {/* Past date: Show daily analytics and session metrics */}
@@ -707,11 +707,11 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, onFindCoach, onView
                             <div className="grid grid-cols-3 gap-3 mb-4 mt-4">
                               <div className="flex items-center gap-2">
                                 <div className="bg-gray-100 p-1.5 rounded-lg">
-                                  <Dumbbell className="w-4 h-4 text-navy" />
+                                  <Dumbbell className="w-4 h-4 text-foreground" />
                                 </div>
                                 <div>
                                   <p className="text-[10px] text-gray-500 uppercase">{t('exercisesLabel')}</p>
-                                  <p className="font-bold text-sm text-navy">{workout.exercises}</p>
+                                  <p className="font-bold text-sm text-foreground">{workout.exercises}</p>
                                 </div>
                               </div>
 
@@ -828,11 +828,11 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, onFindCoach, onView
                       <div className="grid grid-cols-3 gap-3 mb-4 mt-4">
                         <div className="flex items-center gap-2">
                           <div className="bg-gray-100 p-1.5 rounded-lg">
-                            <Dumbbell className="w-4 h-4 text-navy" />
+                            <Dumbbell className="w-4 h-4 text-foreground" />
                           </div>
                           <div>
                             <p className="text-[10px] text-gray-500 uppercase">{t('exercisesLabel')}</p>
-                            <p className="font-bold text-sm text-navy">{workout.exercises}</p>
+                            <p className="font-bold text-sm text-foreground">{workout.exercises}</p>
                           </div>
                         </div>
 
@@ -917,10 +917,10 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, onFindCoach, onView
                           <button
                             onClick={() => handleStartScheduledWorkout(workout.instanceId, workout.planId)}
                             disabled={!canStartToday || scheduleLoading}
-                            className={`flex-1 py-3 rounded-xl font-bold transition-all flex items-center justify-center gap-2 shadow-lg shadow-navy/10 text-sm ${
+                            className={`flex-1 py-3 rounded-xl font-bold transition-all flex items-center justify-center gap-2 shadow-lg shadow-tint-ink/10 text-sm ${
                               !canStartToday || scheduleLoading
                                 ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                                : 'bg-navy text-white hover:bg-navy-light'
+                                : 'bg-tint text-tint-fg hover:bg-tint-2'
                             }`}
                             title={!canStartToday ? t('onlyStartTodayTitle') : undefined}
                           >
@@ -938,14 +938,14 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, onFindCoach, onView
           {canStartToday && (
             <button
               onClick={() => onStartSession()}
-              className="w-full mt-3 px-6 py-3 bg-white text-navy border-2 border-navy/10 rounded-xl font-bold hover:bg-gray-50 transition-colors"
+              className="w-full mt-3 px-6 py-3 bg-card text-foreground border-2 border-tint/10 rounded-xl font-bold hover:bg-gray-50 transition-colors"
             >
               {t('startFreestyle')}
             </button>
           )}
           </div>
         ) : (
-          <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100 text-center relative overflow-hidden">
+          <div className="bg-card rounded-2xl p-8 shadow-lg border border-gray-100 text-center relative overflow-hidden">
              <div className="absolute inset-0 border-2 border-dashed border-gray-200 rounded-2xl pointer-events-none"></div>
 
              <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4 relative z-10">
@@ -954,12 +954,12 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, onFindCoach, onView
 
              {selectedDate < normalizeDate(new Date()) ? (
                <>
-                 <h3 className="text-lg font-bold text-navy mb-2">{t('noActivity')}</h3>
+                 <h3 className="text-lg font-bold text-foreground mb-2">{t('noActivity')}</h3>
                  <p className="text-gray-500">{t('noWorkoutsLogged', { date: selectedDate.toLocaleDateString(dateLocale, { weekday: 'long', month: 'short', day: 'numeric' }) })}</p>
                </>
              ) : (
                <>
-                 <h3 className="text-lg font-bold text-navy mb-2">{t('restDay')}</h3>
+                 <h3 className="text-lg font-bold text-foreground mb-2">{t('restDay')}</h3>
                  <p className="text-gray-500 mb-6">{t('noWorkoutsScheduled', { day: selectedDate.toLocaleDateString(dateLocale, { weekday: 'long' }) })}</p>
 
                  <div className="grid grid-cols-1 gap-3">
@@ -970,7 +970,7 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, onFindCoach, onView
                    {dateKey(selectedDate) === dateKey(new Date()) && (
                      <button
                         onClick={() => onStartSession()}
-                        className="w-full px-6 py-3 bg-white text-navy border-2 border-navy/10 rounded-xl font-bold hover:bg-gray-50 transition-colors"
+                        className="w-full px-6 py-3 bg-card text-foreground border-2 border-tint/10 rounded-xl font-bold hover:bg-gray-50 transition-colors"
                       >
                         {t('startFreestyle')}
                      </button>
@@ -983,9 +983,9 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, onFindCoach, onView
 
         {isScheduling && (
           <div className="fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center p-4">
-            <div className="bg-white w-full max-w-md rounded-3xl p-6 shadow-2xl animate-in slide-in-from-bottom-20">
+            <div className="bg-card w-full max-w-md rounded-3xl p-6 shadow-2xl animate-in slide-in-from-bottom-20">
               <div className="flex items-center justify-between mb-6">
-                <h3 className="text-xl font-bold text-navy">{t('selectAPlan')}</h3>
+                <h3 className="text-xl font-bold text-foreground">{t('selectAPlan')}</h3>
                 <button 
                   onClick={() => setIsScheduling(false)}
                   className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors"
@@ -1006,14 +1006,14 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, onFindCoach, onView
                   <button
                     key={plan.id}
                     onClick={() => handleScheduleWorkout(plan.id)}
-                    className="w-full text-left bg-white p-4 rounded-xl border border-gray-200 hover:border-yellow-500 hover:shadow-md transition-all group"
+                    className="w-full text-left bg-card p-4 rounded-xl border border-gray-200 hover:border-yellow-500 hover:shadow-md transition-all group"
                   >
                     <div className="flex items-start justify-between">
                       <div>
-                        <h4 className="font-bold text-navy group-hover:text-yellow-600 transition-colors">{plan.name}</h4>
+                        <h4 className="font-bold text-foreground group-hover:text-yellow-600 transition-colors">{plan.name}</h4>
                         <div className="flex items-center gap-2 mt-1">
                           {plan.source === 'assigned' ? (
-                            <span className="text-xs text-blue-600 bg-blue-50 px-2 py-0.5 rounded">
+                            <span className="text-xs text-tint-ink bg-tint-soft px-2 py-0.5 rounded">
                               {t('coachLabel', { coach: plan.coachName || '' })}
                             </span>
                           ) : (
@@ -1028,7 +1028,7 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, onFindCoach, onView
                         </div>
                       </div>
                       <div className="h-8 w-8 rounded-full bg-gray-50 flex items-center justify-center group-hover:bg-yellow-500 transition-colors">
-                        <Plus className="w-4 h-4 text-gray-400 group-hover:text-navy" />
+                        <Plus className="w-4 h-4 text-gray-400 group-hover:text-foreground" />
                       </div>
                     </div>
                   </button>
@@ -1039,27 +1039,27 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, onFindCoach, onView
         )}
 
         <div>
-          <h3 className="text-navy font-bold text-lg mb-3">{t('quickActions')}</h3>
+          <h3 className="text-foreground font-bold text-lg mb-3">{t('quickActions')}</h3>
           <div className="grid grid-cols-2 gap-3">
             <button 
               onClick={onCreatePlan}
-              className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all text-left group"
+              className="bg-card p-4 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all text-left group"
             >
-              <div className="w-10 h-10 bg-blue-50 rounded-full flex items-center justify-center mb-3 group-hover:bg-blue-100 transition-colors">
-                <Plus className="w-5 h-5 text-blue-600" />
+              <div className="w-10 h-10 bg-tint-soft rounded-full flex items-center justify-center mb-3 group-hover:bg-tint-soft transition-colors">
+                <Plus className="w-5 h-5 text-tint-ink" />
               </div>
-              <h4 className="font-bold text-navy">{t('createPlan')}</h4>
+              <h4 className="font-bold text-foreground">{t('createPlan')}</h4>
               <p className="text-xs text-gray-500 mt-1">{t('buildCustomRoutine')}</p>
             </button>
 
             <button
               onClick={() => (onFindCoach ? onFindCoach() : onNavigate('athlete-search'))}
-              className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all text-left group"
+              className="bg-card p-4 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all text-left group"
             >
               <div className="w-10 h-10 bg-purple-50 rounded-full flex items-center justify-center mb-3 group-hover:bg-purple-100 transition-colors">
                 <Calendar className="w-5 h-5 text-purple-600" />
               </div>
-              <h4 className="font-bold text-navy">{t('findPlans')}</h4>
+              <h4 className="font-bold text-foreground">{t('findPlans')}</h4>
               <p className="text-xs text-gray-500 mt-1">{t('browseCoachLibrary')}</p>
             </button>
           </div>
@@ -1067,7 +1067,7 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, onFindCoach, onView
 
         <div>
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-navy font-bold text-lg">{t('yourLibrary')}</h3>
+            <h3 className="text-foreground font-bold text-lg">{t('yourLibrary')}</h3>
             <button className="text-yellow-600 text-sm font-medium">{t('viewAll')}</button>
           </div>
           {planError && (
@@ -1077,7 +1077,7 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, onFindCoach, onView
             <p className="text-sm text-gray-500 mb-2">{t('loading')}</p>
           )}
           {!loadingPlans && !planError && libraryPlans.length === 0 && (
-            <div className="bg-white rounded-xl p-6 text-center border border-gray-100 shadow-sm">
+            <div className="bg-card rounded-xl p-6 text-center border border-gray-100 shadow-sm">
               <p className="text-gray-600 mb-1">{t('noPlansYet')}</p>
               <p className="text-gray-400 text-sm">{t('noPlansHint')}</p>
             </div>
@@ -1085,22 +1085,22 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, onFindCoach, onView
 
           <div className="space-y-3">
             {libraryPlans.map((plan) => (
-              <div key={plan.id} className="bg-white p-4 rounded-xl border border-gray-100 flex items-center justify-between shadow-sm">
+              <div key={plan.id} className="bg-card p-4 rounded-xl border border-gray-100 flex items-center justify-between shadow-sm">
                 <button onClick={() => onViewPlan?.(plan.id)} className="flex items-center gap-3 flex-1 min-w-0 text-left hover:opacity-80 transition-opacity">
                   <div className={`w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0 ${
-                    plan.source === 'assigned' ? 'bg-blue-50' : 'bg-green-50'
+                    plan.source === 'assigned' ? 'bg-tint-soft' : 'bg-green-50'
                   }`}>
                     {plan.source === 'assigned' ? (
-                      <User className="w-6 h-6 text-blue-500" />
+                      <User className="w-6 h-6 text-tint-ink" />
                     ) : (
                       <Dumbbell className="w-6 h-6 text-green-500" />
                     )}
                   </div>
                   <div className="min-w-0">
-                    <h4 className="font-bold text-navy">{plan.name}</h4>
+                    <h4 className="font-bold text-foreground">{plan.name}</h4>
                     <div className="flex items-center gap-2 text-xs mt-0.5">
                       {plan.source === 'assigned' ? (
-                        <span className="text-blue-600 font-medium">{plan.coachName ? t('assignedByCoach', { coach: plan.coachName }) : t('assignedPlan')}</span>
+                        <span className="text-tint-ink font-medium">{plan.coachName ? t('assignedByCoach', { coach: plan.coachName }) : t('assignedPlan')}</span>
                       ) : (
                         <span className="text-green-600 font-medium">{t('myPlan')}</span>
                       )}
@@ -1117,7 +1117,7 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, onFindCoach, onView
                 </button>
                 <button
                   onClick={() => handleScheduleWorkout(plan.id)}
-                  className="p-2 hover:bg-gray-100 rounded-full text-gray-400 hover:text-navy transition-colors flex-shrink-0"
+                  className="p-2 hover:bg-gray-100 rounded-full text-gray-400 hover:text-foreground transition-colors flex-shrink-0"
                   title={t('addToSchedule')}
                 >
                   <Plus className="w-5 h-5" />

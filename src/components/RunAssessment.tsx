@@ -79,10 +79,10 @@ export function RunAssessment({ token, protocolId, onCancel, onSaved }: RunAsses
 
   return (
     <div className="min-h-screen bg-gray-100">
-      <div className="bg-navy px-4 py-4 sticky top-0 z-10">
+      <div className="bg-card border-b border-border px-4 py-4 sticky top-0 z-10">
         <div className="flex items-center justify-between">
           <BackButton onClick={onCancel} aria-label={t('back')} />
-          <h2 className="text-white truncate px-2">{protocol?.name || t('newRun')}</h2>
+          <h2 className="text-foreground truncate px-2">{protocol?.name || t('newRun')}</h2>
           <Button variant="brand" size="sm" icon={<Save />} loading={saving} disabled={loading} onClick={save}>
             {t('save')}
           </Button>
@@ -96,7 +96,7 @@ export function RunAssessment({ token, protocolId, onCancel, onSaved }: RunAsses
           <>
             <p className="text-gray-500 text-sm">{t('runHint')}</p>
             {items.length === 0 ? (
-              <div className="bg-white rounded-2xl p-8 text-center border border-gray-100 shadow-sm">
+              <div className="bg-card rounded-2xl p-8 text-center border border-gray-100 shadow-sm">
                 <ClipboardList className="w-9 h-9 text-gray-200 mx-auto mb-2" />
                 <p className="text-gray-400 text-sm">{t('protocolNoExercises')}</p>
               </div>
@@ -105,8 +105,8 @@ export function RunAssessment({ token, protocolId, onCancel, onSaved }: RunAsses
                 {items.map((it) => {
                   const fields = METRIC_FIELDS.filter((f) => it[f.track]);
                   return (
-                    <div key={it.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
-                      <div className="text-navy font-medium mb-2.5">{localized(it.exercise_name_i18n, it.exercise_name, language)}</div>
+                    <div key={it.id} className="bg-card rounded-2xl border border-gray-100 shadow-sm p-4">
+                      <div className="text-foreground font-medium mb-2.5">{localized(it.exercise_name_i18n, it.exercise_name, language)}</div>
                       <div className="flex gap-2">
                         {fields.map((f) => (
                           <div key={f.field} className="flex-1">

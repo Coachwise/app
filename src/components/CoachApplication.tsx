@@ -96,23 +96,23 @@ export function CoachApplication({ onCancel, onSubmit }: CoachApplicationProps) 
     const pending = application.status === 'PENDING';
     return (
       <div className="min-h-screen bg-gray-100">
-        <div className="bg-navy px-4 py-4 sticky top-0 z-10">
+        <div className="bg-card border-b border-border px-4 py-4 sticky top-0 z-10">
           <div className="flex items-center justify-between">
             <BackButton onClick={onCancel} aria-label={t('back')} />
-            <h2 className="text-white">{t('becomeACoach')}</h2>
+            <h2 className="text-foreground">{t('becomeACoach')}</h2>
             <div className="w-10" />
           </div>
         </div>
         <div className="p-4">
-          <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200 text-center">
+          <div className="bg-card rounded-lg shadow-md p-6 border border-gray-200 text-center">
             <div className={`w-14 h-14 rounded-full mx-auto mb-4 flex items-center justify-center ${pending ? 'bg-yellow-100' : 'bg-green-100'}`}>
               {pending ? <Clock className="w-7 h-7 text-yellow-600" /> : <CheckCircle2 className="w-7 h-7 text-green-600" />}
             </div>
-            <h3 className="text-navy text-lg mb-2">{pending ? t('applicationPending') : t('applicationApproved')}</h3>
+            <h3 className="text-foreground text-lg mb-2">{pending ? t('applicationPending') : t('applicationApproved')}</h3>
             <p className="text-gray-600 text-sm mb-4">{pending ? t('applicationPendingDesc') : t('applicationApprovedDesc')}</p>
             <div className="bg-gray-50 rounded-lg p-3 text-sm">
               <span className="text-gray-500">{t('submissionId')}: </span>
-              <span className="text-navy font-mono break-all">{application.id}</span>
+              <span className="text-foreground font-mono break-all">{application.id}</span>
             </div>
           </div>
         </div>
@@ -123,10 +123,10 @@ export function CoachApplication({ onCancel, onSubmit }: CoachApplicationProps) 
   return (
     <div className="min-h-screen bg-gray-100">
       {/* Header */}
-      <div className="bg-navy px-4 py-4 sticky top-0 z-10">
+      <div className="bg-card border-b border-border px-4 py-4 sticky top-0 z-10">
         <div className="flex items-center justify-between">
           <BackButton onClick={onCancel} aria-label={t('back')} />
-          <h2 className="text-white">{t('becomeACoach')}</h2>
+          <h2 className="text-foreground">{t('becomeACoach')}</h2>
           <div className="w-10"></div>
         </div>
       </div>
@@ -144,7 +144,7 @@ export function CoachApplication({ onCancel, onSubmit }: CoachApplicationProps) 
         )}
 
         {/* Info Banner */}
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <div className="bg-tint-soft border border-blue-200 rounded-lg p-4">
           <p className="text-blue-900 mb-2">{t('becomeCoachwiseCoach')}</p>
           <p className="text-blue-800 text-sm">
             {t('applicationsReviewed')}
@@ -152,17 +152,17 @@ export function CoachApplication({ onCancel, onSubmit }: CoachApplicationProps) 
         </div>
 
         {/* Application Form */}
-        <div className="bg-white rounded-lg shadow-md p-4 border border-gray-200">
-          <h3 className="text-[#3D3D3D] mb-4">{t('applicationDetails')}</h3>
+        <div className="bg-card rounded-lg shadow-md p-4 border border-gray-200">
+          <h3 className="text-foreground mb-4">{t('applicationDetails')}</h3>
           
           <div className="space-y-4">
             <div>
-              <label className="text-[#3D3D3D] mb-2 block">{t('fullName')}</label>
+              <label className="text-foreground mb-2 block">{t('fullName')}</label>
               <input
                 type="text"
                 value={formData.fullName}
                 onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent text-[#3D3D3D]"
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-tint focus:border-transparent text-foreground"
                 placeholder={t('yourFullName')}
               />
             </div>
@@ -173,7 +173,7 @@ export function CoachApplication({ onCancel, onSubmit }: CoachApplicationProps) 
               <select
                 value={formData.specialty}
                 onChange={(e) => setFormData({ ...formData, specialty: e.target.value })}
-                className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-3 bg-card border border-gray-300 rounded-lg focus:ring-2 focus:ring-tint focus:border-transparent"
               >
                 <option value="">{t('selectSpecialty')}</option>
                 {specialties.map(specialty => (
@@ -201,7 +201,7 @@ export function CoachApplication({ onCancel, onSubmit }: CoachApplicationProps) 
                 onChange={(e) => setFormData({ ...formData, certifications: e.target.value })}
                 placeholder={t('listCertifications')}
                 rows={3}
-                className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                className="w-full px-4 py-3 bg-card border border-gray-300 rounded-lg focus:ring-2 focus:ring-tint focus:border-transparent resize-none"
               />
               <p className="text-gray-600 text-sm mt-1">
                 {t('includeCertInfo')}
@@ -216,14 +216,14 @@ export function CoachApplication({ onCancel, onSubmit }: CoachApplicationProps) 
                 onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
                 placeholder={t('coachingPhilosophy')}
                 rows={5}
-                className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                className="w-full px-4 py-3 bg-card border border-gray-300 rounded-lg focus:ring-2 focus:ring-tint focus:border-transparent resize-none"
               />
             </div>
 
             {/* Document Upload */}
             <div>
               <label className="block mb-2 text-gray-900">{t('uploadCredentials')}</label>
-              <div className="bg-white border-2 border-dashed border-gray-300 rounded-lg p-6">
+              <div className="bg-card border-2 border-dashed border-gray-300 rounded-lg p-6">
                 <input
                   type="file"
                   id="file-upload"
@@ -261,7 +261,7 @@ export function CoachApplication({ onCancel, onSubmit }: CoachApplicationProps) 
                 value={formData.website}
                 onChange={(e) => setFormData({ ...formData, website: e.target.value })}
                 placeholder="https://yourwebsite.com"
-                className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-3 bg-card border border-gray-300 rounded-lg focus:ring-2 focus:ring-tint focus:border-transparent"
               />
             </div>
 
@@ -272,7 +272,7 @@ export function CoachApplication({ onCancel, onSubmit }: CoachApplicationProps) 
                 value={formData.instagram}
                 onChange={(e) => setFormData({ ...formData, instagram: e.target.value })}
                 placeholder="@yourusername"
-                className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-3 bg-card border border-gray-300 rounded-lg focus:ring-2 focus:ring-tint focus:border-transparent"
               />
             </div>
 

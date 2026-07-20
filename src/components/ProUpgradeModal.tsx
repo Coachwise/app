@@ -36,22 +36,22 @@ export function ProUpgradeModal({ isOpen, onClose, onUpgrade, feature }: ProUpgr
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl overflow-hidden">
+      <div className="bg-card rounded-2xl max-w-md w-full shadow-2xl overflow-hidden">
         {/* Header */}
-        <div className="bg-gradient-to-r from-navy to-navy-light px-6 py-5 relative">
+        <div className="bg-tint px-6 py-5 relative">
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 p-2 hover:bg-white/10 rounded-lg transition-colors"
+            className="absolute top-4 right-4 p-2 hover:bg-black/10 rounded-lg transition-colors"
           >
-            <X className="w-5 h-5 text-white" />
+            <X className="w-5 h-5 text-tint-fg" />
           </button>
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 bg-yellow-500 rounded-full flex items-center justify-center">
-              <Crown className="w-6 h-6 text-navy" />
+              <Crown className="w-6 h-6 text-foreground" />
             </div>
             <div>
-              <h2 className="text-white text-xl">{getTitle()}</h2>
-              <p className="text-white/80 text-sm">{t('viewOnlyMode')}</p>
+              <h2 className="text-foreground text-xl">{getTitle()}</h2>
+              <p className="text-muted-foreground text-sm">{t('viewOnlyMode')}</p>
             </div>
           </div>
         </div>
@@ -62,7 +62,7 @@ export function ProUpgradeModal({ isOpen, onClose, onUpgrade, feature }: ProUpgr
 
           {/* Features List */}
           <div className="bg-yellow-50 rounded-lg p-4 mb-6 border border-yellow-200">
-            <h3 className="text-navy mb-3 flex items-center gap-2">
+            <h3 className="text-foreground mb-3 flex items-center gap-2">
               <Crown className="w-4 h-4 text-yellow-600" />
               <span>{t('proFeaturesInclude')}</span>
             </h3>
@@ -88,16 +88,16 @@ export function ProUpgradeModal({ isOpen, onClose, onUpgrade, feature }: ProUpgr
 
           {/* How to Upgrade */}
           <div className="mb-6">
-            <h4 className="text-navy mb-3">{t('howToUpgrade')}</h4>
+            <h4 className="text-foreground mb-3">{t('howToUpgrade')}</h4>
             <div className="space-y-2">
               <div className="flex items-start gap-3 text-sm">
-                <div className="w-6 h-6 bg-yellow-500 text-navy rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                <div className="w-6 h-6 bg-yellow-500 text-foreground rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
                   1
                 </div>
                 <span className="text-gray-700">{t('upgradeOption1')}</span>
               </div>
               <div className="flex items-start gap-3 text-sm">
-                <div className="w-6 h-6 bg-yellow-500 text-navy rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                <div className="w-6 h-6 bg-yellow-500 text-foreground rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
                   2
                 </div>
                 <span className="text-gray-700">{t('upgradeOption2')}</span>
@@ -106,7 +106,7 @@ export function ProUpgradeModal({ isOpen, onClose, onUpgrade, feature }: ProUpgr
           </div>
 
           {/* Notice */}
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+          <div className="bg-tint-soft border border-blue-200 rounded-lg p-4 mb-6">
             <p className="text-blue-900 text-sm">
               💡 {t('freeUserNote')}
             </p>

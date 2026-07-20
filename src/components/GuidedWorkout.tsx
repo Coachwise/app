@@ -213,7 +213,7 @@ export function GuidedWorkout({ open, exercises, onLogSet, onClose, onFinish }: 
       {phase === 'done' ? (
         <div className="flex-1 flex flex-col items-center justify-center gap-6 p-8 text-center">
           <div className="w-20 h-20 rounded-full bg-yellow-500 flex items-center justify-center">
-            <Check className="size-10 text-navy" />
+            <Check className="size-10 text-foreground" />
           </div>
           <div>
             <h2 className="text-2xl font-bold">{t('workoutComplete')}</h2>
@@ -247,7 +247,7 @@ export function GuidedWorkout({ open, exercises, onLogSet, onClose, onFinish }: 
 
           {/* Header: what and where we are */}
           <div className={`text-center ${curEx?.mediaUrl ? 'pt-1' : 'pt-8'}`}>
-            <p className={`text-sm font-semibold uppercase tracking-wide ${phase === 'rest' ? 'text-emerald-300' : 'text-yellow-500'}`}>
+            <p className={`text-sm font-semibold uppercase tracking-wide ${phase === 'rest' ? 'text-emerald-300' : 'text-tint-ink'}`}>
               {phase === 'ready' ? t('nextUp') : phase === 'rest' ? t('restNow') : t('work')}
             </p>
             <h2 className="text-2xl font-bold mt-1">{curEx?.name}</h2>

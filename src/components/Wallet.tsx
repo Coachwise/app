@@ -75,15 +75,15 @@ export function Wallet({ onBack }: WalletProps) {
 
   return (
     <div className="min-h-screen bg-gray-100" dir={isRTL ? 'rtl' : 'ltr'}>
-      <div className="bg-gradient-to-br from-navy to-navy-light text-white p-4 pb-8">
+      <div className="bg-tint text-tint-fg p-4 pb-8">
         <div className="flex items-center gap-3 mb-6">
-          <button onClick={onBack} className="p-1 hover:bg-white/10 rounded-lg">
+          <button onClick={onBack} className="p-1 hover:bg-black/10 rounded-lg">
             <ArrowLeft className={`w-6 h-6 ${isRTL ? 'rotate-180' : ''}`} />
           </button>
           <h1 className="text-xl">{t('wallet')}</h1>
         </div>
 
-        <div className="flex items-center gap-2 text-white/70 text-sm mb-1">
+        <div className="flex items-center gap-2 text-muted-foreground text-sm mb-1">
           <WalletIcon className="w-4 h-4" />
           {t('availableBalance')}
         </div>
@@ -91,7 +91,7 @@ export function Wallet({ onBack }: WalletProps) {
           {balance ? formatMoney(balance.available, balance.currency, language) : '—'}
         </div>
         {balance && balance.pending > 0 && (
-          <div className="inline-flex items-center gap-1.5 bg-white/10 rounded-full px-3 py-1 text-sm text-white/80">
+          <div className="inline-flex items-center gap-1.5 bg-black/10 rounded-full px-3 py-1 text-sm text-muted-foreground">
             <Clock className="w-3.5 h-3.5" />
             {t('pendingBalance')}: <span dir="ltr">{formatMoney(balance.pending, balance.currency, language)}</span>
           </div>
@@ -105,7 +105,7 @@ export function Wallet({ onBack }: WalletProps) {
             <button
               onClick={() => (payoutAccount ? setPayoutOpen(true) : setAccountOpen(true))}
               disabled={!balance || balance.available <= 0}
-              className="flex-1 flex items-center justify-center gap-2 bg-white/10 text-white py-2.5 rounded-lg hover:bg-white/20 disabled:opacity-50 font-medium"
+              className="flex-1 flex items-center justify-center gap-2 bg-black/10 text-tint-fg py-2.5 rounded-lg hover:bg-black/20 disabled:opacity-50 font-medium"
             >
               <Send className="w-4 h-4" />
               {t('requestPayout')}
@@ -118,9 +118,9 @@ export function Wallet({ onBack }: WalletProps) {
         {error && <div className="bg-red-50 text-red-700 border border-red-200 rounded-lg p-3 text-sm mb-4">{error}</div>}
 
         {isCoach && (
-          <div className="bg-white rounded-lg shadow-sm p-4 mb-5">
+          <div className="bg-card rounded-lg shadow-sm p-4 mb-5">
             <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2 text-navy text-sm">
+              <div className="flex items-center gap-2 text-foreground text-sm">
                 <CreditCard className="w-4 h-4 text-yellow-600" />
                 {t('payoutInfo')}
               </div>
@@ -134,7 +134,7 @@ export function Wallet({ onBack }: WalletProps) {
             </div>
             {payoutAccount ? (
               <div>
-                <div className="flex items-center gap-2 text-navy" dir="ltr">
+                <div className="flex items-center gap-2 text-foreground" dir="ltr">
                   <CreditCard className="w-4 h-4 text-gray-400" />
                   <span className="tracking-wider">{maskCard(payoutAccount.card_number)}</span>
                 </div>
@@ -153,12 +153,12 @@ export function Wallet({ onBack }: WalletProps) {
 
         {isCoach && payouts.length > 0 && (
           <div className="mb-5">
-            <h2 className="text-navy text-sm mb-2">{t('payouts')}</h2>
-            <div className="bg-white rounded-lg shadow-sm divide-y divide-gray-50">
+            <h2 className="text-foreground text-sm mb-2">{t('payouts')}</h2>
+            <div className="bg-card rounded-lg shadow-sm divide-y divide-gray-50">
               {payouts.map((p) => (
                 <div key={p.id} className="flex items-center justify-between px-4 py-3">
                   <div>
-                    <div className="text-navy" dir="ltr">{formatMoney(p.amount, p.currency, language)}</div>
+                    <div className="text-foreground" dir="ltr">{formatMoney(p.amount, p.currency, language)}</div>
                     <div className="text-xs text-gray-400">{new Date(p.created_at).toLocaleDateString(dateLocale)}</div>
                   </div>
                   <span className={`text-xs px-2 py-1 rounded-full ${payoutBadge(p.status)}`}>{t(`payout_${p.status}`)}</span>
@@ -168,13 +168,13 @@ export function Wallet({ onBack }: WalletProps) {
           </div>
         )}
 
-        <h2 className="text-navy text-sm mb-2">{t('transactions')}</h2>
+        <h2 className="text-foreground text-sm mb-2">{t('transactions')}</h2>
         {loading ? (
           <div className="flex justify-center py-10"><Loader2 className="w-6 h-6 text-gray-400 animate-spin" /></div>
         ) : txns.length === 0 ? (
           <p className="text-center text-gray-400 py-10 text-sm">{t('noTransactions')}</p>
         ) : (
-          <div className="bg-white rounded-lg shadow-sm divide-y divide-gray-50">
+          <div className="bg-card rounded-lg shadow-sm divide-y divide-gray-50">
             {txns.map((tx) => {
               const credit = CREDIT_TYPES.includes(tx.type);
               const pending = new Date(tx.available_at).getTime() > Date.now() && credit;
@@ -184,13 +184,13 @@ export function Wallet({ onBack }: WalletProps) {
                     {credit ? <ArrowDownLeft className="w-4 h-4" /> : <ArrowUpRight className="w-4 h-4" />}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="text-navy text-sm truncate">{t(`txType_${tx.type}`)}</div>
+                    <div className="text-foreground text-sm truncate">{t(`txType_${tx.type}`)}</div>
                     <div className="text-xs text-gray-400 flex items-center gap-1">
                       {new Date(tx.created_at).toLocaleDateString(dateLocale)}
                       {pending && <><Clock className="w-3 h-3" /> {t('pending')}</>}
                     </div>
                   </div>
-                  <div className={`text-sm ${credit ? 'text-green-600' : 'text-navy'}`} dir="ltr">
+                  <div className={`text-sm ${credit ? 'text-green-600' : 'text-foreground'}`} dir="ltr">
                     {credit ? '+' : '−'} {formatMoney(Math.abs(tx.amount), tx.currency, language)}
                   </div>
                 </div>
@@ -242,7 +242,7 @@ function groupCard(digits: string): string {
 function payoutBadge(status: string): string {
   switch (status) {
     case 'PAID': return 'bg-green-100 text-green-700';
-    case 'APPROVED': return 'bg-blue-100 text-blue-700';
+    case 'APPROVED': return 'bg-tint-soft text-blue-700';
     case 'REJECTED': return 'bg-red-100 text-red-700';
     default: return 'bg-yellow-100 text-yellow-700';
   }
@@ -274,8 +274,8 @@ function PayoutSheet({ balance, onClose, onDone }: { balance: WalletBalance; onC
 
   return (
     <div className="fixed inset-0 z-50 bg-black/40 flex items-end justify-center" onClick={onClose}>
-      <div className="bg-white w-full max-w-md rounded-t-2xl p-5 space-y-4" onClick={(e) => e.stopPropagation()} dir={isRTL ? 'rtl' : 'ltr'}>
-        <h3 className="text-navy font-medium">{t('requestPayout')}</h3>
+      <div className="bg-card w-full max-w-md rounded-t-2xl p-5 space-y-4" onClick={(e) => e.stopPropagation()} dir={isRTL ? 'rtl' : 'ltr'}>
+        <h3 className="text-foreground font-medium">{t('requestPayout')}</h3>
         <div className="flex items-center justify-between text-sm">
           <span className="text-gray-500">{t('availableBalance')}</span>
           <button
@@ -294,7 +294,7 @@ function PayoutSheet({ balance, onClose, onDone }: { balance: WalletBalance; onC
             value={amount ? formatAmount(Number(amount), language) : ''}
             onChange={(e) => setAmount(normalizeDigits(e.target.value).replace(/[^\d]/g, ''))}
             placeholder="0"
-            className="w-full bg-gray-50 border border-gray-200 rounded-lg py-3 px-4 text-navy text-center text-lg tracking-wide focus:outline-none focus:ring-2 focus:ring-yellow-500"
+            className="w-full bg-gray-50 border border-gray-200 rounded-lg py-3 px-4 text-foreground text-center text-lg tracking-wide focus:outline-none focus:ring-2 focus:ring-tint"
             dir="ltr"
             autoFocus
           />
@@ -354,8 +354,8 @@ function PayoutAccountSheet({
 
   return (
     <div className="fixed inset-0 z-50 bg-black/40 flex items-end justify-center" onClick={onClose}>
-      <div className="bg-white w-full max-w-md rounded-t-2xl p-5 space-y-4" onClick={(e) => e.stopPropagation()} dir={isRTL ? 'rtl' : 'ltr'}>
-        <h3 className="text-navy font-medium">{t('payoutInfo')}</h3>
+      <div className="bg-card w-full max-w-md rounded-t-2xl p-5 space-y-4" onClick={(e) => e.stopPropagation()} dir={isRTL ? 'rtl' : 'ltr'}>
+        <h3 className="text-foreground font-medium">{t('payoutInfo')}</h3>
 
         {isIRR ? (
           <>
@@ -367,7 +367,7 @@ function PayoutAccountSheet({
                 value={groupCard(card)}
                 onChange={(e) => setCard(normalizeDigits(e.target.value).replace(/\D/g, '').slice(0, 16))}
                 placeholder="•••• •••• •••• ••••"
-                className="mt-1 w-full bg-gray-50 border border-gray-200 rounded-lg py-3 px-4 text-navy text-center text-lg tracking-widest focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                className="mt-1 w-full bg-gray-50 border border-gray-200 rounded-lg py-3 px-4 text-foreground text-center text-lg tracking-widest focus:outline-none focus:ring-2 focus:ring-tint"
                 dir="ltr"
                 autoFocus
               />
@@ -378,7 +378,7 @@ function PayoutAccountSheet({
                 type="text"
                 value={holder}
                 onChange={(e) => setHolder(e.target.value)}
-                className="mt-1 w-full bg-gray-50 border border-gray-200 rounded-lg py-3 px-4 text-navy focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                className="mt-1 w-full bg-gray-50 border border-gray-200 rounded-lg py-3 px-4 text-foreground focus:outline-none focus:ring-2 focus:ring-tint"
               />
             </div>
             {error && <div className="bg-red-50 text-red-700 border border-red-200 rounded-lg p-3 text-sm">{error}</div>}
@@ -443,8 +443,8 @@ function TopUpSheet({ currency, onClose }: { currency: string; onClose: () => vo
 
   return (
     <div className="fixed inset-0 z-50 bg-black/40 flex items-end justify-center" onClick={onClose}>
-      <div className="bg-white w-full max-w-md rounded-t-2xl p-5 space-y-4" onClick={(e) => e.stopPropagation()} dir={isRTL ? 'rtl' : 'ltr'}>
-        <h3 className="text-navy font-medium">{t('addFunds')}</h3>
+      <div className="bg-card w-full max-w-md rounded-t-2xl p-5 space-y-4" onClick={(e) => e.stopPropagation()} dir={isRTL ? 'rtl' : 'ltr'}>
+        <h3 className="text-foreground font-medium">{t('addFunds')}</h3>
 
         <div>
           <label className="text-gray-500 text-sm">{t('topUpAmount')}</label>
@@ -455,7 +455,7 @@ function TopUpSheet({ currency, onClose }: { currency: string; onClose: () => vo
               value={amount ? formatAmount(Number(amount), language) : ''}
               onChange={(e) => setAmount(normalizeDigits(e.target.value).replace(/[^\d]/g, ''))}
               placeholder="0"
-              className="w-full bg-gray-50 border border-gray-200 rounded-lg py-3 px-4 text-navy text-center text-lg tracking-wide focus:outline-none focus:ring-2 focus:ring-yellow-500"
+              className="w-full bg-gray-50 border border-gray-200 rounded-lg py-3 px-4 text-foreground text-center text-lg tracking-wide focus:outline-none focus:ring-2 focus:ring-tint"
               dir="ltr"
               autoFocus
             />
@@ -472,7 +472,7 @@ function TopUpSheet({ currency, onClose }: { currency: string; onClose: () => vo
                 key={p.name}
                 type="button"
                 onClick={() => setProvider(p.name)}
-                className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-sm ${p.name === provider ? 'border-yellow-500 bg-yellow-50 text-navy' : 'border-gray-200 text-gray-600 hover:bg-gray-50'}`}
+                className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-sm ${p.name === provider ? 'border-yellow-500 bg-yellow-50 text-foreground' : 'border-gray-200 text-gray-600 hover:bg-gray-50'}`}
               >
                 {p.logo && <img src={p.logo} alt="" className="w-5 h-5 object-contain" />}
                 {p.title}

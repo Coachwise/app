@@ -122,9 +122,9 @@ export function Feed({ onCreatePost, userRole, onNavigate, onViewProfile, isPro 
   return (
     <div className="min-h-screen bg-gray-100">
       {/* Header */}
-      <div className="bg-navy px-4 py-4 sticky top-0 z-10">
+      <div className="bg-card border-b border-border px-4 py-4 sticky top-0 z-10">
         <div className="flex items-center justify-between">
-          <h1 className="text-white text-xl">{t('feed')}</h1>
+          <h1 className="text-foreground text-xl">{t('feed')}</h1>
           <HamburgerMenu 
             userRole={userRole}
             onNavigate={onNavigate}
@@ -139,7 +139,7 @@ export function Feed({ onCreatePost, userRole, onNavigate, onViewProfile, isPro 
       {/* Posts */}
       <div className="space-y-4 p-4">
         {posts.map((post) => (
-          <div key={post.id} className="bg-white rounded-lg p-4 shadow-md border border-gray-200">
+          <div key={post.id} className="bg-card rounded-lg p-4 shadow-md border border-gray-200">
             {/* User Info */}
             <div className="flex items-start gap-3 mb-3">
               <button 
@@ -160,9 +160,9 @@ export function Feed({ onCreatePost, userRole, onNavigate, onViewProfile, isPro 
                   onClick={() => onViewProfile && onViewProfile(post.userId)}
                   className="flex items-center gap-2 hover:opacity-80 transition-opacity"
                 >
-                  <span className="text-navy">{post.author.name}</span>
+                  <span className="text-foreground">{post.author.name}</span>
                   {post.author.isCoach && (
-                    <span className="px-2 py-0.5 bg-yellow-500 text-navy rounded text-xs">
+                    <span className="px-2 py-0.5 bg-yellow-500 text-foreground rounded text-xs">
                       {t('coachBadge')}
                     </span>
                   )}
@@ -174,10 +174,10 @@ export function Feed({ onCreatePost, userRole, onNavigate, onViewProfile, isPro 
             {/* PR Badge */}
             {post.isPR && (
               <div className="bg-yellow-500 rounded-lg p-3 mb-3 flex items-start gap-3">
-                <Trophy className="w-5 h-5 text-navy mt-0.5" />
+                <Trophy className="w-5 h-5 text-foreground mt-0.5" />
                 <div>
-                  <div className="text-navy text-sm mb-1">{t('personalRecord')}</div>
-                  <div className="text-navy/80 text-sm">
+                  <div className="text-foreground text-sm mb-1">{t('personalRecord')}</div>
+                  <div className="text-foreground/80 text-sm">
                     {post.prDetails?.exercise}: {post.prDetails?.weight} × {post.prDetails?.reps} {t('repsUnit')}
                   </div>
                 </div>
@@ -206,7 +206,7 @@ export function Feed({ onCreatePost, userRole, onNavigate, onViewProfile, isPro 
                     />
                     <div className="absolute inset-0 flex items-center justify-center">
                       <div className="w-16 h-16 bg-white/90 rounded-full flex items-center justify-center">
-                        <Video className="w-8 h-8 text-navy ml-1" />
+                        <Video className="w-8 h-8 text-foreground ml-1" />
                       </div>
                     </div>
                   </div>
@@ -225,11 +225,11 @@ export function Feed({ onCreatePost, userRole, onNavigate, onViewProfile, isPro 
                 <Heart className={`w-5 h-5 ${post.isLiked ? 'fill-red-500' : ''}`} />
                 <span className="text-sm">{post.likes}</span>
               </button>
-              <button className="flex items-center gap-2 text-gray-600 hover:text-navy transition-colors">
+              <button className="flex items-center gap-2 text-gray-600 hover:text-foreground transition-colors">
                 <MessageCircle className="w-5 h-5" />
                 <span className="text-sm">{post.comments}</span>
               </button>
-              <button className="flex items-center gap-2 text-gray-600 hover:text-navy transition-colors">
+              <button className="flex items-center gap-2 text-gray-600 hover:text-foreground transition-colors">
                 <Share2 className="w-5 h-5" />
               </button>
             </div>

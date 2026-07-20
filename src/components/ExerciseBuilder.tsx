@@ -192,10 +192,10 @@ export function ExerciseBuilder({ onCancel, onSaved, exercise }: ExerciseBuilder
 
   return (
     <div className="min-h-screen bg-gray-100">
-      <div className="bg-navy px-4 py-4 sticky top-0 z-10">
+      <div className="bg-card border-b border-border px-4 py-4 sticky top-0 z-10">
         <div className="flex items-center justify-between">
           <BackButton onClick={onCancel} aria-label={t('back')} />
-          <h2 className="text-white">{exercise ? t('editExercise') : t('newExercise')}</h2>
+          <h2 className="text-foreground">{exercise ? t('editExercise') : t('newExercise')}</h2>
           <Button variant="brand" size="sm" icon={<Save />} loading={saving} disabled={!canSave} onClick={handleSave}>
             {t('save')}
           </Button>
@@ -205,35 +205,35 @@ export function ExerciseBuilder({ onCancel, onSaved, exercise }: ExerciseBuilder
       <div className="p-4 space-y-4">
         {error && <div className="p-3 bg-red-100 text-red-800 rounded">{error}</div>}
 
-        <div className="bg-white rounded-lg shadow-md p-4 border border-gray-200 space-y-3">
+        <div className="bg-card rounded-lg shadow-md p-4 border border-gray-200 space-y-3">
           <div>
-            <label className="text-[#3D3D3D] mb-2 block">{t('exerciseName')}</label>
+            <label className="text-foreground mb-2 block">{t('exerciseName')}</label>
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder={t('exerciseNamePlaceholder')}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent text-[#3D3D3D]"
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-tint focus:border-transparent text-foreground"
             />
           </div>
 
           <div>
-            <label className="text-[#3D3D3D] mb-2 block">{t('descriptionLabel')}</label>
+            <label className="text-foreground mb-2 block">{t('descriptionLabel')}</label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder={t('descriptionPlaceholder')}
               rows={3}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent resize-none text-[#3D3D3D]"
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-tint focus:border-transparent resize-none text-foreground"
             />
           </div>
 
           <div>
-            <label className="text-[#3D3D3D] mb-2 block">{t('sportTypeLabel')}</label>
+            <label className="text-foreground mb-2 block">{t('sportTypeLabel')}</label>
             <select
               value={sportType}
               onChange={(e) => setSportType(e.target.value as ExerciseSportType)}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent text-[#3D3D3D] bg-white"
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-tint focus:border-transparent text-foreground bg-card"
             >
               <option value="STRENGTH">{t('sportSTRENGTH')}</option>
               <option value="CLIMBING">{t('sportCLIMBING')}</option>
@@ -244,7 +244,7 @@ export function ExerciseBuilder({ onCancel, onSaved, exercise }: ExerciseBuilder
           </div>
 
           <div>
-            <label className="text-[#3D3D3D] mb-2 block">{t('trackedMetrics')}</label>
+            <label className="text-foreground mb-2 block">{t('trackedMetrics')}</label>
             <p className="text-gray-500 text-xs mb-2">{t('trackedMetricsHint')}</p>
             <div className="grid grid-cols-2 gap-2">
               {([
@@ -258,7 +258,7 @@ export function ExerciseBuilder({ onCancel, onSaved, exercise }: ExerciseBuilder
                   type="button"
                   onClick={() => set(!on)}
                   className={`px-3 py-2 rounded-lg text-sm font-medium border transition-colors ${
-                    on ? 'bg-yellow-500 text-navy border-yellow-500' : 'bg-white text-gray-600 border-gray-300'
+                    on ? 'bg-yellow-500 text-foreground border-yellow-500' : 'bg-card text-gray-600 border-gray-300'
                   }`}
                 >
                   {label}
@@ -268,7 +268,7 @@ export function ExerciseBuilder({ onCancel, onSaved, exercise }: ExerciseBuilder
           </div>
 
           <div>
-            <label className="text-[#3D3D3D] mb-2 block">{t('mediaOptional')}</label>
+            <label className="text-foreground mb-2 block">{t('mediaOptional')}</label>
             <input
               ref={fileInputRef}
               type="file"
@@ -323,10 +323,10 @@ export function ExerciseBuilder({ onCancel, onSaved, exercise }: ExerciseBuilder
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-md p-4 border border-gray-200">
+        <div className="bg-card rounded-lg shadow-md p-4 border border-gray-200">
           <div className="flex items-center justify-between mb-3">
             <div>
-              <h3 className="text-[#3D3D3D]">{t('setsLabel')}</h3>
+              <h3 className="text-foreground">{t('setsLabel')}</h3>
               <p className="text-sm text-gray-600">{t('repsOrTimedHolds')}</p>
             </div>
             <Button variant="brand" size="sm" icon={<Plus />} onClick={addSet}>
@@ -336,7 +336,7 @@ export function ExerciseBuilder({ onCancel, onSaved, exercise }: ExerciseBuilder
 
           <div className="mb-4 rounded-lg border border-yellow-300 bg-yellow-50 p-3">
             <div className="mb-2">
-              <h4 className="text-sm font-medium text-[#3D3D3D]">{t('quickAddTitle')}</h4>
+              <h4 className="text-sm font-medium text-foreground">{t('quickAddTitle')}</h4>
               <p className="text-xs text-gray-600">{t('quickAddHint')}</p>
             </div>
             <div className="flex flex-wrap items-end gap-2">
@@ -347,13 +347,13 @@ export function ExerciseBuilder({ onCancel, onSaved, exercise }: ExerciseBuilder
               <div className="flex gap-1 pb-[1px]">
                 <button
                   onClick={() => setBulkType('reps')}
-                  className={`px-3 py-2 rounded-lg text-sm transition-colors ${bulkType === 'reps' ? 'bg-yellow-500 text-navy' : 'bg-white text-gray-700 border border-gray-300'}`}
+                  className={`px-3 py-2 rounded-lg text-sm transition-colors ${bulkType === 'reps' ? 'bg-yellow-500 text-foreground' : 'bg-card text-gray-700 border border-gray-300'}`}
                 >
                   {t('repsLabel')}
                 </button>
                 <button
                   onClick={() => setBulkType('time')}
-                  className={`px-3 py-2 rounded-lg text-sm transition-colors ${bulkType === 'time' ? 'bg-yellow-500 text-navy' : 'bg-white text-gray-700 border border-gray-300'}`}
+                  className={`px-3 py-2 rounded-lg text-sm transition-colors ${bulkType === 'time' ? 'bg-yellow-500 text-foreground' : 'bg-card text-gray-700 border border-gray-300'}`}
                 >
                   {t('timeLabel')}
                 </button>
@@ -368,7 +368,7 @@ export function ExerciseBuilder({ onCancel, onSaved, exercise }: ExerciseBuilder
               </div>
               <button
                 onClick={addBulkSets}
-                className="flex items-center gap-2 px-3 py-2 bg-navy text-white rounded-lg hover:bg-navy-light transition-colors text-sm"
+                className="flex items-center gap-2 px-3 py-2 bg-tint text-tint-fg rounded-lg hover:bg-tint-2 transition-colors text-sm"
               >
                 <Plus className="w-4 h-4" />
                 {t('addCountSets', { n: Math.max(1, Math.floor(bulkCount)) })}
@@ -408,7 +408,7 @@ export function ExerciseBuilder({ onCancel, onSaved, exercise }: ExerciseBuilder
                       type="text"
                       value={set.name}
                       onChange={(e) => updateSet(set.id, { name: e.target.value })}
-                      className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-3 py-2 bg-card border border-gray-300 rounded-lg focus:ring-2 focus:ring-tint focus:border-transparent"
                       placeholder={t('workingSetPlaceholder')}
                     />
                   </div>
@@ -435,7 +435,7 @@ export function ExerciseBuilder({ onCancel, onSaved, exercise }: ExerciseBuilder
                       <button
                         onClick={() => updateSet(set.id, { type: 'reps' })}
                         className={`px-3 py-2 rounded-lg text-sm transition-colors ${
-                          set.type === 'reps' ? 'bg-yellow-500 text-navy' : 'bg-gray-100 text-gray-700'
+                          set.type === 'reps' ? 'bg-yellow-500 text-foreground' : 'bg-gray-100 text-gray-700'
                         }`}
                       >
                         {t('repsLabel')}
@@ -443,7 +443,7 @@ export function ExerciseBuilder({ onCancel, onSaved, exercise }: ExerciseBuilder
                       <button
                         onClick={() => updateSet(set.id, { type: 'time' })}
                         className={`px-3 py-2 rounded-lg text-sm transition-colors ${
-                          set.type === 'time' ? 'bg-yellow-500 text-navy' : 'bg-gray-100 text-gray-700'
+                          set.type === 'time' ? 'bg-yellow-500 text-foreground' : 'bg-gray-100 text-gray-700'
                         }`}
                       >
                         {t('timeLabel')}

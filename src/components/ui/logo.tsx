@@ -11,7 +11,7 @@ interface LogoProps {
  * `currentColor`, so a text class decides how it reads on its surface:
  *
  *   <Logo className="text-navy" />        // on light or yellow grounds
- *   <Logo className="text-yellow-500" />  // on the navy tile
+ *   <Logo className="text-tint-ink" />  // on the navy tile
  */
 export function Logo({ className }: LogoProps) {
   return (
@@ -41,7 +41,7 @@ interface BrandProps {
 // whatever it stands on, so the two are chosen together and never separately.
 const TILE: Record<BrandTile, { plate: string; mark: string }> = {
   yellow: { plate: 'bg-yellow-500', mark: 'text-navy' },
-  navy: { plate: 'bg-navy', mark: 'text-yellow-500' },
+  navy: { plate: 'bg-tint', mark: 'text-tint-fg' },
   none: { plate: '', mark: '' },
 };
 

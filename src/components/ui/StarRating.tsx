@@ -50,7 +50,7 @@ export function StarRating({
               <Star
                 className={`w-6 h-6 transition-colors ${
                   starValue <= displayValue
-                    ? 'fill-yellow-400 text-yellow-400'
+                    ? 'fill-yellow-400 text-tint-ink'
                     : 'fill-none text-gray-300'
                 }`}
               />

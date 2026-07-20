@@ -6,6 +6,8 @@ export interface AuthTokens {
   token: string;
 }
 
+export type Gender = 'MALE' | 'FEMALE' | 'UNSPECIFIED';
+
 export interface User {
   id: UUID;
   username: string;
@@ -14,6 +16,7 @@ export interface User {
   bio?: string | null;
   first_name?: string | null;
   last_name?: string | null;
+  gender?: Gender;
   phone?: string | null;
   website?: string | null;
   instagram?: string | null;
@@ -47,6 +50,7 @@ export interface UserUpdate {
   instagram?: string;
   birthday?: string;
   avatar_id?: string;
+  gender?: Gender;
 }
 
 export interface Media {

@@ -108,22 +108,22 @@ export function TrophyCase({ data, isOwner, token, onLayoutSaved }: TrophyCasePr
     return (
       <div
         key={item.key}
-        className={`bg-white rounded-2xl border shadow-sm flex items-center gap-3 p-3.5 transition-opacity ${
+        className={`bg-card rounded-2xl border shadow-sm flex items-center gap-3 p-3.5 transition-opacity ${
           dim ? 'opacity-45 border-gray-100' : 'border-gray-100'
         }`}
       >
         {item.kind === 'record' ? (
           <>
-            <span className="w-11 h-11 rounded-xl bg-navy flex items-center justify-center shrink-0">
-              <Medal className="w-5 h-5 text-yellow-400" />
+            <span className="w-11 h-11 rounded-xl bg-tint flex items-center justify-center shrink-0">
+              <Medal className="w-5 h-5 text-tint-ink" />
             </span>
             <div className="flex-1 min-w-0">
-              <div className="text-navy font-medium truncate">{item.record.exercise_name}</div>
+              <div className="text-foreground font-medium truncate">{item.record.exercise_name}</div>
               <div className="text-[11px] text-gray-400">{t('recordLabel')}</div>
             </div>
             {!editing && (
               <div className="text-end shrink-0">
-                <div className="text-lg font-semibold text-navy tabular-nums leading-none">
+                <div className="text-lg font-semibold text-foreground tabular-nums leading-none">
                   {recordPrimary(item.record, t)}
                 </div>
                 {recordSecondary(item.record, t) && (
@@ -138,7 +138,7 @@ export function TrophyCase({ data, isOwner, token, onLayoutSaved }: TrophyCasePr
               <Award className="w-5 h-5 text-yellow-600" />
             </span>
             <div className="flex-1 min-w-0">
-              <div className="text-navy font-medium truncate">{item.badge.title}</div>
+              <div className="text-foreground font-medium truncate">{item.badge.title}</div>
               {item.badge.description ? (
                 <p className="text-xs text-gray-500 truncate">{item.badge.description}</p>
               ) : (
@@ -153,7 +153,7 @@ export function TrophyCase({ data, isOwner, token, onLayoutSaved }: TrophyCasePr
             <button
               onClick={() => move(index, -1)}
               disabled={index === 0}
-              className="p-1.5 rounded-lg text-gray-400 hover:text-navy hover:bg-gray-100 disabled:opacity-30 transition-colors"
+              className="p-1.5 rounded-lg text-gray-400 hover:text-foreground hover:bg-gray-100 disabled:opacity-30 transition-colors"
               aria-label={t('moveUp')}
             >
               <ChevronUp className="w-4 h-4" />
@@ -161,7 +161,7 @@ export function TrophyCase({ data, isOwner, token, onLayoutSaved }: TrophyCasePr
             <button
               onClick={() => move(index, 1)}
               disabled={index === list.length - 1}
-              className="p-1.5 rounded-lg text-gray-400 hover:text-navy hover:bg-gray-100 disabled:opacity-30 transition-colors"
+              className="p-1.5 rounded-lg text-gray-400 hover:text-foreground hover:bg-gray-100 disabled:opacity-30 transition-colors"
               aria-label={t('moveDown')}
             >
               <ChevronDown className="w-4 h-4" />
@@ -169,7 +169,7 @@ export function TrophyCase({ data, isOwner, token, onLayoutSaved }: TrophyCasePr
             <button
               onClick={() => toggleHidden(item.key)}
               className={`p-1.5 rounded-lg transition-colors ${
-                isHidden ? 'text-gray-400 hover:bg-gray-100' : 'text-navy hover:bg-yellow-50'
+                isHidden ? 'text-gray-400 hover:bg-gray-100' : 'text-foreground hover:bg-yellow-50'
               }`}
               aria-label={isHidden ? t('show') : t('hide')}
             >
@@ -184,14 +184,14 @@ export function TrophyCase({ data, isOwner, token, onLayoutSaved }: TrophyCasePr
   return (
     <div className="p-4">
       <div className="flex items-center justify-between mb-3">
-        <h3 className="text-navy font-medium flex items-center gap-2">
-          <Trophy className="w-5 h-5 text-yellow-500" />
+        <h3 className="text-foreground font-medium flex items-center gap-2">
+          <Trophy className="w-5 h-5 text-tint-ink" />
           {t('achievementsTitle')}
         </h3>
         {isOwner && list.length > 0 && !editing && (
           <button
             onClick={startEdit}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm text-navy border border-gray-200 hover:bg-gray-50 transition-colors"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm text-foreground border border-gray-200 hover:bg-gray-50 transition-colors"
           >
             <SlidersHorizontal className="w-4 h-4" />
             {t('arrange')}
@@ -202,7 +202,7 @@ export function TrophyCase({ data, isOwner, token, onLayoutSaved }: TrophyCasePr
       {editing && <p className="text-gray-500 text-xs mb-3">{t('arrangeHint')}</p>}
 
       {list.length === 0 ? (
-        <div className="bg-white rounded-2xl p-8 text-center border border-gray-100 shadow-sm">
+        <div className="bg-card rounded-2xl p-8 text-center border border-gray-100 shadow-sm">
           <Trophy className="w-9 h-9 text-gray-200 mx-auto mb-2" />
           <p className="text-gray-400 text-sm">{t('noAchievementsYet')}</p>
         </div>

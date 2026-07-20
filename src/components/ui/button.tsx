@@ -10,9 +10,9 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        // brand is the app's primary action (yellow on navy) — the default for
-        // save/confirm/submit buttons across every screen.
-        brand: "bg-yellow-500 text-navy hover:bg-yellow-400",
+        // brand is the app's primary action, driven by the accent tint (aqua or
+        // bubblegum) with theme-correct ink text — the default for save/confirm.
+        brand: "bg-tint text-tint-fg hover:bg-tint-2",
         default: "bg-primary text-primary-foreground hover:bg-primary/90",
         destructive:
           "bg-destructive text-white hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60",
@@ -22,8 +22,8 @@ const buttonVariants = cva(
           "bg-secondary text-secondary-foreground hover:bg-secondary/80",
         ghost:
           "hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50",
-        // navGhost is the header back/icon button on the navy top bar.
-        navGhost: "text-white hover:bg-navy-light",
+        // navGhost is the header back/icon button — now on a flat theme surface.
+        navGhost: "text-foreground hover:bg-muted",
         link: "text-primary underline-offset-4 hover:underline",
       },
       size: {

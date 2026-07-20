@@ -142,10 +142,10 @@ export function SubscriptionTierBuilder({ onCancel, onSave, token, packageId }: 
   return (
     <div className="min-h-screen bg-gray-100">
       {/* Header + progress */}
-      <div className="bg-navy px-4 py-4 sticky top-0 z-10">
+      <div className="bg-card border-b border-border px-4 py-4 sticky top-0 z-10">
         <div className="flex items-center justify-between mb-3">
           <BackButton onClick={() => (step === 1 ? onCancel() : setStep(step - 1))} aria-label={t('back')} />
-          <h2 className="text-white">{isEdit ? t('editTier') : t('createTier')}</h2>
+          <h2 className="text-foreground">{isEdit ? t('editTier') : t('createTier')}</h2>
           {step < TOTAL_STEPS ? (
             <Button variant="brand" size="sm" disabled={!canAdvance(step)} onClick={() => canAdvance(step) && setStep(step + 1)}>
               {t('next')}
@@ -162,14 +162,14 @@ export function SubscriptionTierBuilder({ onCancel, onSave, token, packageId }: 
             <div
               key={s}
               className={`h-1.5 flex-1 rounded-full transition-colors ${
-                s <= step ? 'bg-yellow-500' : 'bg-navy-light'
+                s <= step ? 'bg-yellow-500' : 'bg-tint-2'
               }`}
             />
           ))}
         </div>
         <div className="flex items-center justify-between">
-          <span className="text-white text-sm">{stepTitles[step - 1]}</span>
-          <span className="text-gray-300 text-xs">
+          <span className="text-foreground text-sm">{stepTitles[step - 1]}</span>
+          <span className="text-muted-foreground text-xs">
             {t('stepProgress', { current: String(step), total: String(TOTAL_STEPS) })}
           </span>
         </div>
@@ -180,13 +180,13 @@ export function SubscriptionTierBuilder({ onCancel, onSave, token, packageId }: 
         {step === 1 && (
           <>
             <div>
-              <label className="text-[#3D3D3D] mb-2 block">{t('tierName')}</label>
+              <label className="text-foreground mb-2 block">{t('tierName')}</label>
               <input
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder={t('premiumPlanPlaceholder')}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent text-[#3D3D3D]"
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-tint focus:border-transparent text-foreground"
               />
             </div>
             <div>
@@ -196,7 +196,7 @@ export function SubscriptionTierBuilder({ onCancel, onSave, token, packageId }: 
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder={t('whatsIncluded')}
                 rows={4}
-                className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                className="w-full px-4 py-3 bg-card border border-gray-300 rounded-lg focus:ring-2 focus:ring-tint focus:border-transparent resize-none"
               />
             </div>
           </>
@@ -210,7 +210,7 @@ export function SubscriptionTierBuilder({ onCancel, onSave, token, packageId }: 
             </label>
             <p className="text-gray-500 text-sm mb-3">{t('bundledPlansHint')}</p>
             {plans.length === 0 ? (
-              <div className="bg-white border border-dashed border-gray-300 rounded-lg p-6 text-center text-gray-500 text-sm">
+              <div className="bg-card border border-dashed border-gray-300 rounded-lg p-6 text-center text-gray-500 text-sm">
                 {t('noPlansToBundle')}
               </div>
             ) : (
@@ -223,11 +223,11 @@ export function SubscriptionTierBuilder({ onCancel, onSave, token, packageId }: 
                       type="button"
                       onClick={() => togglePlan(plan.id)}
                       className={`w-full flex items-center justify-between p-3 rounded-lg border transition-colors text-left ${
-                        checked ? 'bg-yellow-50 border-yellow-500' : 'bg-white border-gray-200 hover:border-gray-300'
+                        checked ? 'bg-yellow-50 border-yellow-500' : 'bg-card border-gray-200 hover:border-gray-300'
                       }`}
                     >
                       <div>
-                        <div className="text-navy text-sm">{plan.name}</div>
+                        <div className="text-foreground text-sm">{plan.name}</div>
                         {plan.exercise_count != null && (
                           <div className="text-gray-500 text-xs">
                             {t('exercises')}: {plan.exercise_count}
@@ -239,7 +239,7 @@ export function SubscriptionTierBuilder({ onCancel, onSave, token, packageId }: 
                           checked ? 'bg-yellow-500 border-yellow-500' : 'border-gray-300'
                         }`}
                       >
-                        {checked && <Check className="w-4 h-4 text-navy" />}
+                        {checked && <Check className="w-4 h-4 text-foreground" />}
                       </span>
                     </button>
                   );
@@ -296,7 +296,7 @@ export function SubscriptionTierBuilder({ onCancel, onSave, token, packageId }: 
               <select
                 value={checkInFrequency}
                 onChange={(e) => setCheckInFrequency(e.target.value)}
-                className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-3 bg-card border border-gray-300 rounded-lg focus:ring-2 focus:ring-tint focus:border-transparent"
               >
                 <option value="daily">{t('freqDaily')}</option>
                 <option value="weekly">{t('freqWeekly')}</option>
@@ -309,17 +309,17 @@ export function SubscriptionTierBuilder({ onCancel, onSave, token, packageId }: 
             <div className="space-y-2">
               <label className="flex items-center gap-3 cursor-pointer">
                 <input type="checkbox" checked={videoAccess} onChange={(e) => setVideoAccess(e.target.checked)}
-                  className="w-5 h-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500" />
+                  className="w-5 h-5 text-tint-ink rounded border-gray-300 focus:ring-tint" />
                 <span className="text-gray-900">{t('accessVideoLibrary')}</span>
               </label>
               <label className="flex items-center gap-3 cursor-pointer">
                 <input type="checkbox" checked={nutritionGuides} onChange={(e) => setNutritionGuides(e.target.checked)}
-                  className="w-5 h-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500" />
+                  className="w-5 h-5 text-tint-ink rounded border-gray-300 focus:ring-tint" />
                 <span className="text-gray-900">{t('nutritionGuidesIncluded')}</span>
               </label>
               <label className="flex items-center gap-3 cursor-pointer">
                 <input type="checkbox" checked={popular} onChange={(e) => setPopular(e.target.checked)}
-                  className="w-5 h-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500" />
+                  className="w-5 h-5 text-tint-ink rounded border-gray-300 focus:ring-tint" />
                 <span className="text-gray-900">{t('markAsPopular')}</span>
               </label>
             </div>
@@ -330,10 +330,10 @@ export function SubscriptionTierBuilder({ onCancel, onSave, token, packageId }: 
                 <input
                   type="text" value={newFeature} onChange={(e) => setNewFeature(e.target.value)}
                   placeholder={t('formVideoPlaceholder')}
-                  className="flex-1 px-4 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="flex-1 px-4 py-2 bg-card border border-gray-300 rounded-lg focus:ring-2 focus:ring-tint focus:border-transparent"
                   onKeyPress={(e) => e.key === 'Enter' && addCustomFeature()}
                 />
-                <button onClick={addCustomFeature} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                <button onClick={addCustomFeature} className="px-4 py-2 bg-tint text-tint-fg rounded-lg hover:bg-tint-2">
                   <Plus className="w-5 h-5" />
                 </button>
               </div>
@@ -352,14 +352,14 @@ export function SubscriptionTierBuilder({ onCancel, onSave, token, packageId }: 
             </div>
 
             {/* Review */}
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div className="bg-tint-soft border border-blue-200 rounded-lg p-4">
               <div className="text-blue-900 mb-3">{t('preview')}</div>
-              <div className="bg-white rounded-lg p-4">
+              <div className="bg-card rounded-lg p-4">
                 <h3 className="text-gray-900 mb-2">{name || t('tierName')}</h3>
                 <p className="text-gray-600 text-sm mb-3">{description || t('descriptionLabel')}</p>
                 <div className="flex gap-2 mb-3 flex-wrap">
                   {monthlyPrice > 0 && (
-                    <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded text-sm">
+                    <span className="px-3 py-1 bg-tint-soft text-blue-700 rounded text-sm">
                       {monthlyPrice.toLocaleString()}{t('perMoShort')}
                     </span>
                   )}

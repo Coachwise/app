@@ -183,7 +183,7 @@ export function ChannelView({ channelId, userRole, onBack }: ChannelViewProps) {
   return (
     <div className="fixed inset-0 bg-gray-100 flex flex-col z-50 max-w-md mx-auto">
       {/* Header */}
-      <div className="bg-navy px-4 py-3 sticky top-0 z-10">
+      <div className="bg-card border-b border-border px-4 py-3 sticky top-0 z-10">
         <div className="flex items-center gap-3 mb-2">
           <BackButton onClick={onBack} aria-label={t('back')} />
           
@@ -192,8 +192,8 @@ export function ChannelView({ channelId, userRole, onBack }: ChannelViewProps) {
           </div>
           
           <div className="flex-1">
-            <h2 className="text-white">{channelInfo.name}</h2>
-            <p className="text-gray-300 text-xs flex items-center gap-2">
+            <h2 className="text-foreground">{channelInfo.name}</h2>
+            <p className="text-muted-foreground text-xs flex items-center gap-2">
               <Users className="w-3 h-3" />
               {t('membersCount', { count: channelInfo.memberCount })}
             </p>
@@ -208,7 +208,7 @@ export function ChannelView({ channelId, userRole, onBack }: ChannelViewProps) {
             )}
             <button
               onClick={() => setShowMembers(!showMembers)}
-              className="p-2 bg-navy-light text-white rounded-lg hover:bg-[#2A2A8E] transition-colors"
+              className="p-2 bg-tint-2 text-tint-fg rounded-lg hover:bg-tint transition-colors"
             >
               <Users className="w-5 h-5" />
             </button>
@@ -216,8 +216,8 @@ export function ChannelView({ channelId, userRole, onBack }: ChannelViewProps) {
         </div>
 
         {/* Channel Description */}
-        <div className="bg-navy-light rounded-lg px-3 py-2 mb-2">
-          <p className="text-gray-300 text-sm">{channelInfo.description}</p>
+        <div className="bg-tint-soft rounded-lg px-3 py-2 mb-2">
+          <p className="text-tint-ink text-sm">{channelInfo.description}</p>
         </div>
 
         {/* Channel Info Banner */}
@@ -230,9 +230,9 @@ export function ChannelView({ channelId, userRole, onBack }: ChannelViewProps) {
 
       {/* Invite Link Modal */}
       {showInviteLink && (
-        <div className="bg-white border-b border-gray-200 px-4 py-4">
+        <div className="bg-card border-b border-gray-200 px-4 py-4">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-navy">{t('inviteMembers')}</h3>
+            <h3 className="text-foreground">{t('inviteMembers')}</h3>
             <button
               onClick={() => setShowInviteLink(false)}
               className="p-1 hover:bg-gray-100 rounded"
@@ -253,7 +253,7 @@ export function ChannelView({ channelId, userRole, onBack }: ChannelViewProps) {
                 />
                 <button
                   onClick={handleCopyInviteLink}
-                  className="px-4 py-2 bg-navy text-white rounded-lg hover:bg-navy-light transition-colors flex items-center gap-2"
+                  className="px-4 py-2 bg-tint text-tint-fg rounded-lg hover:bg-tint-2 transition-colors flex items-center gap-2"
                 >
                   {linkCopied ? (
                     <>
@@ -291,9 +291,9 @@ export function ChannelView({ channelId, userRole, onBack }: ChannelViewProps) {
 
       {/* Members List Modal */}
       {showMembers && (
-        <div className="bg-white border-b border-gray-200 px-4 py-4">
+        <div className="bg-card border-b border-gray-200 px-4 py-4">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-navy">{t('channelMembers', { count: members.length })}</h3>
+            <h3 className="text-foreground">{t('channelMembers', { count: members.length })}</h3>
             <button
               onClick={() => setShowMembers(false)}
               className="p-1 hover:bg-gray-100 rounded"
@@ -314,7 +314,7 @@ export function ChannelView({ channelId, userRole, onBack }: ChannelViewProps) {
                 <p className="text-gray-900">{channelInfo.coachName}</p>
                 <p className="text-xs text-gray-500">{t('channelOwnerCoach')}</p>
               </div>
-              <span className="px-2 py-1 bg-yellow-500 text-navy rounded text-xs">
+              <span className="px-2 py-1 bg-yellow-500 text-foreground rounded text-xs">
                 {t('owner')}
               </span>
             </div>
@@ -351,8 +351,8 @@ export function ChannelView({ channelId, userRole, onBack }: ChannelViewProps) {
             
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-1">
-                <span className="text-sm text-navy">{channelInfo.coachName}</span>
-                <span className="px-2 py-0.5 bg-yellow-500 text-navy rounded text-xs">
+                <span className="text-sm text-foreground">{channelInfo.coachName}</span>
+                <span className="px-2 py-0.5 bg-yellow-500 text-foreground rounded text-xs">
                   {t('coachBadge')}
                 </span>
                 <span className="text-xs text-gray-500">{message.timestamp}</span>
@@ -369,7 +369,7 @@ export function ChannelView({ channelId, userRole, onBack }: ChannelViewProps) {
                     
                     {/* Options Menu */}
                     {selectedMessageId === message.id && (
-                      <div className="absolute right-0 top-0 bg-white rounded-lg shadow-lg border border-gray-200 p-2 z-20">
+                      <div className="absolute right-0 top-0 bg-card rounded-lg shadow-lg border border-gray-200 p-2 z-20">
                         <button
                           onClick={() => {
                             handleEditMessage(message.id);
@@ -377,7 +377,7 @@ export function ChannelView({ channelId, userRole, onBack }: ChannelViewProps) {
                           }}
                           className="flex items-center gap-2 w-full px-3 py-2 hover:bg-gray-100 rounded-lg transition-colors text-left"
                         >
-                          <Edit2 className="w-4 h-4 text-navy" />
+                          <Edit2 className="w-4 h-4 text-foreground" />
                           <span className="text-sm text-gray-900">{t('edit')}</span>
                         </button>
                         <button
@@ -398,7 +398,7 @@ export function ChannelView({ channelId, userRole, onBack }: ChannelViewProps) {
               
               {editingMessageId === message.id ? (
                 /* Edit Mode */
-                <div className="bg-white rounded-lg p-3 border-2 border-yellow-500">
+                <div className="bg-card rounded-lg p-3 border-2 border-yellow-500">
                   <textarea
                     value={editText}
                     onChange={(e) => setEditText(e.target.value)}
@@ -410,7 +410,7 @@ export function ChannelView({ channelId, userRole, onBack }: ChannelViewProps) {
                     <button
                       onClick={handleSaveEdit}
                       disabled={!editText.trim()}
-                      className="flex-1 py-1.5 bg-navy text-white rounded-lg hover:bg-navy-light disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors text-sm"
+                      className="flex-1 py-1.5 bg-tint text-tint-fg rounded-lg hover:bg-tint-2 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors text-sm"
                     >
                       {t('save')}
                     </button>
@@ -427,7 +427,7 @@ export function ChannelView({ channelId, userRole, onBack }: ChannelViewProps) {
                 </div>
               ) : (
                 /* Normal Message Display */
-                <div className="bg-white rounded-lg rounded-tl-sm p-3 shadow-sm">
+                <div className="bg-card rounded-lg rounded-tl-sm p-3 shadow-sm">
                   {/* Media Content */}
                   {message.mediaType === 'image' && message.mediaUrl && (
                     <div className="mb-2">
@@ -448,7 +448,7 @@ export function ChannelView({ channelId, userRole, onBack }: ChannelViewProps) {
                       />
                       <div className="absolute inset-0 flex items-center justify-center">
                         <div className="w-12 h-12 bg-white/90 rounded-full flex items-center justify-center">
-                          <Play className="w-6 h-6 text-navy ml-1" />
+                          <Play className="w-6 h-6 text-foreground ml-1" />
                         </div>
                       </div>
                     </div>
@@ -467,7 +467,7 @@ export function ChannelView({ channelId, userRole, onBack }: ChannelViewProps) {
 
       {/* Media Preview */}
       {selectedMedia && channelInfo.isOwner && (
-        <div className="fixed bottom-20 left-0 right-0 bg-white border-t border-gray-200 p-4 max-w-md mx-auto">
+        <div className="fixed bottom-20 left-0 right-0 bg-card border-t border-gray-200 p-4 max-w-md mx-auto">
           <div className="relative">
             <button
               onClick={() => setSelectedMedia(null)}
@@ -499,7 +499,7 @@ export function ChannelView({ channelId, userRole, onBack }: ChannelViewProps) {
 
       {/* Input Area - Only for Coach */}
       {channelInfo.isOwner && (
-        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 max-w-md mx-auto">
+        <div className="fixed bottom-0 left-0 right-0 bg-card border-t border-gray-200 p-4 max-w-md mx-auto">
           <div className="flex items-end gap-2">
             {/* Media Button */}
             <button
@@ -545,8 +545,8 @@ export function ChannelView({ channelId, userRole, onBack }: ChannelViewProps) {
 
       {/* Read-Only Notice for Non-Owners */}
       {!channelInfo.isOwner && (
-        <div className="fixed bottom-0 left-0 right-0 bg-navy p-4 max-w-md mx-auto">
-          <p className="text-white text-center text-sm">
+        <div className="fixed bottom-0 left-0 right-0 bg-card border-t border-border p-4 max-w-md mx-auto">
+          <p className="text-muted-foreground text-center text-sm">
             {t('onlyCanPost', { coach: channelInfo.coachName })}
           </p>
         </div>

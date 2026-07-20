@@ -230,7 +230,7 @@ export function Profile({ userRole, onNavigate, onBack, onMessage, viewingUserId
   const connectionButton = connStatus === 'connected' ? (
     <button
       onClick={() => viewingUserId && onMessage?.(viewingUserId)}
-      className="w-full py-3 rounded-lg bg-navy text-white hover:bg-navy-light transition-colors flex items-center justify-center gap-2"
+      className="w-full py-3 rounded-lg bg-tint text-tint-fg hover:bg-tint-2 transition-colors flex items-center justify-center gap-2"
     >
       <MessageCircle className="w-5 h-5" />
       <span>{t('message')}</span>
@@ -239,7 +239,7 @@ export function Profile({ userRole, onNavigate, onBack, onMessage, viewingUserId
     <button
       onClick={handleCancelConnect}
       disabled={connBusy}
-      className="w-full py-3 rounded-lg bg-gray-200 text-navy hover:bg-gray-300 transition-colors flex items-center justify-center gap-2 disabled:opacity-60"
+      className="w-full py-3 rounded-lg bg-gray-200 text-foreground hover:bg-gray-300 transition-colors flex items-center justify-center gap-2 disabled:opacity-60"
     >
       <Clock className="w-5 h-5" />
       <span>{t('requested')}</span>
@@ -252,7 +252,7 @@ export function Profile({ userRole, onNavigate, onBack, onMessage, viewingUserId
       <button
         onClick={handleRejectIncoming}
         disabled={connBusy || !incomingReqId}
-        className="flex-1 py-3 rounded-lg bg-gray-200 text-navy hover:bg-gray-300 transition-colors flex items-center justify-center gap-2 disabled:opacity-60"
+        className="flex-1 py-3 rounded-lg bg-gray-200 text-foreground hover:bg-gray-300 transition-colors flex items-center justify-center gap-2 disabled:opacity-60"
       >
         <X className="w-5 h-5" />
         <span>{t('reject')}</span>
@@ -267,14 +267,14 @@ export function Profile({ userRole, onNavigate, onBack, onMessage, viewingUserId
   return (
     <div className="min-h-screen bg-gray-100">
       {/* Cover */}
-      <div className="relative h-32 bg-gradient-to-br from-navy to-navy-light">
+      <div className="relative h-32 bg-tint">
         {!isOwnProfile && (
           <button
             onClick={() => (onBack ? onBack() : onNavigate('athlete-search'))}
             className={`absolute top-4 ${isRTL ? 'right-4' : 'left-4'} p-2 rounded-lg bg-black/20 hover:bg-black/30 transition-colors`}
             aria-label={t('back')}
           >
-            {isRTL ? <ArrowRight className="w-6 h-6 text-white" /> : <ArrowLeft className="w-6 h-6 text-white" />}
+            {isRTL ? <ArrowRight className="w-6 h-6 text-tint-fg" /> : <ArrowLeft className="w-6 h-6 text-tint-fg" />}
           </button>
         )}
         <div className={`absolute top-4 ${isRTL ? 'left-4' : 'right-4'}`}>
@@ -289,15 +289,15 @@ export function Profile({ userRole, onNavigate, onBack, onMessage, viewingUserId
         </div>
       </div>
 
-      <div className="bg-white border-b border-gray-200">
+      <div className="bg-card border-b border-gray-200">
         <div className="px-4 pt-0 pb-4">
           {/* Avatar */}
           <div className="relative -mt-12 mb-3 w-24">
-            <UserAvatar url={avatarUrl} alt={displayName} sizeClass="w-24 h-24" iconClass="w-12 h-12" className="border-4 border-white" />
+            <UserAvatar url={avatarUrl} alt={displayName} sizeClass="w-24 h-24" iconClass="w-12 h-12" className="border-4 border-tint-fg/30" />
             {proStatus && <ProBadge size="md" className="absolute top-0 right-0" />}
             {isCoachProfile && (
-              <div className={`absolute bottom-0 ${isRTL ? 'left-0' : 'right-0'} bg-yellow-500 rounded-full p-1 border-2 border-white`}>
-                <CheckCircle2 className="w-5 h-5 text-navy" />
+              <div className={`absolute bottom-0 ${isRTL ? 'left-0' : 'right-0'} bg-yellow-500 rounded-full p-1 border-2 border-tint-fg/30`}>
+                <CheckCircle2 className="w-5 h-5 text-foreground" />
               </div>
             )}
           </div>
@@ -305,7 +305,7 @@ export function Profile({ userRole, onNavigate, onBack, onMessage, viewingUserId
           {/* Name & meta */}
           <div className="mb-4">
             <div className="flex items-center gap-2 mb-1">
-              <h2 className="text-navy">{displayName || (viewedLoading ? '…' : t('athlete'))}</h2>
+              <h2 className="text-foreground">{displayName || (viewedLoading ? '…' : t('athlete'))}</h2>
               <span className={`px-2 py-0.5 rounded text-xs ${isCoachProfile ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 text-gray-600'}`}>
                 {isCoachProfile ? t('coach') : t('athlete')}
               </span>
@@ -344,9 +344,9 @@ export function Profile({ userRole, onNavigate, onBack, onMessage, viewingUserId
       {/* Coaching packages (when viewing a coach) */}
       {!isOwnProfile && isCoachProfile && (
         <div className="p-4">
-          <h3 className="text-navy font-medium mb-3">{t('coachPackagesTitle')}</h3>
+          <h3 className="text-foreground font-medium mb-3">{t('coachPackagesTitle')}</h3>
           {coachPackages.length === 0 ? (
-            <div className="bg-white rounded-2xl p-6 text-center border border-gray-100 shadow-sm">
+            <div className="bg-card rounded-2xl p-6 text-center border border-gray-100 shadow-sm">
               <p className="text-gray-500 text-sm">{t('noPackagesOffered')}</p>
             </div>
           ) : (
@@ -355,15 +355,15 @@ export function Profile({ userRole, onNavigate, onBack, onMessage, viewingUserId
                 const isSubscribed = subscribedPackageIds.has(pkg.id);
                 const blocked = !isSubscribed && hasCoachSubscription;
                 return (
-                  <div key={pkg.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                  <div key={pkg.id} className="bg-card rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
                     <div className="p-4">
                       <div className="flex items-start gap-3">
-                        <span className="w-10 h-10 rounded-xl bg-navy flex items-center justify-center shrink-0">
-                          <Package className="w-5 h-5 text-yellow-400" />
+                        <span className="w-10 h-10 rounded-xl bg-tint flex items-center justify-center shrink-0">
+                          <Package className="w-5 h-5 text-tint-ink" />
                         </span>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
-                            <h4 className="text-navy font-medium truncate">{pkg.name}</h4>
+                            <h4 className="text-foreground font-medium truncate">{pkg.name}</h4>
                             {pkg.popular && (
                               <span className="px-2 py-0.5 bg-yellow-100 text-yellow-700 rounded text-[10px]">{t('popular')}</span>
                             )}
@@ -375,7 +375,7 @@ export function Profile({ userRole, onNavigate, onBack, onMessage, viewingUserId
                       {/* Price */}
                       {pkg.price_monthly != null && (
                         <div className="mt-3 flex items-baseline gap-1">
-                          <span className="text-2xl font-semibold text-navy tabular-nums" dir="ltr">
+                          <span className="text-2xl font-semibold text-foreground tabular-nums" dir="ltr">
                             {formatMoney(pkg.price_monthly, pkg.currency, language)}
                           </span>
                           <span className="text-gray-500 text-sm">
@@ -403,7 +403,7 @@ export function Profile({ userRole, onNavigate, onBack, onMessage, viewingUserId
                             ? 'bg-green-50 text-green-700 cursor-default'
                             : blocked
                               ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                              : 'bg-yellow-500 text-navy hover:bg-yellow-400'
+                              : 'bg-yellow-500 text-foreground hover:bg-yellow-400'
                         }`}
                       >
                         {isSubscribed ? (
@@ -428,15 +428,15 @@ export function Profile({ userRole, onNavigate, onBack, onMessage, viewingUserId
       {/* Coach credential: active clients */}
       {isCoachProfile && achievements && (
         <div className="px-4 pt-4">
-          <div className="bg-gradient-to-br from-navy to-navy-light rounded-2xl p-4 flex items-center gap-4">
-            <span className="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center shrink-0">
-              <Users className="w-6 h-6 text-yellow-400" />
+          <div className="bg-tint rounded-2xl p-4 flex items-center gap-4">
+            <span className="w-12 h-12 rounded-xl bg-black/10 flex items-center justify-center shrink-0">
+              <Users className="w-6 h-6 text-tint-ink" />
             </span>
             <div>
-              <div className="text-white text-3xl font-semibold tabular-nums leading-none">
+              <div className="text-tint-fg text-3xl font-semibold tabular-nums leading-none">
                 {achievements.active_clients.toLocaleString()}
               </div>
-              <div className="text-white/60 text-xs mt-1.5">{t('activeClientsLabel')}</div>
+              <div className="text-muted-foreground text-xs mt-1.5">{t('activeClientsLabel')}</div>
             </div>
           </div>
         </div>

@@ -42,15 +42,15 @@ export function Support({ onBack, initialTicketId }: SupportProps) {
 
   return (
     <div className="fixed inset-0 z-40 bg-gray-100 max-w-md mx-auto flex flex-col">
-      <div className="bg-navy px-3 py-3 flex items-center gap-2">
+      <div className="bg-card border-b border-border px-3 py-3 flex items-center gap-2">
         <button
           onClick={() => (mode.name === 'list' ? onBack() : setMode({ name: 'list' }))}
-          className="p-2 rounded-lg hover:bg-navy-light transition-colors"
+          className="p-2 rounded-lg hover:bg-tint-2 transition-colors"
           aria-label={t('back')}
         >
-          <BackIcon className="w-6 h-6 text-white" />
+          <BackIcon className="w-6 h-6 text-foreground" />
         </button>
-        <h1 className="text-white text-lg flex-1">{t('support')}</h1>
+        <h1 className="text-foreground text-lg flex-1">{t('support')}</h1>
         {mode.name === 'list' && (
           <Button variant="brand" size="sm" icon={<Plus />} onClick={() => setMode({ name: 'new' })} className="rounded-full">
             {t('newTicket')}
@@ -104,9 +104,9 @@ function StatusChip({ ticket }: { ticket: SupportTicket | SupportTicketListItem 
   }
   if (ticket.turn === 'USER') {
     // The support team has answered and it's the user's move — highlight it.
-    return <span className="text-[10px] px-2 py-0.5 rounded-full bg-yellow-500 text-navy font-semibold">{t('yourTurn')}</span>;
+    return <span className="text-[10px] px-2 py-0.5 rounded-full bg-yellow-500 text-foreground font-semibold">{t('yourTurn')}</span>;
   }
-  return <span className="text-[10px] px-2 py-0.5 rounded-full bg-navy/10 text-navy">{t('awaitingSupport')}</span>;
+  return <span className="text-[10px] px-2 py-0.5 rounded-full bg-tint-soft text-tint-ink">{t('awaitingSupport')}</span>;
 }
 
 function TicketList({
@@ -149,7 +149,7 @@ function TicketList({
   if (items.length === 0) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center px-8 text-center gap-3">
-        <LifeBuoy className="w-12 h-12 text-gray-300" />
+        <LifeBuoy className="w-12 h-12 text-muted-foreground" />
         <p className="text-gray-500">{t('noTicketsYet')}</p>
         <Button variant="brand" onClick={onNew} className="mt-2 px-5 rounded-full">
           {t('openFirstTicket')}
@@ -164,10 +164,10 @@ function TicketList({
         <button
           key={ti.id}
           onClick={() => onOpen(ti.id)}
-          className="w-full bg-white rounded-xl p-3 text-start shadow-sm hover:bg-gray-50 transition-colors"
+          className="w-full bg-card rounded-xl p-3 text-start shadow-sm hover:bg-gray-50 transition-colors"
         >
           <div className="flex items-center gap-2">
-            <p className="text-navy font-semibold flex-1 truncate">{ti.subject}</p>
+            <p className="text-foreground font-semibold flex-1 truncate">{ti.subject}</p>
             <StatusChip ticket={ti} />
           </div>
           {ti.last_body && (
@@ -177,7 +177,7 @@ function TicketList({
           )}
           <div className="flex items-center gap-2 mt-1">
             <span className="text-gray-400 text-[11px] font-mono" dir="ltr">#{ticketRef(ti.id)}</span>
-            <span className="text-gray-300 text-[11px]">·</span>
+            <span className="text-muted-foreground text-[11px]">·</span>
             <span className="text-gray-400 text-[11px]">{fmtTime(ti.last_message_at)}</span>
           </div>
         </button>
@@ -209,25 +209,25 @@ function NewTicket({ token, onCreated }: { token?: string; onCreated: (id: strin
   return (
     <div className="flex-1 overflow-y-auto p-4 space-y-4">
       <div>
-        <label className="block text-navy font-semibold mb-1">{t('ticketSubject')}</label>
+        <label className="block text-foreground font-semibold mb-1">{t('ticketSubject')}</label>
         <input
           type="text"
           value={subject}
           onChange={(e) => setSubject(e.target.value)}
           maxLength={140}
           placeholder={t('ticketSubjectPlaceholder')}
-          className="w-full bg-white rounded-lg px-4 py-2.5 text-navy border border-gray-200 focus:outline-none focus:ring-2 focus:ring-yellow-500"
+          className="w-full bg-card rounded-lg px-4 py-2.5 text-foreground border border-gray-200 focus:outline-none focus:ring-2 focus:ring-yellow-500"
         />
       </div>
       <div>
-        <label className="block text-navy font-semibold mb-1">{t('ticketMessage')}</label>
+        <label className="block text-foreground font-semibold mb-1">{t('ticketMessage')}</label>
         <textarea
           value={body}
           onChange={(e) => setBody(e.target.value)}
           maxLength={4000}
           rows={7}
           placeholder={t('ticketMessagePlaceholder')}
-          className="w-full bg-white rounded-lg px-4 py-2.5 text-navy border border-gray-200 focus:outline-none focus:ring-2 focus:ring-yellow-500 resize-none"
+          className="w-full bg-card rounded-lg px-4 py-2.5 text-foreground border border-gray-200 focus:outline-none focus:ring-2 focus:ring-yellow-500 resize-none"
         />
       </div>
       {error && <p className="text-red-600 text-sm">{error}</p>}
@@ -316,9 +316,9 @@ function Thread({
       {/* The ticket's identity, pinned above the thread: the subject, its
           reference for quoting in a follow-up, and the way to close it. */}
       {ticket && (
-        <div className="bg-white border-b border-gray-200 px-4 py-2.5 flex items-center gap-2">
+        <div className="bg-card border-b border-gray-200 px-4 py-2.5 flex items-center gap-2">
           <div className="min-w-0 flex-1">
-            <p className="text-navy font-semibold truncate">{ticket.subject}</p>
+            <p className="text-foreground font-semibold truncate">{ticket.subject}</p>
             <div className="flex items-center gap-2 mt-0.5">
               <span className="text-gray-400 text-[11px] font-mono" dir="ltr">
                 #{ticketRef(ticket.id)}
@@ -356,13 +356,13 @@ function Thread({
               <div
                 className={`max-w-[78%] px-3 py-2 rounded-2xl ${
                   mine
-                    ? 'bg-yellow-500 text-navy rounded-br-sm'
-                    : 'bg-white text-gray-800 border border-gray-200 rounded-bl-sm'
+                    ? 'bg-yellow-500 text-foreground rounded-br-sm'
+                    : 'bg-card text-gray-800 border border-gray-200 rounded-bl-sm'
                 }`}
               >
-                {!mine && <p className="text-[10px] text-navy/60 font-semibold mb-0.5">{t('supportTeam')}</p>}
+                {!mine && <p className="text-[10px] text-foreground/60 font-semibold mb-0.5">{t('supportTeam')}</p>}
                 <p className="whitespace-pre-wrap break-words">{m.body}</p>
-                <div className={`text-[10px] mt-1 ${mine ? 'text-navy/60' : 'text-gray-400'} text-end`}>
+                <div className={`text-[10px] mt-1 ${mine ? 'text-foreground/60' : 'text-gray-400'} text-end`}>
                   {fmtTime(m.created_at)}
                 </div>
               </div>
@@ -375,12 +375,12 @@ function Thread({
       {error && <p className="text-red-600 text-sm px-4 pb-1">{error}</p>}
 
       {ticket?.status === 'CLOSED' ? (
-        <div className="bg-white border-t border-gray-200 p-4 text-center text-gray-500 text-sm flex items-center justify-center gap-2">
+        <div className="bg-card border-t border-gray-200 p-4 text-center text-gray-500 text-sm flex items-center justify-center gap-2">
           <Lock className="w-4 h-4" />
           {t('ticketClosedHint')}
         </div>
       ) : canSend ? (
-        <div className="bg-white border-t border-gray-200 p-3 flex items-center gap-2">
+        <div className="bg-card border-t border-gray-200 p-3 flex items-center gap-2">
           <input
             type="text"
             value={text}
@@ -392,7 +392,7 @@ function Thread({
               }
             }}
             placeholder={t('typeMessage')}
-            className="flex-1 bg-gray-100 rounded-full px-4 py-2.5 text-navy focus:outline-none focus:ring-2 focus:ring-yellow-500"
+            className="flex-1 bg-gray-100 rounded-full px-4 py-2.5 text-foreground focus:outline-none focus:ring-2 focus:ring-yellow-500"
           />
           <Button
             variant="brand"
@@ -406,7 +406,7 @@ function Thread({
           </Button>
         </div>
       ) : (
-        <div className="bg-white border-t border-gray-200 p-4 text-center text-gray-500 text-sm">
+        <div className="bg-card border-t border-gray-200 p-4 text-center text-gray-500 text-sm">
           {t('awaitingSupportHint')}
         </div>
       )}

@@ -213,7 +213,7 @@ export function AthleteSearch({ userRole, onNavigate, onViewProfile, activeTab: 
     }
     if (status === 'pending_outgoing') {
       return (
-        <button onClick={() => handleCancel(user)} disabled={busy} className={`${base} bg-gray-200 text-navy hover:bg-gray-300`}>
+        <button onClick={() => handleCancel(user)} disabled={busy} className={`${base} bg-gray-200 text-foreground hover:bg-gray-300`}>
           <Clock className="w-4 h-4" />
           <span className="hidden sm:inline">{t('requested')}</span>
         </button>
@@ -221,7 +221,7 @@ export function AthleteSearch({ userRole, onNavigate, onViewProfile, activeTab: 
     }
     if (status === 'pending_incoming') {
       return (
-        <button onClick={() => setActiveTab('requests')} className={`${base} bg-navy text-white hover:bg-navy-light`}>
+        <button onClick={() => setActiveTab('requests')} className={`${base} bg-tint text-tint-fg hover:bg-tint-2`}>
           <Check className="w-4 h-4" />
           <span className="hidden sm:inline">{t('respond')}</span>
         </button>
@@ -235,14 +235,14 @@ export function AthleteSearch({ userRole, onNavigate, onViewProfile, activeTab: 
   };
 
   const UserRow = ({ user, trailing }: { user: User; trailing?: ReactNode }) => (
-    <div className="bg-white rounded-lg p-4 shadow-md border border-gray-200">
+    <div className="bg-card rounded-lg p-4 shadow-md border border-gray-200">
       <div className="flex items-center gap-3">
         <Avatar user={user} onClick={() => onViewProfile(user.id)} />
         <div className="flex-1 min-w-0">
           <div onClick={() => onViewProfile(user.id)} className="cursor-pointer hover:opacity-80 transition-opacity">
             <div className="flex items-center gap-2 mb-1">
-              <span className="text-navy truncate">{displayName(user)}</span>
-              {user.is_coach && <CheckCircle2 className="w-4 h-4 text-yellow-500 flex-shrink-0" />}
+              <span className="text-foreground truncate">{displayName(user)}</span>
+              {user.is_coach && <CheckCircle2 className="w-4 h-4 text-tint-ink flex-shrink-0" />}
             </div>
             <p className="text-gray-600 text-sm">@{user.username}</p>
           </div>
@@ -254,15 +254,15 @@ export function AthleteSearch({ userRole, onNavigate, onViewProfile, activeTab: 
 
   const tabClass = (tab: Tab) =>
     `flex-1 py-2 px-3 text-sm rounded-lg transition-colors inline-flex items-center justify-center gap-1.5 ${
-      activeTab === tab ? 'bg-yellow-500 text-navy' : 'bg-white/10 text-white'
+      activeTab === tab ? 'bg-yellow-500 text-foreground' : 'bg-muted text-foreground'
     }`;
 
   return (
     <div className="min-h-screen bg-gray-100">
       {/* Header */}
-      <div className="bg-navy px-4 py-4 sticky top-0 z-10">
+      <div className="bg-card border-b border-border px-4 py-4 sticky top-0 z-10">
         <div className="flex items-center justify-between mb-4">
-          <h1 className="text-white text-xl">{t('discover')}</h1>
+          <h1 className="text-foreground text-xl">{t('discover')}</h1>
           <HamburgerMenu userRole={userRole} onNavigate={onNavigate} />
         </div>
 
@@ -277,7 +277,7 @@ export function AthleteSearch({ userRole, onNavigate, onViewProfile, activeTab: 
           <button onClick={() => setActiveTab('requests')} className={`${tabClass('requests')} relative`}>
             <span>{t('requests')}</span>
             {requestCount > 0 && (
-              <span className="absolute -top-2 -right-2 min-w-[20px] h-5 px-1.5 rounded-full bg-red-500 text-white text-[11px] font-semibold leading-none inline-flex items-center justify-center ring-2 ring-navy">
+              <span className="absolute -top-2 -right-2 min-w-[20px] h-5 px-1.5 rounded-full bg-red-500 text-white text-[11px] font-semibold leading-none inline-flex items-center justify-center ring-2 ring-card">
                 {requestCount.toLocaleString(language === 'fa' ? 'fa-IR' : 'en-US')}
               </span>
             )}
@@ -294,14 +294,14 @@ export function AthleteSearch({ userRole, onNavigate, onViewProfile, activeTab: 
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder={t('searchPlaceholder')}
-                className={`w-full bg-white border-0 rounded-lg py-3 ${isRTL ? 'pr-10 pl-4' : 'pl-10 pr-4'} text-navy focus:outline-none focus:ring-2 focus:ring-yellow-500`}
+                className={`w-full bg-card border-0 rounded-lg py-3 ${isRTL ? 'pr-10 pl-4' : 'pl-10 pr-4'} text-foreground focus:outline-none focus:ring-2 focus:ring-yellow-500`}
               />
             </div>
             <div className="flex items-center gap-2 flex-wrap">
               <button
                 onClick={() => setFilterCoachesOnly(!filterCoachesOnly)}
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
-                  filterCoachesOnly ? 'bg-yellow-500 text-navy' : 'bg-white/10 text-white border border-white/20'
+                  filterCoachesOnly ? 'bg-yellow-500 text-foreground' : 'bg-muted text-foreground border border-border'
                 }`}
               >
                 <CheckCircle2 className="w-4 h-4" />
@@ -317,7 +317,7 @@ export function AthleteSearch({ userRole, onNavigate, onViewProfile, activeTab: 
                   key={value || 'all'}
                   onClick={() => setSportFilter(value)}
                   className={`px-3 py-2 rounded-lg text-sm transition-colors ${
-                    sportFilter === value ? 'bg-yellow-500 text-navy' : 'bg-white/10 text-white border border-white/20'
+                    sportFilter === value ? 'bg-yellow-500 text-foreground' : 'bg-muted text-foreground border border-border'
                   }`}
                 >
                   {label}
@@ -332,7 +332,7 @@ export function AthleteSearch({ userRole, onNavigate, onViewProfile, activeTab: 
         {/* DISCOVER */}
         {activeTab === 'discover' && (
           <>
-            <h2 className="text-navy">
+            <h2 className="text-foreground">
               {searchQuery.trim() === '' ? t('allAthletes') : `${results.length} ${t('athletes')}`}
             </h2>
             {error && (
@@ -341,7 +341,7 @@ export function AthleteSearch({ userRole, onNavigate, onViewProfile, activeTab: 
             {loading ? (
               <div className="text-center py-10 text-gray-500 text-sm">{t('searching')}</div>
             ) : results.length === 0 ? (
-              <div className="bg-white rounded-lg p-8 text-center shadow-md border border-gray-200">
+              <div className="bg-card rounded-lg p-8 text-center shadow-md border border-gray-200">
                 <p className="text-gray-600">{t('noUsersFound')}</p>
               </div>
             ) : (
@@ -357,11 +357,11 @@ export function AthleteSearch({ userRole, onNavigate, onViewProfile, activeTab: 
         {/* MY NETWORK */}
         {activeTab === 'network' && (
           <>
-            <h2 className="text-navy">{t('myNetwork')}</h2>
+            <h2 className="text-foreground">{t('myNetwork')}</h2>
             {networkLoading ? (
               <div className="text-center py-10 text-gray-500 text-sm">{t('searching')}</div>
             ) : connections.length === 0 ? (
-              <div className="bg-white rounded-lg p-8 text-center shadow-md border border-gray-200">
+              <div className="bg-card rounded-lg p-8 text-center shadow-md border border-gray-200">
                 <p className="text-gray-600">{t('noConnections')}</p>
               </div>
             ) : (
@@ -386,11 +386,11 @@ export function AthleteSearch({ userRole, onNavigate, onViewProfile, activeTab: 
         {/* REQUESTS */}
         {activeTab === 'requests' && (
           <>
-            <h2 className="text-navy">{t('connectionRequests')}</h2>
+            <h2 className="text-foreground">{t('connectionRequests')}</h2>
             {requestsLoading ? (
               <div className="text-center py-10 text-gray-500 text-sm">{t('searching')}</div>
             ) : requests.length === 0 ? (
-              <div className="bg-white rounded-lg p-8 text-center shadow-md border border-gray-200">
+              <div className="bg-card rounded-lg p-8 text-center shadow-md border border-gray-200">
                 <p className="text-gray-600">{t('noRequests')}</p>
               </div>
             ) : (
@@ -414,7 +414,7 @@ export function AthleteSearch({ userRole, onNavigate, onViewProfile, activeTab: 
                           <button
                             onClick={() => handleReject(req)}
                             disabled={pendingIds.has(req.id)}
-                            className="p-2 rounded-lg bg-gray-200 text-navy hover:bg-gray-300 transition-colors disabled:opacity-60"
+                            className="p-2 rounded-lg bg-gray-200 text-foreground hover:bg-gray-300 transition-colors disabled:opacity-60"
                             aria-label={t('reject')}
                           >
                             <X className="w-5 h-5" />

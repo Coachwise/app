@@ -20,7 +20,7 @@ export function GradeSelect({
     <select
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className={cn('rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-sm text-navy', className)}
+      className={cn('rounded-lg border border-gray-300 bg-card px-2 py-1.5 text-sm text-foreground', className)}
     >
       <option value="">{placeholder}</option>
       <optgroup label="Bouldering (V)">

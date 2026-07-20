@@ -35,7 +35,7 @@ type PlanExercise = {
 function SportTypeBadge({ sportType }: { sportType: ExerciseSportType }) {
   const { t } = useLanguage();
   const colors = {
-    STRENGTH: 'bg-blue-100 text-blue-700',
+    STRENGTH: 'bg-tint-soft text-blue-700',
     CLIMBING: 'bg-purple-100 text-purple-700',
     CARDIO: 'bg-red-100 text-red-700',
     MOBILITY: 'bg-green-100 text-green-700',
@@ -305,10 +305,10 @@ export function PlanBuilder({ onCancel, onSave, planId }: PlanBuilderProps) {
   return (
     <div className="min-h-screen bg-gray-100">
       {/* Header */}
-      <div className="bg-navy px-4 py-4 sticky top-0 z-10">
+      <div className="bg-card border-b border-border px-4 py-4 sticky top-0 z-10">
         <div className="flex items-center justify-between">
           <BackButton onClick={onCancel} aria-label={t('back')} />
-          <h2 className="text-white">{planId ? (isOwner ? t('editPlan') : t('viewPlan')) : t('createPlan')}</h2>
+          <h2 className="text-foreground">{planId ? (isOwner ? t('editPlan') : t('viewPlan')) : t('createPlan')}</h2>
           {readOnly ? (
             <div className="w-10" />
           ) : (
@@ -331,7 +331,7 @@ export function PlanBuilder({ onCancel, onSave, planId }: PlanBuilderProps) {
             onChange={(e) => setPlanName(e.target.value)}
             placeholder={t('planNamePlaceholder')}
             readOnly={readOnly}
-            className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${readOnly ? 'bg-gray-100 text-gray-700 cursor-default' : 'bg-white'}`}
+            className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-tint focus:border-transparent ${readOnly ? 'bg-gray-100 text-gray-700 cursor-default' : 'bg-card'}`}
           />
         </div>
 
@@ -342,7 +342,7 @@ export function PlanBuilder({ onCancel, onSave, planId }: PlanBuilderProps) {
               type="checkbox"
               checked={isPublic}
               onChange={(e) => setIsPublic(e.target.checked)}
-              className="w-5 h-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+              className="w-5 h-5 text-tint-ink rounded border-gray-300 focus:ring-tint"
             />
             <div>
               <span className="text-gray-900">{t('makePlanPublic')}</span>
@@ -352,13 +352,13 @@ export function PlanBuilder({ onCancel, onSave, planId }: PlanBuilderProps) {
         )}
 
         {/* Exercises List */}
-        <div className="bg-white rounded-lg shadow-md p-4 border border-gray-200">
+        <div className="bg-card rounded-lg shadow-md p-4 border border-gray-200">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-[#3D3D3D]">{t('exercisesCount', { count: exercises.length })}</h3>
+            <h3 className="text-foreground">{t('exercisesCount', { count: exercises.length })}</h3>
             {!readOnly && (
               <button
                 onClick={() => setShowExerciseSelector(!showExerciseSelector)}
-                className="flex items-center gap-2 px-4 py-2 bg-yellow-500 text-[#3D3D3D] rounded-lg hover:bg-yellow-400 transition-colors"
+                className="flex items-center gap-2 px-4 py-2 bg-yellow-500 text-foreground rounded-lg hover:bg-yellow-400 transition-colors"
               >
                 <Plus className="w-4 h-4" />
                 <span className="text-sm">{t('add')}</span>
@@ -367,7 +367,7 @@ export function PlanBuilder({ onCancel, onSave, planId }: PlanBuilderProps) {
           </div>
 
           {showExerciseSelector && (
-            <div className="mb-4 border border-gray-200 rounded-lg p-4 bg-white shadow-sm">
+            <div className="mb-4 border border-gray-200 rounded-lg p-4 bg-card shadow-sm">
               <div className="flex gap-2 mb-3">
                 <div className="flex-1 relative">
                   <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
@@ -375,7 +375,7 @@ export function PlanBuilder({ onCancel, onSave, planId }: PlanBuilderProps) {
                     value={exerciseSearch}
                     onChange={(e) => setExerciseSearch(e.target.value)}
                     placeholder={t('searchExercisesPlaceholder')}
-                    className="w-full pl-9 pr-3 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent text-sm"
+                    className="w-full pl-9 pr-3 py-2 bg-card border border-gray-300 rounded-lg focus:ring-2 focus:ring-tint focus:border-transparent text-sm"
                   />
                 </div>
                 <Button variant="brand" size="sm" icon={<Plus />} onClick={() => setShowExerciseBuilder(true)}>
@@ -393,7 +393,7 @@ export function PlanBuilder({ onCancel, onSave, planId }: PlanBuilderProps) {
                         key={s}
                         onClick={() => selectSport(s)}
                         className={`shrink-0 px-5 py-2.5 rounded-xl text-sm font-semibold transition-colors ${
-                          sport === s ? 'bg-navy text-white shadow-sm' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                          sport === s ? 'bg-tint text-tint-fg shadow-sm' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                         }`}
                       >
                         {t(`sport${s}`)}
@@ -411,7 +411,7 @@ export function PlanBuilder({ onCancel, onSave, planId }: PlanBuilderProps) {
                     <button
                       onClick={() => selectCategory('')}
                       className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                        category === '' ? 'bg-navy text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        category === '' ? 'bg-tint text-tint-fg' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                       }`}
                     >
                       {t('allCategories')}
@@ -421,7 +421,7 @@ export function PlanBuilder({ onCancel, onSave, planId }: PlanBuilderProps) {
                         key={c.id}
                         onClick={() => selectCategory(c.slug)}
                         className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                          category === c.slug ? 'bg-navy text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                          category === c.slug ? 'bg-tint text-tint-fg' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                         }`}
                       >
                         {localized(c.name_i18n, c.slug, language)}
@@ -473,7 +473,7 @@ export function PlanBuilder({ onCancel, onSave, planId }: PlanBuilderProps) {
                           className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
                             alreadyAdded
                               ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                              : 'bg-navy text-white hover:bg-navy-light'
+                              : 'bg-tint text-tint-fg hover:bg-tint-2'
                           }`}
                         >
                           {alreadyAdded ? t('added') : t('add')}
@@ -498,14 +498,14 @@ export function PlanBuilder({ onCancel, onSave, planId }: PlanBuilderProps) {
           )}
 
           {exercises.length === 0 ? (
-            <div className="bg-white border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+            <div className="bg-card border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
               <p className="text-gray-600 mb-2">{t('noExercisesAddedYet')}</p>
               <p className="text-gray-500 text-sm">{t('tapAddExerciseToBuild')}</p>
             </div>
           ) : (
             <div className="space-y-3">
               {exercises.map((exercise, index) => (
-                <div key={exercise.key} className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
+                <div key={exercise.key} className="bg-card border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
                   <div className="flex items-start gap-3">
                     {!readOnly && (
                       <button className="mt-2 text-gray-400 hover:text-gray-600 cursor-grab active:cursor-grabbing">

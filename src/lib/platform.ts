@@ -30,7 +30,7 @@ export async function openExternal(url: string, onClose?: () => void): Promise<v
         onClose();
       });
     }
-    await Browser.open({ url, presentationStyle: 'popover', toolbarColor: '#0E0E55' });
+    await Browser.open({ url, presentationStyle: 'popover', toolbarColor: '#0097e6' });
     return;
   }
   window.open(url, '_blank');
@@ -47,7 +47,7 @@ export async function initNative(): Promise<void> {
     await StatusBar.setOverlaysWebView({ overlay: false });
     await StatusBar.setStyle({ style: Style.Dark }); // dark bg → light content
     if (platform() === 'android') {
-      await StatusBar.setBackgroundColor({ color: '#0E0E55' });
+      await StatusBar.setBackgroundColor({ color: '#0097e6' });
     }
   } catch {
     /* status bar not available */

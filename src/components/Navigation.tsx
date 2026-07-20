@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Home, Dumbbell, LayoutDashboard, MessageCircle, Compass, Activity } from 'lucide-react';
+import { Home, Dumbbell, LayoutDashboard, MessageCircle, Compass } from 'lucide-react';
 import type { ViewType, UserRole } from '../App';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -43,20 +43,17 @@ export function Navigation({ currentView, onNavigate, userRole }: NavigationProp
     ...(FEATURES.feed ? [{ id: 'feed' as ViewType, icon: Home, label: t('feed') }] : []),
     { id: 'athlete-search' as ViewType, icon: Compass, label: t('discover') },
     { id: 'workouts-home' as ViewType, icon: Dumbbell, label: t('workouts') },
-    // Athletes get a top-level Analytics tab. Coaches don't (it would be a 5th
-    // tab) — their personal analytics live inside the dashboard's Analytics section.
+    { id: 'messages' as ViewType, icon: MessageCircle, label: t('messages') },
+    // Personal training analytics lives in the side menu for both roles (keeps the
+    // bottom nav consistent and a coach's own training out of their work dashboard).
     ...(userRole === 'coach' ? [
-      { id: 'messages' as ViewType, icon: MessageCircle, label: t('messages') },
       { id: 'coach-dashboard' as ViewType, icon: LayoutDashboard, label: t('dashboard') },
-    ] : [
-      { id: 'analytics' as ViewType, icon: Activity, label: t('analytics') },
-      { id: 'messages' as ViewType, icon: MessageCircle, label: t('messages') },
-    ]),
+    ] : []),
   ];
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 bg-navy max-w-md mx-auto"
+      className="fixed bottom-0 left-0 right-0 bg-card border-t border-border max-w-md mx-auto"
       style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
     >
       <div className="flex items-center justify-around px-4 py-3">
@@ -75,13 +72,13 @@ export function Navigation({ currentView, onNavigate, userRole }: NavigationProp
               key={item.id}
               onClick={() => onNavigate(item.id)}
               className={`flex flex-col items-center gap-1 py-2 px-4 transition-all ${
-                isActive ? 'text-yellow-500' : 'text-gray-300'
+                isActive ? 'text-tint-ink' : 'text-muted-foreground'
               }`}
             >
               <span className="relative">
                 <Icon className="w-6 h-6" />
                 {showDot && (
-                  <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-red-500 rounded-full border border-navy" />
+                  <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-red-500 rounded-full border border-tint" />
                 )}
               </span>
               <span className="text-xs">{item.label}</span>

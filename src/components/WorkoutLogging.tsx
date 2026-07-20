@@ -180,10 +180,10 @@ export function WorkoutLogging({ sport, sessionId, onBack }: WorkoutLoggingProps
   return (
     <div className="min-h-screen bg-gray-100">
       {/* Header */}
-      <div className="bg-navy px-4 py-4 sticky top-0 z-10">
+      <div className="bg-card border-b border-border px-4 py-4 sticky top-0 z-10">
         <div className="flex items-center justify-between">
           <BackButton onClick={onBack} aria-label={t('back')} />
-          <h2 className="text-white">{t('workoutTitle', { sport: sport === 'fitness' ? t('sportFitness') : t('sportClimbing') })}</h2>
+          <h2 className="text-foreground">{t('workoutTitle', { sport: sport === 'fitness' ? t('sportFitness') : t('sportClimbing') })}</h2>
           <Button variant="brand" size="sm" onClick={handleFinishSession} className="font-bold">
             {t('finish')}
           </Button>
@@ -198,8 +198,8 @@ export function WorkoutLogging({ sport, sessionId, onBack }: WorkoutLoggingProps
           </div>
         )}
         {/* Timer Card */}
-        <div className="bg-navy rounded-lg shadow-lg p-6 text-center">
-          <div className="text-6xl text-white mb-4 font-mono">{formatTime(timer)}</div>
+        <div className="bg-tint rounded-lg shadow-lg p-6 text-center">
+          <div className="text-6xl text-tint-fg mb-4 font-mono">{formatTime(timer)}</div>
           <div className="flex gap-3 justify-center">
             {!isRunning ? (
               <Button variant="brand" icon={<Play className="size-5" />} onClick={() => setIsRunning(true)} className="px-6 py-3">
@@ -216,7 +216,7 @@ export function WorkoutLogging({ sport, sessionId, onBack }: WorkoutLoggingProps
                   setTimer(0);
                   setIsRunning(false);
                 }}
-                className="flex items-center gap-2 px-6 py-3 bg-white text-navy rounded-lg hover:bg-gray-100 transition-colors border border-gray-200"
+                className="flex items-center gap-2 px-6 py-3 bg-card text-foreground rounded-lg hover:bg-gray-100 transition-colors border border-gray-200"
               >
                 <RotateCcw className="w-5 h-5" />
                 <span>{t('reset')}</span>
@@ -235,7 +235,7 @@ export function WorkoutLogging({ sport, sessionId, onBack }: WorkoutLoggingProps
             value={exercise}
             onChange={(e) => setExercise(e.target.value)}
             placeholder={sport === 'fitness' ? t('deadliftPlaceholder') : t('boulderPlaceholder')}
-            className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full px-4 py-3 bg-card border border-gray-300 rounded-lg focus:ring-2 focus:ring-tint focus:border-transparent"
           />
         </div>
 
@@ -246,7 +246,7 @@ export function WorkoutLogging({ sport, sessionId, onBack }: WorkoutLoggingProps
               <label className="text-gray-900">{t('setsLabel')}</label>
               <button
                 onClick={addSet}
-                className="flex items-center gap-1 text-blue-600 hover:text-blue-700"
+                className="flex items-center gap-1 text-tint-ink hover:text-tint-ink"
               >
                 <Plus className="w-4 h-4" />
                 <span className="text-sm">{t('addSet')}</span>
@@ -255,7 +255,7 @@ export function WorkoutLogging({ sport, sessionId, onBack }: WorkoutLoggingProps
             
             <div className="space-y-3">
               {sets.map((set, index) => (
-                <div key={index} className="bg-white border border-gray-200 rounded-lg p-4">
+                <div key={index} className="bg-card border border-gray-200 rounded-lg p-4">
                   <div className="flex items-center justify-between mb-3">
                     <span className="text-gray-600">{t('setNumber', { n: index + 1 })}</span>
                     {sets.length > 1 && (
@@ -304,7 +304,7 @@ export function WorkoutLogging({ sport, sessionId, onBack }: WorkoutLoggingProps
             
             <div className="space-y-3">
               {climbingAttempts.map((attempt, index) => (
-                <div key={index} className="bg-white border border-gray-200 rounded-lg p-4">
+                <div key={index} className="bg-card border border-gray-200 rounded-lg p-4">
                   <div className="flex items-center justify-between mb-3">
                     <span className="text-gray-600">{t('attemptNumber', { n: index + 1 })}</span>
                     {climbingAttempts.length > 1 && (
@@ -368,7 +368,7 @@ export function WorkoutLogging({ sport, sessionId, onBack }: WorkoutLoggingProps
             onChange={(e) => setNotes(e.target.value)}
             placeholder={t('notesPlaceholder')}
             rows={4}
-            className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+            className="w-full px-4 py-3 bg-card border border-gray-300 rounded-lg focus:ring-2 focus:ring-tint focus:border-transparent resize-none"
           />
         </div>
 
@@ -376,7 +376,7 @@ export function WorkoutLogging({ sport, sessionId, onBack }: WorkoutLoggingProps
         <button
           onClick={handleSave}
           disabled={loading}
-          className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed font-bold"
+          className="w-full bg-tint text-tint-fg py-3 rounded-lg hover:bg-tint-2 transition-colors active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed font-bold"
         >
           {loading ? t('saving') : t('logExercise')}
         </button>

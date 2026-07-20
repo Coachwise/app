@@ -102,10 +102,10 @@ export function TestBuilder({ token, testId, onCancel, onSave }: TestBuilderProp
 
   return (
     <div className="min-h-screen bg-gray-100">
-      <div className="bg-navy px-4 py-4 sticky top-0 z-10">
+      <div className="bg-card border-b border-border px-4 py-4 sticky top-0 z-10">
         <div className="flex items-center justify-between">
           <BackButton onClick={onCancel} aria-label={t('back')} />
-          <h2 className="text-white">{isEdit ? t('editTest') : t('createTest')}</h2>
+          <h2 className="text-foreground">{isEdit ? t('editTest') : t('createTest')}</h2>
           <Button variant="brand" size="sm" icon={<Save />} loading={saving} disabled={!isValid} onClick={handleSave}>
             {t('save')}
           </Button>
@@ -114,13 +114,13 @@ export function TestBuilder({ token, testId, onCancel, onSave }: TestBuilderProp
 
       <div className="p-4 space-y-4 pb-28">
         <div>
-          <label className="text-[#3D3D3D] mb-2 block">{t('testName')}</label>
+          <label className="text-foreground mb-2 block">{t('testName')}</label>
           <input
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder={t('testNamePlaceholder')}
-            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent text-[#3D3D3D]"
+            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-tint focus:border-transparent text-foreground"
           />
         </div>
         <div>
@@ -130,7 +130,7 @@ export function TestBuilder({ token, testId, onCancel, onSave }: TestBuilderProp
             onChange={(e) => setDescription(e.target.value)}
             placeholder={t('whatsIncluded')}
             rows={3}
-            className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+            className="w-full px-4 py-3 bg-card border border-gray-300 rounded-lg focus:ring-2 focus:ring-tint focus:border-transparent resize-none"
           />
         </div>
 
@@ -150,7 +150,7 @@ export function TestBuilder({ token, testId, onCancel, onSave }: TestBuilderProp
                       key={key}
                       onClick={() => toggleMetric(idx, key)}
                       className={`flex-1 py-1.5 rounded-lg text-xs transition-colors flex items-center justify-center gap-1 border ${
-                        on ? 'bg-navy text-white border-navy' : 'bg-white text-gray-500 border-gray-200'
+                        on ? 'bg-tint text-tint-fg border-tint' : 'bg-card text-gray-500 border-gray-200'
                       }`}
                     >
                       {on && <Check className="w-3 h-3" />}

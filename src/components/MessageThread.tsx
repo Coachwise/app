@@ -93,9 +93,9 @@ export function MessageThread({ conversationId, onBack, onViewProfile }: Message
   return (
     <div className="fixed inset-0 z-50 bg-gray-100 max-w-md mx-auto flex flex-col">
       {/* Header */}
-      <div className="bg-navy px-3 py-3 flex items-center gap-2">
-        <button onClick={onBack} className="p-2 rounded-lg hover:bg-navy-light transition-colors" aria-label={t('back')}>
-          <BackIcon className="w-6 h-6 text-white" />
+      <div className="bg-card border-b border-border px-3 py-3 flex items-center gap-2">
+        <button onClick={onBack} className="p-2 rounded-lg hover:bg-tint-2 transition-colors" aria-label={t('back')}>
+          <BackIcon className="w-6 h-6 text-foreground" />
         </button>
         <button
           onClick={() => peer && onViewProfile?.(peer.id)}
@@ -103,8 +103,8 @@ export function MessageThread({ conversationId, onBack, onViewProfile }: Message
         >
           <UserAvatar url={peer?.avatar?.url} alt={peerName(peer)} sizeClass="w-10 h-10" iconClass="w-5 h-5" />
           <div className="min-w-0 text-start">
-            <p className="text-white truncate">{peerName(peer) || '…'}</p>
-            {peer && <p className="text-gray-300 text-xs truncate">@{peer.username}</p>}
+            <p className="text-foreground truncate">{peerName(peer) || '…'}</p>
+            {peer && <p className="text-muted-foreground text-xs truncate">@{peer.username}</p>}
           </div>
         </button>
       </div>
@@ -123,12 +123,12 @@ export function MessageThread({ conversationId, onBack, onViewProfile }: Message
                 <div
                   className={`max-w-[78%] px-3 py-2 rounded-2xl ${
                     mine
-                      ? 'bg-yellow-500 text-navy rounded-br-sm'
-                      : 'bg-white text-gray-800 border border-gray-200 rounded-bl-sm'
+                      ? 'bg-yellow-500 text-foreground rounded-br-sm'
+                      : 'bg-card text-gray-800 border border-gray-200 rounded-bl-sm'
                   }`}
                 >
                   <p className="whitespace-pre-wrap break-words">{m.body}</p>
-                  <div className={`text-[10px] mt-1 ${mine ? 'text-navy/60' : 'text-gray-400'} text-end`}>
+                  <div className={`text-[10px] mt-1 ${mine ? 'text-foreground/60' : 'text-gray-400'} text-end`}>
                     {fmtTime(m.created_at)}
                   </div>
                 </div>
@@ -140,7 +140,7 @@ export function MessageThread({ conversationId, onBack, onViewProfile }: Message
       </div>
 
       {/* Composer */}
-      <div className="bg-white border-t border-gray-200 p-3 flex items-center gap-2">
+      <div className="bg-card border-t border-gray-200 p-3 flex items-center gap-2">
         <input
           type="text"
           value={text}
@@ -152,7 +152,7 @@ export function MessageThread({ conversationId, onBack, onViewProfile }: Message
             }
           }}
           placeholder={t('typeMessage')}
-          className="flex-1 bg-gray-100 rounded-full px-4 py-2.5 text-navy focus:outline-none focus:ring-2 focus:ring-yellow-500"
+          className="flex-1 bg-gray-100 rounded-full px-4 py-2.5 text-foreground focus:outline-none focus:ring-2 focus:ring-yellow-500"
         />
         <Button
           variant="brand"
