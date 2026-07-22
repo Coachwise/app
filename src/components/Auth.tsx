@@ -48,6 +48,44 @@ export function Auth({ onLogin }: AuthProps) {
     return () => { active = false; };
   }, []);
 
+  // Web OTP API: Auto-retrieve verification code on compatible Android/Chrome devices.
+  useEffect(() => {
+    if (mode !== 'phone-code' || !sentPhone) return;
+    if (!('OTPCredential' in window)) return;
+
+    const ac = new AbortController();
+
+    navigator.credentials.get({
+      otp: { transport: ['sms'] },
+      signal: ac.signal
+    } as any)
+      .then(async (otp: any) => {
+        if (otp && otp.code) {
+          setCode(otp.code);
+          setError(null);
+          setLoading(true);
+          try {
+            const tokens = await AuthAPI.verifyPhoneOtp(sentPhone, otp.code.trim());
+            setTokens(tokens);
+            onLogin();
+          } catch (err) {
+            setError(errorText(t, err));
+          } finally {
+            setLoading(false);
+          }
+        }
+      })
+      .catch((err) => {
+        if (err.name !== 'AbortError') {
+          console.warn('Web OTP API error:', err);
+        }
+      });
+
+    return () => {
+      ac.abort();
+    };
+  }, [mode, sentPhone, t, onLogin, setTokens]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -175,6 +213,7 @@ export function Auth({ onLogin }: AuthProps) {
                       onChange={(e) => setCode(e.target.value)}
                       placeholder="- - - - - -"
                       maxLength={6}
+                      autoComplete="one-time-code"
                       className={`w-full bg-gray-50 border border-gray-200 rounded-lg py-3 ${isRTL ? 'pr-10 pl-4' : 'pl-10 pr-4'} text-navy text-center text-lg tracking-[0.5em] focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent`}
                       required
                       autoFocus
