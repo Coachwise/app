@@ -69,7 +69,12 @@ jobs:
             V="0.0.0+${GITHUB_SHA::7}"
           fi
           echo "VITE_APP_VERSION=$V" >> "$GITHUB_ENV"
-          echo "Building app version $V"
+          # versionCode must be a monotonically increasing integer or Android
+          # won't treat a new APK as an update (same code = stale WebView cache,
+          # and only uninstall/reinstall shows new content). run_number is
+          # guaranteed to increase across every CI run.
+          echo "VERSION_CODE=${{ github.run_number }}" >> "$GITHUB_ENV"
+          echo "Building app version $V (versionCode ${{ github.run_number }})"
 
       - name: Build web app
         env:
@@ -98,7 +103,7 @@ jobs:
         run: npx cap sync android
 
       - name: Build debug APK
-        run: ./gradlew assembleDebug --no-daemon
+        run: ./gradlew assembleDebug --no-daemon -PcoachwiseVersionCode=$VERSION_CODE -PcoachwiseVersionName=$VITE_APP_VERSION
         working-directory: android
 
       - name: Rename APK
