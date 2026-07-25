@@ -39,12 +39,15 @@ export function ProUpgradeModal({ isOpen, onClose, onUpgrade, feature }: ProUpgr
       <div className="bg-card rounded-2xl max-w-md w-full shadow-2xl overflow-hidden">
         {/* Header */}
         <div className="bg-tint px-6 py-5 relative">
-          <button
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={onClose}
-            className="absolute top-4 right-4 p-2 hover:bg-black/10 rounded-lg transition-colors"
+            aria-label={t('close')}
+            className="absolute top-4 right-4 text-tint-fg hover:bg-black/10"
           >
-            <X className="w-5 h-5 text-tint-fg" />
-          </button>
+            <X className="size-5" />
+          </Button>
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 bg-yellow-500 rounded-full flex items-center justify-center">
               <Crown className="w-6 h-6 text-foreground" />
@@ -117,12 +120,9 @@ export function ProUpgradeModal({ isOpen, onClose, onUpgrade, feature }: ProUpgr
             <Button variant="brand" size="block" icon={<Crown className="size-5" />} onClick={onUpgrade}>
               {t('subscribeToCoach')}
             </Button>
-            <button
-              onClick={onClose}
-              className="w-full bg-gray-200 text-gray-700 py-3 rounded-lg hover:bg-gray-300 transition-colors"
-            >
+            <Button variant="secondary" size="block" onClick={onClose}>
               {t('close')}
-            </button>
+            </Button>
           </div>
         </div>
       </div>

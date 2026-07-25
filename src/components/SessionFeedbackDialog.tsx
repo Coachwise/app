@@ -66,13 +66,16 @@ export function SessionFeedbackDialog({
             <h2 className="text-lg font-semibold text-foreground">
               {t('sessionFeedback')}
             </h2>
-            <button
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={onClose}
-              className="p-1 hover:bg-tint-2 rounded-lg transition-colors"
               disabled={loading}
+              aria-label={t('close')}
+              className="rounded-lg text-foreground hover:bg-tint-2"
             >
-              <X className="w-5 h-5 text-foreground" />
-            </button>
+              <X className="size-5" />
+            </Button>
           </div>
 
           {/* Content */}

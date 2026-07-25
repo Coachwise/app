@@ -94,9 +94,9 @@ export function MessageThread({ conversationId, onBack, onViewProfile }: Message
     <div className="fixed inset-0 z-50 bg-gray-100 max-w-md mx-auto flex flex-col">
       {/* Header */}
       <div className="bg-card border-b border-border px-3 py-3 flex items-center gap-2">
-        <button onClick={onBack} className="p-2 rounded-lg hover:bg-tint-2 transition-colors" aria-label={t('back')}>
-          <BackIcon className="w-6 h-6 text-foreground" />
-        </button>
+        <Button variant="ghost" size="icon" onClick={onBack} aria-label={t('back')} className="rounded-lg text-foreground hover:bg-tint-2">
+          <BackIcon className="size-6" />
+        </Button>
         <button
           onClick={() => peer && onViewProfile?.(peer.id)}
           className="flex items-center gap-3 flex-1 min-w-0"

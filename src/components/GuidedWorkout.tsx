@@ -283,13 +283,14 @@ export function GuidedWorkout({ open, exercises, onLogSet, onClose, onFinish }: 
                   <Timer className="size-4" />
                   {phase === 'rest' ? t('restNow') : phase === 'ready' ? t('getReady') : t('secondsLeft')}
                 </p>
-                <button
+                <Button
+                  variant="ghost"
                   onClick={() => setPaused((p) => !p)}
-                  className="mt-5 inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
+                  icon={paused ? <Play className="size-5" /> : <Pause className="size-5" />}
+                  className="mt-5 px-5 rounded-full bg-white/10 hover:bg-white/20 text-white"
                 >
-                  {paused ? <Play className="size-5" /> : <Pause className="size-5" />}
                   {paused ? t('resume') : t('pause')}
-                </button>
+                </Button>
               </div>
             )}
 
@@ -361,15 +362,15 @@ function Stepper({
       <span className="text-[11px] font-bold text-white/60">{label}</span>
       <div className="flex items-center gap-3">
         {!readOnly && (
-          <button onClick={() => onChange(-step)} className="p-1.5 rounded-full bg-white/10 hover:bg-white/20" aria-label="decrease">
+          <Button variant="ghost" size="icon" onClick={() => onChange(-step)} className="size-8 rounded-full bg-white/10 hover:bg-white/20 text-white" aria-label="decrease">
             <Minus className="size-4" />
-          </button>
+          </Button>
         )}
         <span className="text-2xl font-bold tabular-nums w-12 text-center">{value}</span>
         {!readOnly && (
-          <button onClick={() => onChange(step)} className="p-1.5 rounded-full bg-white/10 hover:bg-white/20" aria-label="increase">
+          <Button variant="ghost" size="icon" onClick={() => onChange(step)} className="size-8 rounded-full bg-white/10 hover:bg-white/20 text-white" aria-label="increase">
             <Plus className="size-4" />
-          </button>
+          </Button>
         )}
       </div>
     </div>

@@ -16,8 +16,8 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const brand = (f) => readFileSync(join(root, 'brand', f), 'utf8');
 const res = (p) => join(root, 'android/app/src/main/res', p);
 
-const NAVY = '#0E0E55';
-const YELLOW = '#eab308'; // --brand-yellow
+const AZURE = '#0097E6'; // --brand azure
+const MARK = '#ffffff'; // white mark on the azure tile
 
 const icon = brand('icon.svg');
 // mark.svg is `currentColor` (one colour, set by whatever it sits on), so every
@@ -48,17 +48,17 @@ for (const [d, scale] of Object.entries(density)) {
 // Splash: the mark, centred on navy, at ~26% of the short edge.
 const splash = { mdpi: [320, 480], hdpi: [480, 800], xhdpi: [720, 1280], xxhdpi: [960, 1600], xxxhdpi: [1280, 1920] };
 for (const [d, [w, h]] of Object.entries(splash)) {
-  jobs.push({ svg: mark, out: res(`drawable-port-${d}/splash.png`), w, h, bg: NAVY, cover: 0.26 });
-  jobs.push({ svg: mark, out: res(`drawable-land-${d}/splash.png`), w: h, h: w, bg: NAVY, cover: 0.26 });
+  jobs.push({ svg: mark, out: res(`drawable-port-${d}/splash.png`), w, h, bg: AZURE, cover: 0.26 });
+  jobs.push({ svg: mark, out: res(`drawable-land-${d}/splash.png`), w: h, h: w, bg: AZURE, cover: 0.26 });
 }
-jobs.push({ svg: mark, out: res('drawable/splash.png'), w: 480, h: 320, bg: NAVY, cover: 0.26 });
+jobs.push({ svg: mark, out: res('drawable/splash.png'), w: 480, h: 320, bg: AZURE, cover: 0.26 });
 
 // iOS: one 1024 app icon (no rounding — the OS masks it) and three identical
 // 2732² splashes (light / dark / any).
 const ios = (p) => join(root, 'ios/App/App/Assets.xcassets', p);
-jobs.push({ svg: iosIcon, out: ios('AppIcon.appiconset/AppIcon-512@2x.png'), w: 1024, h: 1024, bg: NAVY });
+jobs.push({ svg: iosIcon, out: ios('AppIcon.appiconset/AppIcon-512@2x.png'), w: 1024, h: 1024, bg: AZURE });
 for (const n of ['', '-1', '-2']) {
-  jobs.push({ svg: mark, out: ios(`Splash.imageset/splash-2732x2732${n}.png`), w: 2732, h: 2732, bg: NAVY, cover: 0.26 });
+  jobs.push({ svg: mark, out: ios(`Splash.imageset/splash-2732x2732${n}.png`), w: 2732, h: 2732, bg: AZURE, cover: 0.26 });
 }
 
 // Web
@@ -93,7 +93,7 @@ for (const job of jobs) {
     `<style>
        html,body{margin:0;padding:0;width:${job.w}px;height:${job.h}px;
          background:${job.bg ?? 'transparent'};
-         color:${job.color ?? YELLOW};
+         color:${job.color ?? MARK};
          display:flex;align-items:center;justify-content:center}
        svg{${size};display:block}
      </style>${job.svg}`,

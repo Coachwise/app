@@ -171,20 +171,31 @@ export function AvatarCropper({ image, busy, onCancel, onDone }: AvatarCropperPr
           value={zoom}
           onChange={(e) => changeZoom(Number(e.target.value))}
           aria-label={t('zoom')}
-          className="w-full accent-yellow-500"
+          className="w-full accent-tint"
         />
       </div>
 
+      {/* Both actions go through the shared Button at the SAME size so their
+          heights always match — size="block" gives py-3 with no fixed h-*. */}
       <div className="w-full max-w-xs flex gap-3">
-        <button
+        <Button
           type="button"
+          variant="ghost"
+          size="block"
           onClick={onCancel}
           disabled={working}
-          className="flex-1 py-3 rounded-xl border border-white/30 text-white disabled:opacity-50"
+          className="flex-1 rounded-xl border border-white/30 text-white hover:bg-white/10 hover:text-white"
         >
           {t('cancel')}
-        </button>
-        <Button type="button" variant="brand" loading={working} onClick={handleDone} className="flex-1 py-3 rounded-xl font-semibold">
+        </Button>
+        <Button
+          type="button"
+          variant="brand"
+          size="block"
+          loading={working}
+          onClick={handleDone}
+          className="flex-1 rounded-xl font-semibold"
+        >
           {t('usePhoto')}
         </Button>
       </div>

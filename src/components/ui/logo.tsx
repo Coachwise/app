@@ -10,8 +10,8 @@ interface LogoProps {
  * One colour, always — the whole mark is a single path filled with
  * `currentColor`, so a text class decides how it reads on its surface:
  *
- *   <Logo className="text-navy" />        // on light or yellow grounds
- *   <Logo className="text-tint-ink" />  // on the navy tile
+ *   <Logo className="text-tint-ink" />   // on light grounds
+ *   <Logo className="text-tint-fg" />    // white, on the azure tile
  */
 export function Logo({ className }: LogoProps) {
   return (
@@ -23,7 +23,7 @@ export function Logo({ className }: LogoProps) {
   );
 }
 
-type BrandTile = 'yellow' | 'navy' | 'none';
+type BrandTile = 'accent' | 'none';
 type BrandSize = 'sm' | 'lg';
 
 interface BrandProps {
@@ -40,8 +40,8 @@ interface BrandProps {
 // A tile decides the mark's colour: the mark is one colour and must contrast
 // whatever it stands on, so the two are chosen together and never separately.
 const TILE: Record<BrandTile, { plate: string; mark: string }> = {
-  yellow: { plate: 'bg-yellow-500', mark: 'text-navy' },
-  navy: { plate: 'bg-tint', mark: 'text-tint-fg' },
+  // The brand tile: the azure plate with a white mark — matches the app icon.
+  accent: { plate: 'bg-tint', mark: 'text-tint-fg' },
   none: { plate: '', mark: '' },
 };
 

@@ -14,12 +14,12 @@ const config = {
   plugins: {
     SplashScreen: {
       launchShowDuration: 800,
-      backgroundColor: '#0E0E55', // brand navy
+      backgroundColor: '#0097E6', // brand azure
       showSpinner: false,
       androidScaleType: 'CENTER_CROP',
     },
     StatusBar: {
-      backgroundColor: '#0E0E55',
+      backgroundColor: '#0097E6',
       style: 'DARK', // dark background → light icons
     },
     Keyboard: {

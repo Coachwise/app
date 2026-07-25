@@ -119,12 +119,14 @@ export function ExercisePicker<T extends PickedExercise>({
             <div key={it.exercise_id} className="p-4">
               <div className="flex items-center justify-between gap-2 mb-2">
                 <span className="text-foreground text-sm truncate">{it.exercise_name}</span>
-                <button
+                <Button
+                  variant="ghost"
+                  size="icon"
                   onClick={() => onRemove(idx)}
-                  className="p-2 rounded-lg text-muted-foreground hover:text-red-500 hover:bg-red-50 transition-colors shrink-0"
+                  className="rounded-lg text-muted-foreground hover:text-red-500 hover:bg-red-50 shrink-0"
                 >
-                  <Trash2 className="w-4 h-4" />
-                </button>
+                  <Trash2 className="size-4" />
+                </Button>
               </div>
               {renderControl(it, idx)}
             </div>

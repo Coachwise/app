@@ -53,7 +53,6 @@ export function PlanBuilder({ onCancel, onSave, planId }: PlanBuilderProps) {
   const { t, language } = useLanguage();
   const PAGE_SIZE = 20;
   const [planName, setPlanName] = useState('');
-  const [isPublic, setIsPublic] = useState(false);
   const [exercises, setExercises] = useState<PlanExercise[]>([]);
   const [showExerciseSelector, setShowExerciseSelector] = useState(false);
   const [exerciseLibrary, setExerciseLibrary] = useState<Exercise[]>([]);
@@ -91,7 +90,6 @@ export function PlanBuilder({ onCancel, onSave, planId }: PlanBuilderProps) {
         ]);
         if (cancelled) return;
         setPlanName(plan.name);
-        setIsPublic(plan.public);
         setIsOwner(plan.user_id === user?.id);
         const mapped: PlanExercise[] = (planExercises || []).map((pe) => {
           const summary = pe.exercise?.sets?.[0];
@@ -230,7 +228,7 @@ export function PlanBuilder({ onCancel, onSave, planId }: PlanBuilderProps) {
       if (planId) {
         // Update the existing plan, then resync its exercises (remove all, re-add
         // in order) to reflect adds/removes/reorders/rest+intensity changes.
-        await PlansAPI.updatePlan(token, planId, { name: planName.trim(), public: isPublic });
+        await PlansAPI.updatePlan(token, planId, { name: planName.trim() });
         await Promise.all(
           originalExerciseIds.map((exerciseId) =>
             PlansAPI.removePlanExercise(token, planId, exerciseId).catch(() => {})
@@ -248,7 +246,6 @@ export function PlanBuilder({ onCancel, onSave, planId }: PlanBuilderProps) {
       } else {
         const plan = await PlansAPI.createPlan(token, {
           name: planName.trim(),
-          public: isPublic,
         });
         await Promise.all(
           exercises.map((exercise, index) =>
@@ -334,22 +331,6 @@ export function PlanBuilder({ onCancel, onSave, planId }: PlanBuilderProps) {
             className={`w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-tint focus:border-transparent ${readOnly ? 'bg-muted text-foreground cursor-default' : 'bg-card'}`}
           />
         </div>
-
-        {/* Visibility */}
-        {!readOnly && (
-          <label className="flex items-center gap-3 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={isPublic}
-              onChange={(e) => setIsPublic(e.target.checked)}
-              className="w-5 h-5 text-tint-ink rounded border-border focus:ring-tint"
-            />
-            <div>
-              <span className="text-foreground">{t('makePlanPublic')}</span>
-              <p className="text-muted-foreground text-sm">{t('publicPlansVisible')}</p>
-            </div>
-          </label>
-        )}
 
         {/* Exercises List */}
         <div className="bg-card rounded-lg shadow-md p-4 border border-border">

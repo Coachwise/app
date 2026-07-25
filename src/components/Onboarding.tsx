@@ -41,6 +41,7 @@ export function Onboarding({ onDone }: OnboardingProps) {
   const [avatarId, setAvatarId] = useState<string | null>(user?.avatar_id ?? null);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(user?.avatar?.url ?? null);
   const [uploading, setUploading] = useState(false);
+  const [preparingImage, setPreparingImage] = useState(false);
   const [pending, setPending] = useState<PreparedImage | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -78,10 +79,15 @@ export function Onboarding({ onDone }: OnboardingProps) {
     e.target.value = '';
     if (!file) return;
     setError(null);
+    // Preparing (decode + downscale) a big phone photo blocks briefly; show the
+    // spinner so the picker doesn't feel frozen before the cropper opens.
+    setPreparingImage(true);
     try {
       setPending(await prepareImage(file));
     } catch (err) {
       setError(err instanceof UnsupportedImageError ? t('imageFormatUnsupported') : errorText(t, err));
+    } finally {
+      setPreparingImage(false);
     }
   };
 
@@ -147,7 +153,7 @@ export function Onboarding({ onDone }: OnboardingProps) {
       )}
       <div className="w-full max-w-md">
         <div className="text-center mb-6">
-          <Brand name={t('appName')} tile="yellow" size="sm" className="text-tint-fg mb-3" />
+          <Brand name={t('appName')} tile="accent" size="sm" className="text-tint-fg mb-3" />
           <h1 className="text-foreground text-2xl mb-1">{t('welcomeToCoachwise')}</h1>
           <p className="text-muted-foreground text-sm">{t('completeProfileHint')}</p>
         </div>
@@ -169,7 +175,7 @@ export function Onboarding({ onDone }: OnboardingProps) {
                   <UserIcon className="w-9 h-9 text-gray-400" />
                 )}
                 <span className="absolute bottom-0 inset-x-0 bg-black/40 py-1 flex items-center justify-center">
-                  {uploading ? <Loader2 className="w-4 h-4 text-white animate-spin" /> : <Camera className="w-4 h-4 text-white" />}
+                  {uploading || preparingImage ? <Loader2 className="w-4 h-4 text-white animate-spin" /> : <Camera className="w-4 h-4 text-white" />}
                 </span>
               </button>
               <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleAvatar} />

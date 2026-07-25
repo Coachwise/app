@@ -43,13 +43,15 @@ export function Support({ onBack, initialTicketId }: SupportProps) {
   return (
     <div className="fixed inset-0 z-40 bg-gray-100 max-w-md mx-auto flex flex-col">
       <div className="bg-card border-b border-border px-3 py-3 flex items-center gap-2">
-        <button
+        <Button
+          variant="ghost"
+          size="icon"
           onClick={() => (mode.name === 'list' ? onBack() : setMode({ name: 'list' }))}
-          className="p-2 rounded-lg hover:bg-tint-2 transition-colors"
           aria-label={t('back')}
+          className="rounded-lg text-foreground hover:bg-tint-2"
         >
-          <BackIcon className="w-6 h-6 text-foreground" />
-        </button>
+          <BackIcon className="size-6" />
+        </Button>
         <h1 className="text-foreground text-lg flex-1">{t('support')}</h1>
         {mode.name === 'list' && (
           <Button variant="brand" size="sm" icon={<Plus />} onClick={() => setMode({ name: 'new' })} className="rounded-full">
@@ -327,14 +329,16 @@ function Thread({
             </div>
           </div>
           {ticket.status === 'OPEN' && (
-            <button
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={close}
               disabled={closing}
-              className="flex items-center gap-1 text-gray-500 hover:text-red-600 text-xs px-2 py-1 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
+              icon={<X className="size-3.5" />}
+              className="text-xs text-muted-foreground hover:text-red-600 hover:bg-muted"
             >
-              <X className="w-3.5 h-3.5" />
               {closing ? t('sending') : t('closeTicket')}
-            </button>
+            </Button>
           )}
         </div>
       )}

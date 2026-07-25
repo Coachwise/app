@@ -21,7 +21,7 @@ export function About({ onBack }: AboutProps) {
       </div>
 
       <div className="p-6 flex flex-col items-center text-center">
-        <Brand name={t('appName')} tile="navy" size="sm" className="text-foreground mt-6" />
+        <Brand name={t('appName')} tile="accent" size="sm" className="text-foreground mt-6" />
 
         <div className="mt-4 flex items-center gap-2">
           {APP_IS_BETA && (

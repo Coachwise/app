@@ -110,7 +110,7 @@ export function Auth({ onLogin }: AuthProps) {
       <div className="flex-1 flex items-center justify-center p-4">
         <div className="w-full max-w-md">
           <div className="text-center mb-8">
-            <Brand name={t('appName')} tile="yellow" size="lg" className="text-tint-fg mb-3" />
+            <Brand name={t('appName')} tile="accent" size="lg" className="text-tint-fg mb-3" />
             <p className="text-muted-foreground">{subtitle}</p>
           </div>
 

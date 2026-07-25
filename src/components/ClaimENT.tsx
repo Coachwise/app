@@ -101,9 +101,9 @@ export function ClaimENT({ onBack, onNavigate, userRole, isPro }: ClaimENTProps)
       <div className="bg-card px-4 py-6 sticky top-0 z-10 border-b border-border">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
-            <button onClick={onBack} className="text-foreground hover:text-muted-foreground">
-              <ArrowLeft className="w-6 h-6" />
-            </button>
+            <Button variant="ghost" size="icon" onClick={onBack} aria-label={t('back')} className="text-foreground">
+              <ArrowLeft className="size-6" />
+            </Button>
             <div className="flex items-center gap-2">
               <Zap className="w-6 h-6 text-tint-ink" />
               <h1 className="text-foreground text-xl">{t('sparkRewards')}</h1>
@@ -156,13 +156,15 @@ export function ClaimENT({ onBack, onNavigate, userRole, isPro }: ClaimENTProps)
               </p>
             </div>
           </div>
-          <button
+          <Button
+            variant="outline"
+            size="block"
             disabled
-            className="w-full mt-3 bg-tint-soft text-tint-ink py-3 rounded-lg flex items-center justify-center gap-2 font-semibold cursor-not-allowed border border-tint-2"
+            icon={<Zap className="size-5" />}
+            className="mt-3 bg-tint-soft text-tint-ink border-tint-2 font-semibold"
           >
-            <Zap className="w-5 h-5" />
-            <span>{t('withdrawalsPaused')}</span>
-          </button>
+            {t('withdrawalsPaused')}
+          </Button>
         </div>
       </div>
 

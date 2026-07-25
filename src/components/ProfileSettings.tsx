@@ -1,4 +1,4 @@
-import { User, Mail, Phone, Calendar, Briefcase, Instagram, Globe, Camera, Save } from 'lucide-react';
+import { User, Mail, Phone, Calendar, Briefcase, Instagram, Globe, Camera, Save, Loader2 } from 'lucide-react';
 import { Button } from './ui/button';
 import { BackButton } from './ui/back-button';
 import { useState, useRef, useEffect } from 'react';
@@ -45,6 +45,7 @@ export function ProfileSettings({ onBack }: ProfileSettingsProps) {
   const [website, setWebsite] = useState('');
   const [instagram, setInstagram] = useState('');
 
+  const [preparingImage, setPreparingImage] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -75,12 +76,17 @@ export function ProfileSettings({ onBack }: ProfileSettingsProps) {
       return;
     }
     setError(null);
+    // Decoding + downscaling a phone photo (up to ~12 MP) takes a moment on a
+    // weak device; show a spinner so the UI doesn't look frozen before the
+    // cropper appears.
+    setPreparingImage(true);
     try {
       setPending(await prepareImage(file));
     } catch (e) {
       if (e instanceof UnsupportedImageError) setError(t('imageFormatUnsupported'));
       else setError(e instanceof Error ? e.message : t('unableToUploadImage'));
     } finally {
+      setPreparingImage(false);
       event.target.value = '';
     }
   };
@@ -180,9 +186,14 @@ export function ProfileSettings({ onBack }: ProfileSettingsProps) {
                 {initials}
               </div>
             )}
+            {preparingImage && (
+              <div className="absolute inset-0 rounded-full bg-black/40 flex items-center justify-center">
+                <Loader2 className="w-7 h-7 text-white animate-spin" />
+              </div>
+            )}
             <button
               onClick={() => fileInputRef.current?.click()}
-              disabled={uploadingImage}
+              disabled={uploadingImage || preparingImage}
               className="absolute bottom-0 right-0 p-2 bg-tint text-tint-fg rounded-full hover:bg-tint-2 transition-colors border-2 border-white disabled:opacity-60"
             >
               <Camera className="w-4 h-4" />
