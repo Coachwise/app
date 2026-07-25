@@ -74,7 +74,7 @@ export function Wallet({ onBack }: WalletProps) {
   useRealtimeRefetch('wallet', load);
 
   return (
-    <div className="min-h-screen bg-gray-100" dir={isRTL ? 'rtl' : 'ltr'}>
+    <div className="min-h-screen bg-background" dir={isRTL ? 'rtl' : 'ltr'}>
       <div className="bg-tint text-tint-fg p-4 pb-8">
         <div className="flex items-center gap-3 mb-6">
           <button onClick={onBack} className="p-1 hover:bg-black/10 rounded-lg">
@@ -83,7 +83,7 @@ export function Wallet({ onBack }: WalletProps) {
           <h1 className="text-xl">{t('wallet')}</h1>
         </div>
 
-        <div className="flex items-center gap-2 text-muted-foreground text-sm mb-1">
+        <div className="flex items-center gap-2 text-tint-fg/70 text-sm mb-1">
           <WalletIcon className="w-4 h-4" />
           {t('availableBalance')}
         </div>
@@ -91,7 +91,7 @@ export function Wallet({ onBack }: WalletProps) {
           {balance ? formatMoney(balance.available, balance.currency, language) : '—'}
         </div>
         {balance && balance.pending > 0 && (
-          <div className="inline-flex items-center gap-1.5 bg-black/10 rounded-full px-3 py-1 text-sm text-muted-foreground">
+          <div className="inline-flex items-center gap-1.5 bg-black/10 rounded-full px-3 py-1 text-sm text-tint-fg/70">
             <Clock className="w-3.5 h-3.5" />
             {t('pendingBalance')}: <span dir="ltr">{formatMoney(balance.pending, balance.currency, language)}</span>
           </div>
@@ -121,12 +121,12 @@ export function Wallet({ onBack }: WalletProps) {
           <div className="bg-card rounded-lg shadow-sm p-4 mb-5">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2 text-foreground text-sm">
-                <CreditCard className="w-4 h-4 text-yellow-600" />
+                <CreditCard className="w-4 h-4 text-tint-ink" />
                 {t('payoutInfo')}
               </div>
               <button
                 onClick={() => setAccountOpen(true)}
-                className="inline-flex items-center gap-1 text-yellow-600 hover:text-yellow-700 text-sm font-medium"
+                className="inline-flex items-center gap-1 text-tint-ink hover:text-tint text-sm font-medium"
               >
                 {payoutAccount ? <Pencil className="w-3.5 h-3.5" /> : <Plus className="w-4 h-4" />}
                 {payoutAccount ? t('editPayoutInfo') : t('addPayoutInfo')}
@@ -135,18 +135,18 @@ export function Wallet({ onBack }: WalletProps) {
             {payoutAccount ? (
               <div>
                 <div className="flex items-center gap-2 text-foreground" dir="ltr">
-                  <CreditCard className="w-4 h-4 text-gray-400" />
+                  <CreditCard className="w-4 h-4 text-muted-foreground" />
                   <span className="tracking-wider">{maskCard(payoutAccount.card_number)}</span>
                 </div>
                 {payoutAccount.account_holder && (
-                  <p className="text-gray-500 text-sm mt-1">{payoutAccount.account_holder}</p>
+                  <p className="text-muted-foreground text-sm mt-1">{payoutAccount.account_holder}</p>
                 )}
                 {payoutAccount.status === 'UNVERIFIED' && (
-                  <p className="text-gray-400 text-xs mt-2">{t('payoutAccountPendingReview')}</p>
+                  <p className="text-muted-foreground text-xs mt-2">{t('payoutAccountPendingReview')}</p>
                 )}
               </div>
             ) : (
-              <p className="text-gray-500 text-sm">{t('payoutInfoSetupPrompt')}</p>
+              <p className="text-muted-foreground text-sm">{t('payoutInfoSetupPrompt')}</p>
             )}
           </div>
         )}
@@ -154,12 +154,12 @@ export function Wallet({ onBack }: WalletProps) {
         {isCoach && payouts.length > 0 && (
           <div className="mb-5">
             <h2 className="text-foreground text-sm mb-2">{t('payouts')}</h2>
-            <div className="bg-card rounded-lg shadow-sm divide-y divide-gray-50">
+            <div className="bg-card rounded-lg shadow-sm divide-y divide-border">
               {payouts.map((p) => (
                 <div key={p.id} className="flex items-center justify-between px-4 py-3">
                   <div>
                     <div className="text-foreground" dir="ltr">{formatMoney(p.amount, p.currency, language)}</div>
-                    <div className="text-xs text-gray-400">{new Date(p.created_at).toLocaleDateString(dateLocale)}</div>
+                    <div className="text-xs text-muted-foreground">{new Date(p.created_at).toLocaleDateString(dateLocale)}</div>
                   </div>
                   <span className={`text-xs px-2 py-1 rounded-full ${payoutBadge(p.status)}`}>{t(`payout_${p.status}`)}</span>
                 </div>
@@ -170,22 +170,22 @@ export function Wallet({ onBack }: WalletProps) {
 
         <h2 className="text-foreground text-sm mb-2">{t('transactions')}</h2>
         {loading ? (
-          <div className="flex justify-center py-10"><Loader2 className="w-6 h-6 text-gray-400 animate-spin" /></div>
+          <div className="flex justify-center py-10"><Loader2 className="w-6 h-6 text-muted-foreground animate-spin" /></div>
         ) : txns.length === 0 ? (
-          <p className="text-center text-gray-400 py-10 text-sm">{t('noTransactions')}</p>
+          <p className="text-center text-muted-foreground py-10 text-sm">{t('noTransactions')}</p>
         ) : (
-          <div className="bg-card rounded-lg shadow-sm divide-y divide-gray-50">
+          <div className="bg-card rounded-lg shadow-sm divide-y divide-border">
             {txns.map((tx) => {
               const credit = CREDIT_TYPES.includes(tx.type);
               const pending = new Date(tx.available_at).getTime() > Date.now() && credit;
               return (
                 <div key={tx.id} className="flex items-center gap-3 px-4 py-3">
-                  <div className={`w-9 h-9 rounded-full flex items-center justify-center ${credit ? 'bg-green-50 text-green-600' : 'bg-gray-100 text-gray-500'}`}>
+                  <div className={`w-9 h-9 rounded-full flex items-center justify-center ${credit ? 'bg-green-50 text-green-600' : 'bg-muted text-muted-foreground'}`}>
                     {credit ? <ArrowDownLeft className="w-4 h-4" /> : <ArrowUpRight className="w-4 h-4" />}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="text-foreground text-sm truncate">{t(`txType_${tx.type}`)}</div>
-                    <div className="text-xs text-gray-400 flex items-center gap-1">
+                    <div className="text-xs text-muted-foreground flex items-center gap-1">
                       {new Date(tx.created_at).toLocaleDateString(dateLocale)}
                       {pending && <><Clock className="w-3 h-3" /> {t('pending')}</>}
                     </div>
@@ -242,7 +242,7 @@ function groupCard(digits: string): string {
 function payoutBadge(status: string): string {
   switch (status) {
     case 'PAID': return 'bg-green-100 text-green-700';
-    case 'APPROVED': return 'bg-tint-soft text-blue-700';
+    case 'APPROVED': return 'bg-tint-soft text-tint-ink';
     case 'REJECTED': return 'bg-red-100 text-red-700';
     default: return 'bg-yellow-100 text-yellow-700';
   }
@@ -277,11 +277,11 @@ function PayoutSheet({ balance, onClose, onDone }: { balance: WalletBalance; onC
       <div className="bg-card w-full max-w-md rounded-t-2xl p-5 space-y-4" onClick={(e) => e.stopPropagation()} dir={isRTL ? 'rtl' : 'ltr'}>
         <h3 className="text-foreground font-medium">{t('requestPayout')}</h3>
         <div className="flex items-center justify-between text-sm">
-          <span className="text-gray-500">{t('availableBalance')}</span>
+          <span className="text-muted-foreground">{t('availableBalance')}</span>
           <button
             type="button"
             onClick={() => setAmount(String(balance.available))}
-            className="text-yellow-600 hover:text-yellow-700 font-medium"
+            className="text-tint-ink hover:text-tint font-medium"
             dir="ltr"
           >
             {t('max')}: {formatMoney(balance.available, balance.currency, language)}
@@ -294,11 +294,11 @@ function PayoutSheet({ balance, onClose, onDone }: { balance: WalletBalance; onC
             value={amount ? formatAmount(Number(amount), language) : ''}
             onChange={(e) => setAmount(normalizeDigits(e.target.value).replace(/[^\d]/g, ''))}
             placeholder="0"
-            className="w-full bg-gray-50 border border-gray-200 rounded-lg py-3 px-4 text-foreground text-center text-lg tracking-wide focus:outline-none focus:ring-2 focus:ring-tint"
+            className="w-full bg-muted border border-border rounded-lg py-3 px-4 text-foreground text-center text-lg tracking-wide focus:outline-none focus:ring-2 focus:ring-tint"
             dir="ltr"
             autoFocus
           />
-          <span className={`absolute top-1/2 -translate-y-1/2 ${isRTL ? 'left-3' : 'right-3'} text-gray-400 text-sm`}>
+          <span className={`absolute top-1/2 -translate-y-1/2 ${isRTL ? 'left-3' : 'right-3'} text-muted-foreground text-sm`}>
             {currencyLabel(balance.currency, language)}
           </span>
         </div>
@@ -360,25 +360,25 @@ function PayoutAccountSheet({
         {isIRR ? (
           <>
             <div>
-              <label className="text-gray-500 text-sm">{t('cardNumber')}</label>
+              <label className="text-muted-foreground text-sm">{t('cardNumber')}</label>
               <input
                 type="text"
                 inputMode="numeric"
                 value={groupCard(card)}
                 onChange={(e) => setCard(normalizeDigits(e.target.value).replace(/\D/g, '').slice(0, 16))}
                 placeholder="•••• •••• •••• ••••"
-                className="mt-1 w-full bg-gray-50 border border-gray-200 rounded-lg py-3 px-4 text-foreground text-center text-lg tracking-widest focus:outline-none focus:ring-2 focus:ring-tint"
+                className="mt-1 w-full bg-muted border border-border rounded-lg py-3 px-4 text-foreground text-center text-lg tracking-widest focus:outline-none focus:ring-2 focus:ring-tint"
                 dir="ltr"
                 autoFocus
               />
             </div>
             <div>
-              <label className="text-gray-500 text-sm">{t('accountHolderOptional')}</label>
+              <label className="text-muted-foreground text-sm">{t('accountHolderOptional')}</label>
               <input
                 type="text"
                 value={holder}
                 onChange={(e) => setHolder(e.target.value)}
-                className="mt-1 w-full bg-gray-50 border border-gray-200 rounded-lg py-3 px-4 text-foreground focus:outline-none focus:ring-2 focus:ring-tint"
+                className="mt-1 w-full bg-muted border border-border rounded-lg py-3 px-4 text-foreground focus:outline-none focus:ring-2 focus:ring-tint"
               />
             </div>
             {error && <div className="bg-red-50 text-red-700 border border-red-200 rounded-lg p-3 text-sm">{error}</div>}
@@ -387,7 +387,7 @@ function PayoutAccountSheet({
             </Button>
           </>
         ) : (
-          <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 text-center text-gray-500 text-sm">
+          <div className="bg-muted border border-border rounded-lg p-4 text-center text-muted-foreground text-sm">
             {t('payoutStripeSoon')}
           </div>
         )}
@@ -447,7 +447,7 @@ function TopUpSheet({ currency, onClose }: { currency: string; onClose: () => vo
         <h3 className="text-foreground font-medium">{t('addFunds')}</h3>
 
         <div>
-          <label className="text-gray-500 text-sm">{t('topUpAmount')}</label>
+          <label className="text-muted-foreground text-sm">{t('topUpAmount')}</label>
           <div className="relative mt-1">
             <input
               type="text"
@@ -455,11 +455,11 @@ function TopUpSheet({ currency, onClose }: { currency: string; onClose: () => vo
               value={amount ? formatAmount(Number(amount), language) : ''}
               onChange={(e) => setAmount(normalizeDigits(e.target.value).replace(/[^\d]/g, ''))}
               placeholder="0"
-              className="w-full bg-gray-50 border border-gray-200 rounded-lg py-3 px-4 text-foreground text-center text-lg tracking-wide focus:outline-none focus:ring-2 focus:ring-tint"
+              className="w-full bg-muted border border-border rounded-lg py-3 px-4 text-foreground text-center text-lg tracking-wide focus:outline-none focus:ring-2 focus:ring-tint"
               dir="ltr"
               autoFocus
             />
-            <span className={`absolute top-1/2 -translate-y-1/2 ${isRTL ? 'left-3' : 'right-3'} text-gray-400 text-sm`}>
+            <span className={`absolute top-1/2 -translate-y-1/2 ${isRTL ? 'left-3' : 'right-3'} text-muted-foreground text-sm`}>
               {currencyLabel(currency, language)}
             </span>
           </div>
@@ -472,7 +472,7 @@ function TopUpSheet({ currency, onClose }: { currency: string; onClose: () => vo
                 key={p.name}
                 type="button"
                 onClick={() => setProvider(p.name)}
-                className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-sm ${p.name === provider ? 'border-yellow-500 bg-yellow-50 text-foreground' : 'border-gray-200 text-gray-600 hover:bg-gray-50'}`}
+                className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-sm ${p.name === provider ? 'border-tint bg-tint-soft text-tint-ink' : 'border-border text-muted-foreground hover:bg-muted'}`}
               >
                 {p.logo && <img src={p.logo} alt="" className="w-5 h-5 object-contain" />}
                 {p.title}
@@ -481,7 +481,7 @@ function TopUpSheet({ currency, onClose }: { currency: string; onClose: () => vo
           </div>
         ) : (
           selectedProvider && (
-            <div className="flex items-center gap-2 text-sm text-gray-500">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
               {selectedProvider.logo && <img src={selectedProvider.logo} alt="" className="w-6 h-6 object-contain" />}
               {selectedProvider.title}
             </div>

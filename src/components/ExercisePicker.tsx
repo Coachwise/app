@@ -68,10 +68,10 @@ export function ExercisePicker<T extends PickedExercise>({
   };
 
   return (
-    <div className="bg-card rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-      <div className="px-4 py-3.5 border-b border-gray-100 flex items-center justify-between">
+    <div className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden">
+      <div className="px-4 py-3.5 border-b border-border flex items-center justify-between">
         <h3 className="text-foreground font-medium">
-          {title || t('testExercises')} <span className="text-gray-400">({items.length})</span>
+          {title || t('testExercises')} <span className="text-muted-foreground">({items.length})</span>
         </h3>
         <Button variant="brand" size="sm" icon={<Plus />} onClick={() => setPicking(!picking)}>
           {t('addExercise')}
@@ -79,29 +79,29 @@ export function ExercisePicker<T extends PickedExercise>({
       </div>
 
       {picking && (
-        <div className="border-b border-gray-100 bg-gray-50/60">
+        <div className="border-b border-border bg-muted/60">
           <div className="p-3">
             <div className="relative">
-              <Search className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Search className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <input
                 type="text"
                 autoFocus
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder={t('searchExercises')}
-                className="w-full ps-10 pe-3 py-2 bg-card border border-gray-200 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent text-sm text-foreground"
+                className="w-full ps-10 pe-3 py-2 bg-card border border-border rounded-lg focus:ring-2 focus:ring-tint focus:border-transparent text-sm text-foreground"
               />
             </div>
           </div>
           {filtered.length === 0 ? (
-            <div className="px-4 pb-4 text-center text-gray-500 text-sm">{t('noResults')}</div>
+            <div className="px-4 pb-4 text-center text-muted-foreground text-sm">{t('noResults')}</div>
           ) : (
-            <div className="max-h-56 overflow-y-auto divide-y divide-gray-100">
+            <div className="max-h-56 overflow-y-auto divide-y divide-border">
               {filtered.map((ex) => (
                 <button
                   key={ex.id}
                   onClick={() => add(ex)}
-                  className="w-full text-start px-4 py-2.5 hover:bg-yellow-50 transition-colors text-sm text-foreground"
+                  className="w-full text-start px-4 py-2.5 hover:bg-tint-soft transition-colors text-sm text-foreground"
                 >
                   {exName(ex)}
                 </button>
@@ -112,16 +112,16 @@ export function ExercisePicker<T extends PickedExercise>({
       )}
 
       {items.length === 0 ? (
-        <div className="p-6 text-center text-gray-400 text-sm">{emptyHint || t('noTestExercises')}</div>
+        <div className="p-6 text-center text-muted-foreground text-sm">{emptyHint || t('noTestExercises')}</div>
       ) : (
-        <div className="divide-y divide-gray-100">
+        <div className="divide-y divide-border">
           {items.map((it, idx) => (
             <div key={it.exercise_id} className="p-4">
               <div className="flex items-center justify-between gap-2 mb-2">
                 <span className="text-foreground text-sm truncate">{it.exercise_name}</span>
                 <button
                   onClick={() => onRemove(idx)}
-                  className="p-2 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors shrink-0"
+                  className="p-2 rounded-lg text-muted-foreground hover:text-red-500 hover:bg-red-50 transition-colors shrink-0"
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>

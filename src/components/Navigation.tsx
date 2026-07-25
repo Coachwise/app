@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Home, Dumbbell, LayoutDashboard, MessageCircle, Compass } from 'lucide-react';
+import { Home, ClipboardList, LayoutDashboard, MessageCircle, Compass } from 'lucide-react';
 import type { ViewType, UserRole } from '../App';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -42,7 +42,7 @@ export function Navigation({ currentView, onNavigate, userRole }: NavigationProp
   const navItems = [
     ...(FEATURES.feed ? [{ id: 'feed' as ViewType, icon: Home, label: t('feed') }] : []),
     { id: 'athlete-search' as ViewType, icon: Compass, label: t('discover') },
-    { id: 'workouts-home' as ViewType, icon: Dumbbell, label: t('workouts') },
+    { id: 'workouts-home' as ViewType, icon: ClipboardList, label: t('workouts') },
     { id: 'messages' as ViewType, icon: MessageCircle, label: t('messages') },
     // Personal training analytics lives in the side menu for both roles (keeps the
     // bottom nav consistent and a coach's own training out of their work dashboard).

@@ -239,7 +239,7 @@ export function Profile({ userRole, onNavigate, onBack, onMessage, viewingUserId
     <button
       onClick={handleCancelConnect}
       disabled={connBusy}
-      className="w-full py-3 rounded-lg bg-gray-200 text-foreground hover:bg-gray-300 transition-colors flex items-center justify-center gap-2 disabled:opacity-60"
+      className="w-full py-3 rounded-lg bg-muted text-foreground hover:bg-secondary transition-colors flex items-center justify-center gap-2 disabled:opacity-60"
     >
       <Clock className="w-5 h-5" />
       <span>{t('requested')}</span>
@@ -252,7 +252,7 @@ export function Profile({ userRole, onNavigate, onBack, onMessage, viewingUserId
       <button
         onClick={handleRejectIncoming}
         disabled={connBusy || !incomingReqId}
-        className="flex-1 py-3 rounded-lg bg-gray-200 text-foreground hover:bg-gray-300 transition-colors flex items-center justify-center gap-2 disabled:opacity-60"
+        className="flex-1 py-3 rounded-lg bg-muted text-foreground hover:bg-secondary transition-colors flex items-center justify-center gap-2 disabled:opacity-60"
       >
         <X className="w-5 h-5" />
         <span>{t('reject')}</span>
@@ -265,7 +265,7 @@ export function Profile({ userRole, onNavigate, onBack, onMessage, viewingUserId
   );
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-background">
       {/* Cover */}
       <div className="relative h-32 bg-tint">
         {!isOwnProfile && (
@@ -289,15 +289,15 @@ export function Profile({ userRole, onNavigate, onBack, onMessage, viewingUserId
         </div>
       </div>
 
-      <div className="bg-card border-b border-gray-200">
+      <div className="bg-card border-b border-border">
         <div className="px-4 pt-0 pb-4">
           {/* Avatar */}
           <div className="relative -mt-12 mb-3 w-24">
             <UserAvatar url={avatarUrl} alt={displayName} sizeClass="w-24 h-24" iconClass="w-12 h-12" className="border-4 border-tint-fg/30" />
             {proStatus && <ProBadge size="md" className="absolute top-0 right-0" />}
             {isCoachProfile && (
-              <div className={`absolute bottom-0 ${isRTL ? 'left-0' : 'right-0'} bg-yellow-500 rounded-full p-1 border-2 border-tint-fg/30`}>
-                <CheckCircle2 className="w-5 h-5 text-foreground" />
+              <div className={`absolute bottom-0 ${isRTL ? 'left-0' : 'right-0'} bg-tint rounded-full p-1 border-2 border-tint-fg/30`}>
+                <CheckCircle2 className="w-5 h-5 text-tint-fg" />
               </div>
             )}
           </div>
@@ -306,23 +306,23 @@ export function Profile({ userRole, onNavigate, onBack, onMessage, viewingUserId
           <div className="mb-4">
             <div className="flex items-center gap-2 mb-1">
               <h2 className="text-foreground">{displayName || (viewedLoading ? '…' : t('athlete'))}</h2>
-              <span className={`px-2 py-0.5 rounded text-xs ${isCoachProfile ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 text-gray-600'}`}>
+              <span className={`px-2 py-0.5 rounded text-xs ${isCoachProfile ? 'bg-tint-soft text-tint-ink' : 'bg-muted text-muted-foreground'}`}>
                 {isCoachProfile ? t('coach') : t('athlete')}
               </span>
             </div>
-            {displayHandle && <p className="text-gray-600">{displayHandle}</p>}
-            {jobTitle && <p className="text-gray-700 mt-2">{jobTitle}</p>}
-            {bio && <p className="text-gray-700 mt-2 text-sm whitespace-pre-line">{bio}</p>}
+            {displayHandle && <p className="text-muted-foreground">{displayHandle}</p>}
+            {jobTitle && <p className="text-foreground mt-2">{jobTitle}</p>}
+            {bio && <p className="text-foreground mt-2 text-sm whitespace-pre-line">{bio}</p>}
             {(website || instagram) && (
               <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2 text-sm">
                 {website && (
-                  <a href={/^https?:\/\//.test(website) ? website : `https://${website}`} target="_blank" rel="noreferrer" className="text-yellow-600 hover:underline inline-flex items-center gap-1" dir="ltr">
+                  <a href={/^https?:\/\//.test(website) ? website : `https://${website}`} target="_blank" rel="noreferrer" className="text-tint-ink hover:underline inline-flex items-center gap-1" dir="ltr">
                     <Globe className="w-4 h-4" />
                     {website.replace(/^https?:\/\//, '')}
                   </a>
                 )}
                 {instagram && (
-                  <a href={`https://instagram.com/${instagram}`} target="_blank" rel="noreferrer" className="text-yellow-600 hover:underline inline-flex items-center gap-1" dir="ltr">
+                  <a href={`https://instagram.com/${instagram}`} target="_blank" rel="noreferrer" className="text-tint-ink hover:underline inline-flex items-center gap-1" dir="ltr">
                     <Instagram className="w-4 h-4" />
                     @{instagram}
                   </a>
@@ -346,8 +346,8 @@ export function Profile({ userRole, onNavigate, onBack, onMessage, viewingUserId
         <div className="p-4">
           <h3 className="text-foreground font-medium mb-3">{t('coachPackagesTitle')}</h3>
           {coachPackages.length === 0 ? (
-            <div className="bg-card rounded-2xl p-6 text-center border border-gray-100 shadow-sm">
-              <p className="text-gray-500 text-sm">{t('noPackagesOffered')}</p>
+            <div className="bg-card rounded-2xl p-6 text-center border border-border shadow-sm">
+              <p className="text-muted-foreground text-sm">{t('noPackagesOffered')}</p>
             </div>
           ) : (
             <div className="space-y-3">
@@ -355,7 +355,7 @@ export function Profile({ userRole, onNavigate, onBack, onMessage, viewingUserId
                 const isSubscribed = subscribedPackageIds.has(pkg.id);
                 const blocked = !isSubscribed && hasCoachSubscription;
                 return (
-                  <div key={pkg.id} className="bg-card rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                  <div key={pkg.id} className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden">
                     <div className="p-4">
                       <div className="flex items-start gap-3">
                         <span className="w-10 h-10 rounded-xl bg-tint flex items-center justify-center shrink-0">
@@ -365,10 +365,10 @@ export function Profile({ userRole, onNavigate, onBack, onMessage, viewingUserId
                           <div className="flex items-center gap-2">
                             <h4 className="text-foreground font-medium truncate">{pkg.name}</h4>
                             {pkg.popular && (
-                              <span className="px-2 py-0.5 bg-yellow-100 text-yellow-700 rounded text-[10px]">{t('popular')}</span>
+                              <span className="px-2 py-0.5 bg-tint-soft text-tint-ink rounded text-[10px]">{t('popular')}</span>
                             )}
                           </div>
-                          {pkg.description && <p className="text-gray-500 text-xs mt-0.5 line-clamp-2">{pkg.description}</p>}
+                          {pkg.description && <p className="text-muted-foreground text-xs mt-0.5 line-clamp-2">{pkg.description}</p>}
                         </div>
                       </div>
 
@@ -378,19 +378,19 @@ export function Profile({ userRole, onNavigate, onBack, onMessage, viewingUserId
                           <span className="text-2xl font-semibold text-foreground tabular-nums" dir="ltr">
                             {formatMoney(pkg.price_monthly, pkg.currency, language)}
                           </span>
-                          <span className="text-gray-500 text-sm">
+                          <span className="text-muted-foreground text-sm">
                             {pkg.billing_type === 'ONE_TIME' ? t('oneTimeShort') : t('perMoShort')}
                           </span>
                         </div>
                       )}
 
                       {/* What's included */}
-                      <div className="mt-3 space-y-1 text-sm text-gray-700">
-                        <div className="flex items-center gap-2"><Check className="w-4 h-4 text-yellow-600 shrink-0" />{t('plansIncludedCount', { count: String(pkg.plan_count) })}</div>
-                        {pkg.video_access && <div className="flex items-center gap-2"><Check className="w-4 h-4 text-yellow-600 shrink-0" />{t('videoLibraryAccessShort')}</div>}
-                        {pkg.nutrition_guides && <div className="flex items-center gap-2"><Check className="w-4 h-4 text-yellow-600 shrink-0" />{t('nutritionGuidesShort')}</div>}
+                      <div className="mt-3 space-y-1 text-sm text-foreground">
+                        <div className="flex items-center gap-2"><Check className="w-4 h-4 text-tint-ink shrink-0" />{t('plansIncludedCount', { count: String(pkg.plan_count) })}</div>
+                        {pkg.video_access && <div className="flex items-center gap-2"><Check className="w-4 h-4 text-tint-ink shrink-0" />{t('videoLibraryAccessShort')}</div>}
+                        {pkg.nutrition_guides && <div className="flex items-center gap-2"><Check className="w-4 h-4 text-tint-ink shrink-0" />{t('nutritionGuidesShort')}</div>}
                         {(pkg.custom_features || []).map((f, i) => (
-                          <div key={i} className="flex items-center gap-2"><Check className="w-4 h-4 text-yellow-600 shrink-0" />{f}</div>
+                          <div key={i} className="flex items-center gap-2"><Check className="w-4 h-4 text-tint-ink shrink-0" />{f}</div>
                         ))}
                       </div>
 
@@ -402,8 +402,8 @@ export function Profile({ userRole, onNavigate, onBack, onMessage, viewingUserId
                           isSubscribed
                             ? 'bg-green-50 text-green-700 cursor-default'
                             : blocked
-                              ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                              : 'bg-yellow-500 text-foreground hover:bg-yellow-400'
+                              ? 'bg-muted text-muted-foreground cursor-not-allowed'
+                              : 'bg-tint text-tint-fg hover:bg-tint-2'
                         }`}
                       >
                         {isSubscribed ? (
@@ -428,12 +428,12 @@ export function Profile({ userRole, onNavigate, onBack, onMessage, viewingUserId
       {/* Coach credential: active clients */}
       {isCoachProfile && achievements && (
         <div className="px-4 pt-4">
-          <div className="bg-tint rounded-2xl p-4 flex items-center gap-4">
-            <span className="w-12 h-12 rounded-xl bg-black/10 flex items-center justify-center shrink-0">
+          <div className="bg-card border border-border shadow-sm rounded-2xl p-4 flex items-center gap-4">
+            <span className="w-12 h-12 rounded-xl bg-tint-soft flex items-center justify-center shrink-0">
               <Users className="w-6 h-6 text-tint-ink" />
             </span>
             <div>
-              <div className="text-tint-fg text-3xl font-semibold tabular-nums leading-none">
+              <div className="text-tint-ink text-3xl font-semibold tabular-nums leading-none">
                 {achievements.active_clients.toLocaleString()}
               </div>
               <div className="text-muted-foreground text-xs mt-1.5">{t('activeClientsLabel')}</div>

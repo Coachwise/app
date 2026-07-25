@@ -35,11 +35,11 @@ type PlanExercise = {
 function SportTypeBadge({ sportType }: { sportType: ExerciseSportType }) {
   const { t } = useLanguage();
   const colors = {
-    STRENGTH: 'bg-tint-soft text-blue-700',
-    CLIMBING: 'bg-purple-100 text-purple-700',
+    STRENGTH: 'bg-tint-soft text-tint-ink',
+    CLIMBING: 'bg-amber-100 text-amber-700',
     CARDIO: 'bg-red-100 text-red-700',
     MOBILITY: 'bg-green-100 text-green-700',
-    GENERAL: 'bg-gray-100 text-gray-700',
+    GENERAL: 'bg-muted text-muted-foreground',
   };
   return (
     <span className={`px-2 py-0.5 rounded text-xs font-medium ${colors[sportType]}`}>
@@ -303,7 +303,7 @@ export function PlanBuilder({ onCancel, onSave, planId }: PlanBuilderProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-background">
       {/* Header */}
       <div className="bg-card border-b border-border px-4 py-4 sticky top-0 z-10">
         <div className="flex items-center justify-between">
@@ -324,14 +324,14 @@ export function PlanBuilder({ onCancel, onSave, planId }: PlanBuilderProps) {
 
         {/* Plan Name */}
         <div>
-          <label className="block mb-2 text-gray-900">{t('planName')}</label>
+          <label className="block mb-2 text-foreground">{t('planName')}</label>
           <input
             type="text"
             value={planName}
             onChange={(e) => setPlanName(e.target.value)}
             placeholder={t('planNamePlaceholder')}
             readOnly={readOnly}
-            className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-tint focus:border-transparent ${readOnly ? 'bg-gray-100 text-gray-700 cursor-default' : 'bg-card'}`}
+            className={`w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-tint focus:border-transparent ${readOnly ? 'bg-muted text-foreground cursor-default' : 'bg-card'}`}
           />
         </div>
 
@@ -342,23 +342,23 @@ export function PlanBuilder({ onCancel, onSave, planId }: PlanBuilderProps) {
               type="checkbox"
               checked={isPublic}
               onChange={(e) => setIsPublic(e.target.checked)}
-              className="w-5 h-5 text-tint-ink rounded border-gray-300 focus:ring-tint"
+              className="w-5 h-5 text-tint-ink rounded border-border focus:ring-tint"
             />
             <div>
-              <span className="text-gray-900">{t('makePlanPublic')}</span>
-              <p className="text-gray-600 text-sm">{t('publicPlansVisible')}</p>
+              <span className="text-foreground">{t('makePlanPublic')}</span>
+              <p className="text-muted-foreground text-sm">{t('publicPlansVisible')}</p>
             </div>
           </label>
         )}
 
         {/* Exercises List */}
-        <div className="bg-card rounded-lg shadow-md p-4 border border-gray-200">
+        <div className="bg-card rounded-lg shadow-md p-4 border border-border">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-foreground">{t('exercisesCount', { count: exercises.length })}</h3>
             {!readOnly && (
               <button
                 onClick={() => setShowExerciseSelector(!showExerciseSelector)}
-                className="flex items-center gap-2 px-4 py-2 bg-yellow-500 text-foreground rounded-lg hover:bg-yellow-400 transition-colors"
+                className="flex items-center gap-2 px-4 py-2 bg-tint text-tint-fg rounded-lg hover:bg-tint-2 transition-colors"
               >
                 <Plus className="w-4 h-4" />
                 <span className="text-sm">{t('add')}</span>
@@ -367,15 +367,15 @@ export function PlanBuilder({ onCancel, onSave, planId }: PlanBuilderProps) {
           </div>
 
           {showExerciseSelector && (
-            <div className="mb-4 border border-gray-200 rounded-lg p-4 bg-card shadow-sm">
+            <div className="mb-4 border border-border rounded-lg p-4 bg-card shadow-sm">
               <div className="flex gap-2 mb-3">
                 <div className="flex-1 relative">
-                  <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                  <Search className="w-4 h-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2" />
                   <input
                     value={exerciseSearch}
                     onChange={(e) => setExerciseSearch(e.target.value)}
                     placeholder={t('searchExercisesPlaceholder')}
-                    className="w-full pl-9 pr-3 py-2 bg-card border border-gray-300 rounded-lg focus:ring-2 focus:ring-tint focus:border-transparent text-sm"
+                    className="w-full pl-9 pr-3 py-2 bg-card border border-border rounded-lg focus:ring-2 focus:ring-tint focus:border-transparent text-sm"
                   />
                 </div>
                 <Button variant="brand" size="sm" icon={<Plus />} onClick={() => setShowExerciseBuilder(true)}>
@@ -386,14 +386,14 @@ export function PlanBuilder({ onCancel, onSave, planId }: PlanBuilderProps) {
               {/* Sport selector (first level) */}
               {sports.length > 0 && (
                 <div className="mb-3">
-                  <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">{t('chooseSport')}</div>
+                  <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">{t('chooseSport')}</div>
                   <div className="flex gap-2 overflow-x-auto pb-1">
                     {sports.map((s) => (
                       <button
                         key={s}
                         onClick={() => selectSport(s)}
                         className={`shrink-0 px-5 py-2.5 rounded-xl text-sm font-semibold transition-colors ${
-                          sport === s ? 'bg-tint text-tint-fg shadow-sm' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                          sport === s ? 'bg-tint text-tint-fg shadow-sm' : 'bg-muted text-foreground hover:bg-secondary'
                         }`}
                       >
                         {t(`sport${s}`)}
@@ -406,12 +406,12 @@ export function PlanBuilder({ onCancel, onSave, planId }: PlanBuilderProps) {
               {/* Category selector (second level) */}
               {categoriesForSport.length > 0 && (
                 <div className="mb-4">
-                  <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">{t('chooseCategory')}</div>
+                  <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">{t('chooseCategory')}</div>
                   <div className="flex gap-2 flex-wrap">
                     <button
                       onClick={() => selectCategory('')}
                       className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                        category === '' ? 'bg-tint text-tint-fg' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        category === '' ? 'bg-tint text-tint-fg' : 'bg-muted text-foreground hover:bg-secondary'
                       }`}
                     >
                       {t('allCategories')}
@@ -421,7 +421,7 @@ export function PlanBuilder({ onCancel, onSave, planId }: PlanBuilderProps) {
                         key={c.id}
                         onClick={() => selectCategory(c.slug)}
                         className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                          category === c.slug ? 'bg-tint text-tint-fg' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                          category === c.slug ? 'bg-tint text-tint-fg' : 'bg-muted text-foreground hover:bg-secondary'
                         }`}
                       >
                         {localized(c.name_i18n, c.slug, language)}
@@ -432,16 +432,16 @@ export function PlanBuilder({ onCancel, onSave, planId }: PlanBuilderProps) {
               )}
 
               {loadingExercises && (
-                <div className="text-sm text-gray-600 py-4 text-center">
+                <div className="text-sm text-muted-foreground py-4 text-center">
                   <RefreshCw className="w-5 h-5 animate-spin inline-block mb-1" />
                   <div>{t('loadingExercises')}</div>
                 </div>
               )}
               {!loadingExercises && (exerciseLibrary?.length ?? 0) === 0 && (
-                <div className="text-sm text-gray-600 py-8 text-center">
-                  <Dumbbell className="w-8 h-8 mx-auto mb-2 text-gray-400" />
+                <div className="text-sm text-muted-foreground py-8 text-center">
+                  <Dumbbell className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
                   <div className="font-medium">{t('noExercisesFound')}</div>
-                  <div className="text-xs text-gray-500 mt-1">{t('createFirstExercise')}</div>
+                  <div className="text-xs text-muted-foreground mt-1">{t('createFirstExercise')}</div>
                 </div>
               )}
               <div ref={listRef} onScroll={onListScroll} className="space-y-2 max-h-96 overflow-auto">
@@ -453,18 +453,18 @@ export function PlanBuilder({ onCancel, onSave, planId }: PlanBuilderProps) {
                     summary && summary.rest_time !== undefined ? nsToSeconds(summary.rest_time) : 60;
                   const alreadyAdded = existingExerciseIds.has(exercise.id);
                   return (
-                    <div key={exercise.id} className="bg-gray-50 border border-gray-200 rounded-lg p-3 hover:border-gray-300 transition-colors">
+                    <div key={exercise.id} className="bg-muted border border-border rounded-lg p-3 hover:border-border transition-colors">
                       <div className="flex items-start justify-between gap-3">
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1">
-                            <div className="font-medium text-gray-900 truncate">{localized(exercise.name_i18n, exercise.name, language)}</div>
+                            <div className="font-medium text-foreground truncate">{localized(exercise.name_i18n, exercise.name, language)}</div>
                             <SportTypeBadge sportType={exercise.sport_type} />
                           </div>
-                          <div className="text-sm text-gray-600">
+                          <div className="text-sm text-muted-foreground">
                             {t('setsTargetRest', { sets: exercise.sets?.length || 1, target: displayTarget, rest })}
                           </div>
                           {localized(exercise.description_i18n, exercise.description, language) && (
-                            <div className="text-xs text-gray-500 mt-1 line-clamp-1">{localized(exercise.description_i18n, exercise.description, language)}</div>
+                            <div className="text-xs text-muted-foreground mt-1 line-clamp-1">{localized(exercise.description_i18n, exercise.description, language)}</div>
                           )}
                         </div>
                         <button
@@ -472,7 +472,7 @@ export function PlanBuilder({ onCancel, onSave, planId }: PlanBuilderProps) {
                           disabled={alreadyAdded}
                           className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
                             alreadyAdded
-                              ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                              ? 'bg-muted text-muted-foreground cursor-not-allowed'
                               : 'bg-tint text-tint-fg hover:bg-tint-2'
                           }`}
                         >
@@ -484,12 +484,12 @@ export function PlanBuilder({ onCancel, onSave, planId }: PlanBuilderProps) {
                 })}
 
                 {loadingExercises && exerciseLibrary.length > 0 && (
-                  <div className="py-3 text-center text-gray-500 text-sm">
+                  <div className="py-3 text-center text-muted-foreground text-sm">
                     <RefreshCw className="w-4 h-4 animate-spin inline-block" />
                   </div>
                 )}
                 {!loadingExercises && exerciseLibrary.length > 0 && exerciseLibrary.length < total && (
-                  <div className="py-2 text-center text-xs text-gray-400">
+                  <div className="py-2 text-center text-xs text-muted-foreground">
                     {exerciseLibrary.length}/{total}
                   </div>
                 )}
@@ -498,25 +498,25 @@ export function PlanBuilder({ onCancel, onSave, planId }: PlanBuilderProps) {
           )}
 
           {exercises.length === 0 ? (
-            <div className="bg-card border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
-              <p className="text-gray-600 mb-2">{t('noExercisesAddedYet')}</p>
-              <p className="text-gray-500 text-sm">{t('tapAddExerciseToBuild')}</p>
+            <div className="bg-card border-2 border-dashed border-border rounded-lg p-8 text-center">
+              <p className="text-muted-foreground mb-2">{t('noExercisesAddedYet')}</p>
+              <p className="text-muted-foreground text-sm">{t('tapAddExerciseToBuild')}</p>
             </div>
           ) : (
             <div className="space-y-3">
               {exercises.map((exercise, index) => (
-                <div key={exercise.key} className="bg-card border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
+                <div key={exercise.key} className="bg-card border border-border rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
                   <div className="flex items-start gap-3">
                     {!readOnly && (
-                      <button className="mt-2 text-gray-400 hover:text-gray-600 cursor-grab active:cursor-grabbing">
+                      <button className="mt-2 text-muted-foreground hover:text-foreground cursor-grab active:cursor-grabbing">
                         <GripVertical className="w-5 h-5" />
                       </button>
                     )}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between mb-3">
                         <div className="flex-1 min-w-0">
-                          <div className="font-medium text-gray-900 mb-1">{exercise.name}</div>
-                          <div className="text-sm text-gray-600">
+                          <div className="font-medium text-foreground mb-1">{exercise.name}</div>
+                          <div className="text-sm text-muted-foreground">
                             {t('setsReps', { sets: exercise.sets, reps: exercise.repsOrDuration, unit: exercise.type === 'reps' ? t('repsUnit') : t('secUnit') })}
                           </div>
                         </div>
@@ -532,7 +532,7 @@ export function PlanBuilder({ onCancel, onSave, planId }: PlanBuilderProps) {
                       </div>
 
                       {readOnly ? (
-                        <div className="flex items-center gap-4 text-sm text-gray-600">
+                        <div className="flex items-center gap-4 text-sm text-muted-foreground">
                           <span>{t('restBetweenSets')}: {exercise.restInterval} {t('secondsUnit')}</span>
                           <span>{t('intensityLevel')}: {exercise.intensity}/10</span>
                         </div>
@@ -540,7 +540,7 @@ export function PlanBuilder({ onCancel, onSave, planId }: PlanBuilderProps) {
                         <div className="space-y-3">
                           {/* Rest Interval */}
                           <div>
-                            <label className="text-xs font-medium text-gray-700 mb-1.5 block">
+                            <label className="text-xs font-medium text-foreground mb-1.5 block">
                               {t('restBetweenSets')}
                             </label>
                             <div className="flex items-center gap-2">
@@ -551,7 +551,7 @@ export function PlanBuilder({ onCancel, onSave, planId }: PlanBuilderProps) {
                                 onChange={(v) => updateRest(exercise.key, v)}
                                 className="w-32"
                               />
-                              <span className="text-sm text-gray-600">{t('secondsUnit')}</span>
+                              <span className="text-sm text-muted-foreground">{t('secondsUnit')}</span>
                             </div>
                           </div>
 

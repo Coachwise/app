@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Menu, X, Bell, Shield, LogOut, Settings, Users, DollarSign, Globe, User, Crown, Coins, ClipboardList, Info, LifeBuoy, Sun, Moon, Palette, Activity } from 'lucide-react';
+import { createPortal } from 'react-dom';
+import { X, Bell, Shield, LogOut, Settings, Users, DollarSign, Globe, User, Crown, Coins, ClipboardList, Info, LifeBuoy, Sun, Moon, Palette, Activity, ChevronDown } from 'lucide-react';
 import { getTheme, setTheme } from '../lib/theme';
 import { APP_VERSION, APP_IS_BETA } from '../config';
 import type { UserRole } from '../App';
@@ -32,6 +33,7 @@ export function HamburgerMenu({
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { t, language, setLanguage, isRTL } = useLanguage();
   const [showLanguageSelector, setShowLanguageSelector] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
   const [theme, setThemePref] = useState(getTheme());
   const [unread, setUnread] = useState(0);
 
@@ -76,12 +78,19 @@ export function HamburgerMenu({
 
   return (
     <>
-      {/* Hamburger Menu Overlay */}
-      {isMenuOpen && (
-        <div 
-          className="fixed inset-0 bg-black/50 z-40"
-          onClick={() => setIsMenuOpen(false)}
-        />
+      {/* Overlay + slide-out drawer are portaled to <body> so they escape any
+          stacking context created by the header they're triggered from (the
+          Workouts header is `position: sticky`, which forms its own stacking
+          context — without the portal a low z-index page element like the
+          rest-day icon can paint over the open menu). */}
+      {createPortal(
+        <>
+          {/* Hamburger Menu Overlay */}
+          {isMenuOpen && (
+            <div
+              className="fixed inset-0 bg-black/50 z-40"
+              onClick={() => setIsMenuOpen(false)}
+            />
       )}
 
       {/* Slide-out Menu — opens from the same edge the trigger sits on, which
@@ -283,98 +292,115 @@ export function HamburgerMenu({
                 <span className="text-foreground">{t('wallet')}</span>
               </button>
 
+              {/* Settings — collapsible group holding privacy, language & appearance */}
               <button
-                onClick={() => {
-                  onNavigate('privacy-settings');
-                  setIsMenuOpen(false);
-                }}
-                className="w-full flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg transition-colors text-left"
+                onClick={() => setShowSettings(!showSettings)}
+                aria-expanded={showSettings}
+                className="w-full flex items-center gap-3 p-3 hover:bg-muted rounded-lg transition-colors text-left"
               >
-                <Shield className="w-5 h-5 text-gray-600" />
-                <span className="text-foreground">{t('privacySecurity')}</span>
+                <Settings className="w-5 h-5 text-muted-foreground" />
+                <span className="text-foreground flex-1 text-start">{t('settings')}</span>
+                <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${showSettings ? 'rotate-180' : ''}`} />
               </button>
 
+              {showSettings && (
+                <div className="ps-3 space-y-1">
+                  {/* Privacy & Security */}
+                  <button
+                    onClick={() => {
+                      onNavigate('privacy-settings');
+                      setIsMenuOpen(false);
+                    }}
+                    className="w-full flex items-center gap-3 p-3 hover:bg-muted rounded-lg transition-colors text-left"
+                  >
+                    <Shield className="w-5 h-5 text-muted-foreground" />
+                    <span className="text-foreground">{t('privacySecurity')}</span>
+                  </button>
+
+                  {/* Language */}
+                  <button
+                    onClick={() => setShowLanguageSelector(!showLanguageSelector)}
+                    className="w-full flex items-center gap-3 p-3 hover:bg-muted rounded-lg transition-colors text-left"
+                  >
+                    <Globe className="w-5 h-5 text-muted-foreground" />
+                    <span className="text-foreground flex-1 text-start">{t('language')}</span>
+                    <span className="text-muted-foreground text-sm">{language === 'en' ? 'EN' : 'فا'}</span>
+                  </button>
+
+                  {showLanguageSelector && (
+                    <div className="bg-muted rounded-lg p-2 space-y-1">
+                      <button
+                        onClick={() => {
+                          setLanguage('en');
+                          setShowLanguageSelector(false);
+                        }}
+                        className={`w-full text-left px-3 py-2 rounded transition-colors ${
+                          language === 'en' ? 'bg-tint text-tint-fg' : 'hover:bg-secondary text-foreground'
+                        }`}
+                      >
+                        {t('english')}
+                      </button>
+                      <button
+                        onClick={() => {
+                          setLanguage('fa');
+                          setShowLanguageSelector(false);
+                        }}
+                        className={`w-full text-left px-3 py-2 rounded transition-colors ${
+                          language === 'fa' ? 'bg-tint text-tint-fg' : 'hover:bg-secondary text-foreground'
+                        }`}
+                      >
+                        {t('persian')}
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Appearance — colour mode + accent */}
+                  <div className="p-3">
+                    <div className="flex items-center gap-3 mb-3">
+                      <Palette className="w-5 h-5 text-muted-foreground" />
+                      <span className="text-foreground flex-1 text-start">{t('appearance')}</span>
+                    </div>
+                    <div className="flex gap-2 mb-2">
+                      {([['light', t('themeLight'), Sun], ['dark', t('themeDark'), Moon]] as const).map(([m, label, Ic]) => (
+                        <button
+                          key={m}
+                          onClick={() => setThemePref(setTheme({ mode: m }))}
+                          className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-medium border transition-colors ${
+                            theme.mode === m ? 'bg-tint text-tint-fg border-tint' : 'bg-card text-muted-foreground border-border'
+                          }`}
+                        >
+                          <Ic className="w-4 h-4" />{label}
+                        </button>
+                      ))}
+                    </div>
+                    <div className="flex gap-2">
+                      {([['azure', '#0097e6', 'Azure'], ['pink', '#fda7df', 'Pink']] as const).map(([a, color, label]) => (
+                        <button
+                          key={a}
+                          onClick={() => setThemePref(setTheme({ accent: a }))}
+                          className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-medium border transition-colors ${
+                            theme.accent === a ? 'border-tint bg-tint-soft text-tint-ink' : 'bg-card text-muted-foreground border-border'
+                          }`}
+                        >
+                          <span className="w-3.5 h-3.5 rounded-full" style={{ background: color }} />{label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Support */}
               <button
                 onClick={() => {
                   onNavigate('support');
                   setIsMenuOpen(false);
                 }}
-                className="w-full flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg transition-colors text-left"
+                className="w-full flex items-center gap-3 p-3 hover:bg-muted rounded-lg transition-colors text-left"
               >
-                <LifeBuoy className="w-5 h-5 text-gray-600" />
+                <LifeBuoy className="w-5 h-5 text-muted-foreground" />
                 <span className="text-foreground">{t('support')}</span>
               </button>
-
-              {/* Language Selector */}
-              <button 
-                onClick={() => setShowLanguageSelector(!showLanguageSelector)}
-                className="w-full flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg transition-colors text-left"
-              >
-                <Globe className="w-5 h-5 text-gray-600" />
-                <span className="text-foreground flex-1 text-start">{t('language')}</span>
-                <span className="text-gray-500 text-sm">{language === 'en' ? 'EN' : 'فا'}</span>
-              </button>
-
-              {showLanguageSelector && (
-                <div className="bg-gray-50 rounded-lg p-2 space-y-1">
-                  <button
-                    onClick={() => {
-                      setLanguage('en');
-                      setShowLanguageSelector(false);
-                    }}
-                    className={`w-full text-left px-3 py-2 rounded transition-colors ${
-                      language === 'en' ? 'bg-yellow-500 text-foreground' : 'hover:bg-gray-200 text-foreground'
-                    }`}
-                  >
-                    {t('english')}
-                  </button>
-                  <button
-                    onClick={() => {
-                      setLanguage('fa');
-                      setShowLanguageSelector(false);
-                    }}
-                    className={`w-full text-left px-3 py-2 rounded transition-colors ${
-                      language === 'fa' ? 'bg-yellow-500 text-foreground' : 'hover:bg-gray-200 text-foreground'
-                    }`}
-                  >
-                    {t('persian')}
-                  </button>
-                </div>
-              )}
-
-              {/* Appearance — colour mode + accent */}
-              <div className="p-3">
-                <div className="flex items-center gap-3 mb-3">
-                  <Palette className="w-5 h-5 text-gray-600" />
-                  <span className="text-foreground flex-1 text-start">{t('appearance')}</span>
-                </div>
-                <div className="flex gap-2 mb-2">
-                  {([['light', t('themeLight'), Sun], ['dark', t('themeDark'), Moon]] as const).map(([m, label, Ic]) => (
-                    <button
-                      key={m}
-                      onClick={() => setThemePref(setTheme({ mode: m }))}
-                      className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-medium border transition-colors ${
-                        theme.mode === m ? 'bg-tint text-tint-fg border-tint' : 'bg-card text-gray-600 border-gray-300'
-                      }`}
-                    >
-                      <Ic className="w-4 h-4" />{label}
-                    </button>
-                  ))}
-                </div>
-                <div className="flex gap-2">
-                  {([['azure', '#0097e6', 'Azure'], ['pink', '#fda7df', 'Pink']] as const).map(([a, color, label]) => (
-                    <button
-                      key={a}
-                      onClick={() => setThemePref(setTheme({ accent: a }))}
-                      className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-medium border transition-colors ${
-                        theme.accent === a ? 'border-tint bg-tint-soft text-tint-ink' : 'bg-card text-gray-600 border-gray-300'
-                      }`}
-                    >
-                      <span className="w-3.5 h-3.5 rounded-full" style={{ background: color }} />{label}
-                    </button>
-                  ))}
-                </div>
-              </div>
 
               <div className="border-t border-gray-200 my-2"></div>
 
@@ -411,6 +437,9 @@ export function HamburgerMenu({
           </button>
         </div>
       </div>
+        </>,
+        document.body,
+      )}
 
       {/* Beta flag + Bell + Hamburger triggers */}
       <div className="flex items-center gap-1">
@@ -433,9 +462,20 @@ export function HamburgerMenu({
         </button>
         <button
           onClick={() => setIsMenuOpen(true)}
-          className="p-2 hover:bg-tint-2 rounded-lg transition-colors"
+          aria-label={t('menu')}
+          className="rounded-full transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tint"
         >
-          <Menu className="w-6 h-6 text-foreground" />
+          {avatarUrl ? (
+            <img
+              src={avatarUrl}
+              alt={displayName}
+              className="w-9 h-9 rounded-full object-cover border border-border"
+            />
+          ) : (
+            <span className="w-9 h-9 rounded-full bg-tint-soft border border-tint/20 flex items-center justify-center text-tint-ink text-sm font-bold">
+              {initials}
+            </span>
+          )}
         </button>
       </div>
     </>

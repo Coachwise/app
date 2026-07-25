@@ -86,7 +86,7 @@ export function MessagesWithChannels({ userRole, onNavigate, setCurrentConversat
   const fa = (n: number) => n.toLocaleString(language === 'fa' ? 'fa-IR' : 'en-US');
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-background">
       {/* Header */}
       <div className="bg-card border-b border-border px-4 py-4 sticky top-0 z-10">
         <div className="flex items-center justify-between">
@@ -101,10 +101,10 @@ export function MessagesWithChannels({ userRole, onNavigate, setCurrentConversat
 
         {/* New-chat: pick a connection (shared ConnectionPicker) */}
         {showNew && (
-          <div className="mt-3 bg-card rounded-2xl border border-gray-200 overflow-hidden">
-            <div className="flex items-center justify-between px-3 py-2.5 border-b border-gray-100">
+          <div className="mt-3 bg-card rounded-2xl border border-border overflow-hidden">
+            <div className="flex items-center justify-between px-3 py-2.5 border-b border-border">
               <span className="text-foreground text-sm font-medium">{t('startConversation')}</span>
-              <button onClick={() => setShowNew(false)} className="p-1 text-gray-400 hover:text-gray-600" aria-label={t('cancel')}>
+              <button onClick={() => setShowNew(false)} className="p-1 text-muted-foreground hover:text-foreground" aria-label={t('cancel')}>
                 <X className="w-4 h-4" />
               </button>
             </div>
@@ -116,11 +116,11 @@ export function MessagesWithChannels({ userRole, onNavigate, setCurrentConversat
       {/* Thread list */}
       <div className="p-4">
         {loading && threads.length === 0 ? (
-          <div className="text-center py-10 text-gray-500 text-sm">{t('loading')}</div>
+          <div className="text-center py-10 text-muted-foreground text-sm">{t('loading')}</div>
         ) : threads.length === 0 ? (
-          <div className="bg-card rounded-lg p-8 text-center shadow-md border border-gray-200">
-            <p className="text-gray-600 mb-1">{t('noConversations')}</p>
-            <p className="text-gray-400 text-sm">{t('noConversationsHint')}</p>
+          <div className="bg-card rounded-lg p-8 text-center shadow-md border border-border">
+            <p className="text-muted-foreground mb-1">{t('noConversations')}</p>
+            <p className="text-muted-foreground text-sm">{t('noConversationsHint')}</p>
           </div>
         ) : (
           <div className="space-y-2">
@@ -128,7 +128,7 @@ export function MessagesWithChannels({ userRole, onNavigate, setCurrentConversat
               <button
                 key={thread.chat_id}
                 onClick={() => openThread(thread)}
-                className="w-full bg-card rounded-lg p-3 shadow-sm border border-gray-200 flex items-center gap-3 hover:bg-gray-50 transition-colors text-start"
+                className="w-full bg-card rounded-lg p-3 shadow-sm border border-border flex items-center gap-3 hover:bg-muted transition-colors text-start"
               >
                 <UserAvatar
                   url={thread.peer?.avatar?.url}
@@ -139,10 +139,10 @@ export function MessagesWithChannels({ userRole, onNavigate, setCurrentConversat
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between gap-2">
                     <span className="text-foreground truncate">{thread.peer ? peerName(thread.peer) : ''}</span>
-                    <span className="text-gray-400 text-xs flex-shrink-0">{fmtTime(thread.last_at)}</span>
+                    <span className="text-muted-foreground text-xs flex-shrink-0">{fmtTime(thread.last_at)}</span>
                   </div>
                   <div className="flex items-center justify-between gap-2 mt-0.5">
-                    <span className={`truncate text-sm ${thread.unread_count > 0 ? 'text-foreground font-medium' : 'text-gray-500'}`}>
+                    <span className={`truncate text-sm ${thread.unread_count > 0 ? 'text-foreground font-medium' : 'text-muted-foreground'}`}>
                       {thread.last_message}
                     </span>
                     {thread.unread_count > 0 && (

@@ -212,8 +212,8 @@ export function GuidedWorkout({ open, exercises, onLogSet, onClose, onFinish }: 
     >
       {phase === 'done' ? (
         <div className="flex-1 flex flex-col items-center justify-center gap-6 p-8 text-center">
-          <div className="w-20 h-20 rounded-full bg-yellow-500 flex items-center justify-center">
-            <Check className="size-10 text-foreground" />
+          <div className="w-20 h-20 rounded-full bg-green-500 flex items-center justify-center">
+            <Check className="size-10 text-white" />
           </div>
           <div>
             <h2 className="text-2xl font-bold">{t('workoutComplete')}</h2>

@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo, useCallback, type MouseEvent, type TouchEvent } from 'react';
-import { Plus, Play, Calendar, Clock, Dumbbell, Trophy, User, X, Trash2, CheckCircle, ArrowLeft, ArrowRight } from 'lucide-react';
+import { Plus, Play, Calendar, Clock, Activity, ClipboardList, Trophy, User, X, Trash2, CheckCircle, ArrowLeft, ArrowRight, Search, FilePlus, Flame, Star } from 'lucide-react';
 import { Button } from './ui/button';
 import { HamburgerMenu } from './HamburgerMenu';
 import type { UserRole } from '../App';
@@ -73,9 +73,14 @@ const dateKey = (date: Date) => date.toISOString().split('T')[0];
 // Session status check - only sessions have COMPLETED status, not schedules
 const isCompletedStatus = (status?: string) => (status || '').toUpperCase() === 'COMPLETED';
 
-const buildRangeDays = (center: Date) => {
-  const start = new Date(normalizeDate(center).getTime() - WINDOW_RADIUS * DAY_MS);
-  return Array.from({ length: WINDOW_RADIUS * 2 + 1 }, (_, i) => new Date(start.getTime() + i * DAY_MS));
+// Build the aligned 7-day week that contains `center`. The week's first day
+// follows the locale: Monday for the Gregorian calendar, Saturday for Jalali.
+// weekStartsOn uses JS weekday indexing (0 = Sunday … 6 = Saturday).
+const buildRangeDays = (center: Date, weekStartsOn: number) => {
+  const c = normalizeDate(center);
+  const offset = (c.getUTCDay() - weekStartsOn + 7) % 7;
+  const start = new Date(c.getTime() - offset * DAY_MS);
+  return Array.from({ length: 7 }, (_, i) => new Date(start.getTime() + i * DAY_MS));
 };
 
 const formatRangeLabel = (days: Date[], locale?: string) => {
@@ -104,6 +109,9 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, onFindCoach, onView
   const { tokens, user } = useAuth();
   // Use the Persian (Jalali/Shamsi) calendar with Persian month/day names when in Persian.
   const dateLocale = language === 'fa' ? 'fa-IR-u-ca-persian' : undefined;
+  // Week alignment follows the calendar: Jalali weeks run Saturday→Friday,
+  // Gregorian weeks run Monday→Sunday. (0 = Sunday … 6 = Saturday.)
+  const weekStartsOn = language === 'fa' ? 6 : 1;
 
   const [libraryPlans, setLibraryPlans] = useState<WorkoutPlan[]>([]);
   const [loadingPlans, setLoadingPlans] = useState(false);
@@ -124,7 +132,7 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, onFindCoach, onView
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
   const [mouseStartX, setMouseStartX] = useState<number | null>(null);
 
-  const visibleDays = useMemo(() => buildRangeDays(centerDate), [centerDate]);
+  const visibleDays = useMemo(() => buildRangeDays(centerDate, weekStartsOn), [centerDate, weekStartsOn]);
   const canStartToday = useMemo(() => dateKey(selectedDate) === dateKey(new Date()), [selectedDate]);
 
   const planLookup = useMemo(() => {
@@ -466,15 +474,22 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, onFindCoach, onView
     setTouchStartX(e.touches[0].clientX);
   };
 
-  const shiftWindow = (days: number) => {
-    setCenterDate(prev => new Date(prev.getTime() + days * DAY_MS));
+  // Move the strip by whole weeks (positive = later, negative = earlier).
+  const shiftWindow = (weeks: number) => {
+    setCenterDate(prev => new Date(prev.getTime() + weeks * 7 * DAY_MS));
+  };
+
+  // Turn a horizontal drag into a one-week step. Mirrored for RTL so a swipe
+  // always moves the calendar in the direction it's dragged.
+  const handleSwipe = (deltaX: number) => {
+    if (Math.abs(deltaX) <= 40) return;
+    const goForward = isRTL ? deltaX > 0 : deltaX < 0;
+    shiftWindow(goForward ? 1 : -1);
   };
 
   const handleTouchEnd = (e: TouchEvent<HTMLDivElement>) => {
     if (touchStartX === null) return;
-    const deltaX = e.changedTouches[0].clientX - touchStartX;
-    if (deltaX > 40) shiftWindow(-3);
-    if (deltaX < -40) shiftWindow(3);
+    handleSwipe(e.changedTouches[0].clientX - touchStartX);
     setTouchStartX(null);
   };
 
@@ -484,119 +499,112 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, onFindCoach, onView
 
   const handleMouseUp = (e: MouseEvent<HTMLDivElement>) => {
     if (mouseStartX === null) return;
-    const deltaX = e.clientX - mouseStartX;
-    if (deltaX > 40) shiftWindow(-3);
-    if (deltaX < -40) shiftWindow(3);
+    handleSwipe(e.clientX - mouseStartX);
     setMouseStartX(null);
   };
 
   const rangeLabel = formatRangeLabel(visibleDays, dateLocale);
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
-      <div className="bg-tint px-4 pt-6 pb-8 rounded-b-[2rem] shadow-xl">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h1 className="text-foreground text-2xl font-bold">{t('workouts')}</h1>
-            <p className="text-tint-fg/70 text-sm">{t('swipeToBrowse')}</p>
-          </div>
+    <div className="min-h-screen bg-background pb-20">
+      {/* Flat header — consistent with every other screen */}
+      <div className="bg-card border-b border-border px-4 py-4 sticky top-0 z-10">
+        <div className="flex items-center justify-between">
+          <h1 className="text-foreground text-xl font-bold">{t('workouts')}</h1>
           <HamburgerMenu userRole={userRole} onNavigate={onNavigate} isPro={isPro} />
-        </div>
-
-        <div className="flex items-center justify-between text-xs text-tint-fg/70 mb-2">
-          <button
-            onClick={() => shiftWindow(-3)}
-            className="p-2 rounded-lg bg-tint-2 hover:bg-tint-2/80 text-tint-fg"
-            aria-label={t('previousDays')}
-          >
-            {isRTL ? <ArrowRight className="w-4 h-4" /> : <ArrowLeft className="w-4 h-4" />}
-          </button>
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-tint-fg">{rangeLabel}</span>
-            <button
-              onClick={() => {
-                const today = normalizeDate(new Date());
-                setCenterDate(today);
-                setSelectedDate(today);
-              }}
-              className="px-3 py-1 rounded-lg bg-yellow-500 hover:bg-yellow-400 text-foreground text-xs font-bold transition-colors"
-            >
-              {t('today')}
-            </button>
-          </div>
-          <button
-            onClick={() => shiftWindow(3)}
-            className="p-2 rounded-lg bg-tint-2 hover:bg-tint-2/80 text-tint-fg"
-            aria-label={t('nextDays')}
-          >
-            {isRTL ? <ArrowLeft className="w-4 h-4" /> : <ArrowRight className="w-4 h-4" />}
-          </button>
-        </div>
-
-        <div
-          className="flex items-center gap-2 overflow-x-auto p-2 bg-tint-2 rounded-2xl select-none"
-          onTouchStart={handleTouchStart}
-          onTouchEnd={handleTouchEnd}
-          onMouseDown={handleMouseDown}
-          onMouseUp={handleMouseUp}
-          onMouseLeave={() => setMouseStartX(null)}
-        >
-          {visibleDays.map((date) => {
-            const key = dateKey(date);
-            const isToday = key === dateKey(new Date());
-            const isPast = date < normalizeDate(new Date());
-            const hasData = isPast
-              ? pastSessions.some(s => s.dateStr === key)
-              : futureSchedules.some(s => s.dateStr === key);
-            const selected = key === dateKey(selectedDate);
-
-            // Styling logic:
-            // - Today always gets full yellow background
-            // - Selected (non-today) gets only colored border
-            // - When scheduling and not today/selected, show orange border
-            // - Otherwise default dark background
-            let buttonClasses = 'flex flex-col items-center justify-center w-12 h-16 rounded-xl transition-all ';
-            if (isToday) {
-              buttonClasses += 'bg-yellow-500 text-foreground shadow-lg font-bold';
-            } else if (selected) {
-              buttonClasses += 'text-tint-fg bg-tint border-2 border-yellow-500 scale-105';
-            } else if (isScheduling && !isPast) {
-              buttonClasses += 'text-tint-fg/70 hover:text-tint-fg bg-tint border-2 border-orange-500';
-            } else {
-              buttonClasses += 'text-tint-fg/70 hover:text-tint-fg bg-tint';
-            }
-
-            return (
-              <button
-                key={date.toISOString()}
-                onClick={() => setSelectedDate(date)}
-                className={buttonClasses}
-              >
-                <span className="text-[10px] font-medium uppercase">
-                  {date.toLocaleDateString(dateLocale, { weekday: 'narrow' })}
-                </span>
-                <span className={`text-sm font-bold ${isToday ? '' : 'opacity-80'}`}>
-                  {date.toLocaleDateString(dateLocale, { day: 'numeric' })}
-                </span>
-                {hasData ? (
-                  <div className={`w-1.5 h-1.5 rounded-full mt-1 ${isToday ? 'bg-tint' : isPast ? 'bg-green-500' : 'bg-yellow-500'}`} />
-                ) : null}
-              </button>
-            );
-          })}
         </div>
       </div>
 
-      <div className="p-4 -mt-4 space-y-6">
+      <div className="p-4 space-y-6">
+        {/* Week strip — a clean card; the accent shows only on today / selected */}
+        <div className="bg-card rounded-2xl border border-border p-3">
+          <div className="flex items-center justify-between mb-3">
+            <button
+              onClick={() => shiftWindow(-1)}
+              className="p-2 rounded-lg text-muted-foreground hover:bg-muted transition-colors"
+              aria-label={t('previousDays')}
+            >
+              {isRTL ? <ArrowRight className="w-4 h-4" /> : <ArrowLeft className="w-4 h-4" />}
+            </button>
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-semibold text-foreground">{rangeLabel}</span>
+              <button
+                onClick={() => {
+                  const today = normalizeDate(new Date());
+                  setCenterDate(today);
+                  setSelectedDate(today);
+                }}
+                className="px-3 py-1 rounded-lg bg-tint text-tint-fg text-xs font-bold hover:bg-tint-2 transition-colors"
+              >
+                {t('today')}
+              </button>
+            </div>
+            <button
+              onClick={() => shiftWindow(1)}
+              className="p-2 rounded-lg text-muted-foreground hover:bg-muted transition-colors"
+              aria-label={t('nextDays')}
+            >
+              {isRTL ? <ArrowLeft className="w-4 h-4" /> : <ArrowRight className="w-4 h-4" />}
+            </button>
+          </div>
+
+          <div
+            className="grid grid-cols-7 gap-1 select-none"
+            onTouchStart={handleTouchStart}
+            onTouchEnd={handleTouchEnd}
+            onMouseDown={handleMouseDown}
+            onMouseUp={handleMouseUp}
+            onMouseLeave={() => setMouseStartX(null)}
+          >
+            {visibleDays.map((date) => {
+              const key = dateKey(date);
+              const isToday = key === dateKey(new Date());
+              const isPast = date < normalizeDate(new Date());
+              const hasData = isPast
+                ? pastSessions.some(s => s.dateStr === key)
+                : futureSchedules.some(s => s.dateStr === key);
+              const selected = key === dateKey(selectedDate);
+
+              let buttonClasses = 'flex flex-col items-center justify-center w-full h-16 rounded-xl transition-all ';
+              if (isToday) {
+                buttonClasses += 'bg-tint text-tint-fg shadow-sm font-bold';
+              } else if (selected) {
+                buttonClasses += 'bg-tint-soft text-tint-ink border-2 border-tint scale-105';
+              } else if (isScheduling && !isPast) {
+                buttonClasses += 'text-foreground bg-muted border-2 border-orange-400';
+              } else {
+                buttonClasses += 'text-muted-foreground hover:text-foreground bg-muted';
+              }
+
+              return (
+                <button
+                  key={date.toISOString()}
+                  onClick={() => setSelectedDate(date)}
+                  className={buttonClasses}
+                >
+                  <span className="text-[10px] font-medium uppercase">
+                    {date.toLocaleDateString(dateLocale, { weekday: 'narrow' })}
+                  </span>
+                  <span className={`text-sm font-bold ${isToday ? '' : 'opacity-90'}`}>
+                    {date.toLocaleDateString(dateLocale, { day: 'numeric' })}
+                  </span>
+                  {hasData ? (
+                    <div className={`w-1.5 h-1.5 rounded-full mt-1 ${isToday ? 'bg-tint-fg' : isPast ? 'bg-green-500' : 'bg-tint-ink'}`} />
+                  ) : null}
+                </button>
+              );
+            })}
+          </div>
+        </div>
         {activeSession && (
           <div className="bg-tint text-tint-fg rounded-2xl p-4 flex items-center justify-between gap-3 shadow-sm">
             <div className="flex items-center gap-3 min-w-0">
-              <div className="w-10 h-10 rounded-full bg-yellow-500 text-foreground flex items-center justify-center flex-shrink-0">
+              <div className="w-10 h-10 rounded-full bg-tint-fg/15 text-tint-fg flex items-center justify-center flex-shrink-0">
                 <Play className="w-5 h-5 ml-0.5" />
               </div>
               <div className="min-w-0">
                 <p className="font-semibold truncate">{t('sessionInProgress')}</p>
-                <p className="text-xs text-muted-foreground truncate">{t('resumeOrDiscardSession')}</p>
+                <p className="text-xs text-tint-fg/70 truncate">{t('resumeOrDiscardSession')}</p>
               </div>
             </div>
             <div className="flex items-center gap-2 flex-shrink-0">
@@ -620,7 +628,7 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, onFindCoach, onView
         )}
 
         {scheduleLoading && (
-          <div className="bg-card border border-gray-200 rounded-lg p-3 text-sm text-gray-600">
+          <div className="bg-card border border-border rounded-lg p-3 text-sm text-muted-foreground">
             {t('refreshingSchedule')}
           </div>
         )}
@@ -628,7 +636,7 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, onFindCoach, onView
         {currentWorkouts.length > 0 ? (
           <div className="space-y-4">
              <div className="flex items-center justify-between px-2">
-                <span className="text-sm font-bold text-gray-500 uppercase tracking-wide">
+                <span className="text-sm font-bold text-muted-foreground uppercase tracking-wide">
                   {selectedDate < normalizeDate(new Date())
                     ? t('completedWorkouts')
                     : dateKey(selectedDate) === dateKey(new Date())
@@ -638,7 +646,7 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, onFindCoach, onView
                 {selectedDate >= normalizeDate(new Date()) && (
                   <button
                     onClick={() => setIsScheduling(true)}
-                    className="text-xs font-bold text-yellow-600 hover:text-yellow-700 flex items-center gap-1"
+                    className="text-xs font-bold text-tint-ink hover:text-tint flex items-center gap-1"
                   >
                     <Plus className="w-3 h-3" /> {t('addAnother')}
                   </button>
@@ -651,8 +659,8 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, onFindCoach, onView
                const isToday = dateKey(selectedDate) === dateKey(new Date());
 
                return (
-                <div key={workout.instanceId} className="bg-card rounded-2xl p-1 shadow-lg border border-gray-100 relative overflow-hidden group">
-                  <div className={`absolute top-0 left-0 w-1.5 h-full ${isCompleted ? 'bg-green-500' : 'bg-yellow-500'}`}></div>
+                <div key={workout.instanceId} className="bg-card rounded-2xl p-1 border border-border shadow-sm relative overflow-hidden group">
+                  <div className={`absolute top-0 left-0 w-1.5 h-full ${isCompleted ? 'bg-green-500' : 'bg-tint'}`}></div>
 
                   <div className="p-5 pl-7">
                     <div className="flex items-center justify-between mb-4">
@@ -662,8 +670,8 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, onFindCoach, onView
                             <User className="w-3 h-3" /> {t('assigned')}
                           </span>
                         ) : (
-                          <span className="flex items-center gap-1 text-xs text-green-600 bg-green-50 px-2 py-0.5 rounded-md font-medium">
-                            <Dumbbell className="w-3 h-3" /> {t('myPlan')}
+                          <span className="flex items-center gap-1 text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-md font-medium">
+                            <ClipboardList className="w-3 h-3" /> {t('myPlan')}
                           </span>
                         )}
                         {isCompleted && !isPastDate && (
@@ -677,7 +685,7 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, onFindCoach, onView
                         {!isPastDate && !isCompleted && (
                           <button
                             onClick={(e) => handleRemoveWorkout(workout.instanceId, e)}
-                            className="p-1.5 bg-gray-50 rounded-full text-gray-400 hover:bg-red-50 hover:text-red-500 transition-colors"
+                            className="p-1.5 bg-muted rounded-full text-muted-foreground hover:bg-red-50 hover:text-red-500 transition-colors"
                             title={t('removeFromSchedule')}
                           >
                             <Trash2 className="w-4 h-4" />
@@ -687,7 +695,7 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, onFindCoach, onView
                     </div>
 
                     <h2 className="text-xl text-foreground font-bold mb-3">{workout.name}</h2>
-                    {workout.coachName && <p className="text-sm text-gray-500 mb-3">{t('byCoach', { coach: workout.coachName })}</p>}
+                    {workout.coachName && <p className="text-sm text-muted-foreground mb-3">{t('byCoach', { coach: workout.coachName })}</p>}
 
                     {/* Past date: Show daily analytics and session metrics */}
                     {isPastDate && isCompleted ? (
@@ -706,26 +714,26 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, onFindCoach, onView
                             {/* Session Metrics Grid - Exercises, Intensity, Quality */}
                             <div className="grid grid-cols-3 gap-3 mb-4 mt-4">
                               <div className="flex items-center gap-2">
-                                <div className="bg-gray-100 p-1.5 rounded-lg">
-                                  <Dumbbell className="w-4 h-4 text-foreground" />
+                                <div className="bg-muted p-1.5 rounded-lg">
+                                  <Activity className="w-4 h-4 text-foreground" />
                                 </div>
                                 <div>
-                                  <p className="text-[10px] text-gray-500 uppercase">{t('exercisesLabel')}</p>
+                                  <p className="text-[10px] text-muted-foreground uppercase">{t('exercisesLabel')}</p>
                                   <p className="font-bold text-sm text-foreground">{workout.exercises}</p>
                                 </div>
                               </div>
 
                               {workout.sessionData?.intensity ? (
                                 <div className="flex items-center gap-2">
-                                  <div className="bg-gray-100 p-1.5 rounded-lg">
-                                    <Trophy className={`w-4 h-4 ${
+                                  <div className="bg-muted p-1.5 rounded-lg">
+                                    <Flame className={`w-4 h-4 ${
                                       workout.sessionData.intensity <= 3 ? 'text-green-600' :
                                       workout.sessionData.intensity <= 6 ? 'text-yellow-600' :
                                       'text-red-600'
                                     }`} />
                                   </div>
                                   <div>
-                                    <p className="text-[10px] text-gray-500 uppercase">{t('intensity')}</p>
+                                    <p className="text-[10px] text-muted-foreground uppercase">{t('intensity')}</p>
                                     <p className={`font-bold text-sm ${
                                       workout.sessionData.intensity <= 3 ? 'text-green-600' :
                                       workout.sessionData.intensity <= 6 ? 'text-yellow-600' :
@@ -737,27 +745,27 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, onFindCoach, onView
                                 </div>
                               ) : (
                                 <div className="flex items-center gap-2">
-                                  <div className="bg-gray-100 p-1.5 rounded-lg">
-                                    <Trophy className="w-4 h-4 text-gray-400" />
+                                  <div className="bg-muted p-1.5 rounded-lg">
+                                    <Flame className="w-4 h-4 text-muted-foreground" />
                                   </div>
                                   <div>
-                                    <p className="text-[10px] text-gray-500 uppercase">{t('intensity')}</p>
-                                    <p className="font-bold text-sm text-gray-400">--</p>
+                                    <p className="text-[10px] text-muted-foreground uppercase">{t('intensity')}</p>
+                                    <p className="font-bold text-sm text-muted-foreground">--</p>
                                   </div>
                                 </div>
                               )}
 
                               {workout.sessionData?.quality ? (
                                 <div className="flex items-center gap-2">
-                                  <div className="bg-gray-100 p-1.5 rounded-lg">
-                                    <CheckCircle className={`w-4 h-4 ${
+                                  <div className="bg-muted p-1.5 rounded-lg">
+                                    <Star className={`w-4 h-4 ${
                                       workout.sessionData.quality <= 2 ? 'text-red-600' :
                                       workout.sessionData.quality <= 3 ? 'text-yellow-600' :
                                       'text-green-600'
                                     }`} />
                                   </div>
                                   <div>
-                                    <p className="text-[10px] text-gray-500 uppercase">{t('quality')}</p>
+                                    <p className="text-[10px] text-muted-foreground uppercase">{t('quality')}</p>
                                     <p className={`font-bold text-sm ${
                                       workout.sessionData.quality <= 2 ? 'text-red-600' :
                                       workout.sessionData.quality <= 3 ? 'text-yellow-600' :
@@ -769,12 +777,12 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, onFindCoach, onView
                                 </div>
                               ) : (
                                 <div className="flex items-center gap-2">
-                                  <div className="bg-gray-100 p-1.5 rounded-lg">
-                                    <CheckCircle className="w-4 h-4 text-gray-400" />
+                                  <div className="bg-muted p-1.5 rounded-lg">
+                                    <Star className="w-4 h-4 text-muted-foreground" />
                                   </div>
                                   <div>
-                                    <p className="text-[10px] text-gray-500 uppercase">{t('quality')}</p>
-                                    <p className="font-bold text-sm text-gray-400">--</p>
+                                    <p className="text-[10px] text-muted-foreground uppercase">{t('quality')}</p>
+                                    <p className="font-bold text-sm text-muted-foreground">--</p>
                                   </div>
                                 </div>
                               )}
@@ -790,19 +798,19 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, onFindCoach, onView
                               )}
                               <div className="grid grid-cols-3 gap-3 mb-3">
                                 <div>
-                                  <p className="text-[10px] text-gray-600 uppercase font-semibold mb-1">{t('duration')}</p>
+                                  <p className="text-[10px] text-muted-foreground uppercase font-semibold mb-1">{t('duration')}</p>
                                   <p className="font-bold text-base text-green-700">
                                     {analytics ? formatDuration(analytics.total_duration) : 'N/A'}
                                   </p>
                                 </div>
                                 <div>
-                                  <p className="text-[10px] text-gray-600 uppercase font-semibold mb-1">{t('setsLabel')}</p>
+                                  <p className="text-[10px] text-muted-foreground uppercase font-semibold mb-1">{t('setsLabel')}</p>
                                   <p className="font-bold text-base text-green-700">
                                     {analytics?.total_sets ?? '--'}
                                   </p>
                                 </div>
                                 <div>
-                                  <p className="text-[10px] text-gray-600 uppercase font-semibold mb-1">{t('repsLabel')}</p>
+                                  <p className="text-[10px] text-muted-foreground uppercase font-semibold mb-1">{t('repsLabel')}</p>
                                   <p className="font-bold text-base text-green-700">
                                     {analytics?.total_reps ?? '--'}
                                   </p>
@@ -810,7 +818,7 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, onFindCoach, onView
                               </div>
 
                               {analytics && analytics.plans_completed && analytics.plans_completed.length > 0 && (
-                                <p className="text-[10px] text-gray-600 mb-2">
+                                <p className="text-[10px] text-muted-foreground mb-2">
                                   <span className="font-semibold uppercase">{t('plansColon')} </span>
                                   <span className="text-green-700 font-medium">
                                     {analytics.plans_completed.join(', ')}
@@ -827,26 +835,26 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, onFindCoach, onView
                     ) : (
                       <div className="grid grid-cols-3 gap-3 mb-4 mt-4">
                         <div className="flex items-center gap-2">
-                          <div className="bg-gray-100 p-1.5 rounded-lg">
-                            <Dumbbell className="w-4 h-4 text-foreground" />
+                          <div className="bg-muted p-1.5 rounded-lg">
+                            <Activity className="w-4 h-4 text-foreground" />
                           </div>
                           <div>
-                            <p className="text-[10px] text-gray-500 uppercase">{t('exercisesLabel')}</p>
+                            <p className="text-[10px] text-muted-foreground uppercase">{t('exercisesLabel')}</p>
                             <p className="font-bold text-sm text-foreground">{workout.exercises}</p>
                           </div>
                         </div>
 
                         {workout.sessionData?.intensity ? (
                           <div className="flex items-center gap-2">
-                            <div className="bg-gray-100 p-1.5 rounded-lg">
-                              <Trophy className={`w-4 h-4 ${
+                            <div className="bg-muted p-1.5 rounded-lg">
+                              <Flame className={`w-4 h-4 ${
                                 workout.sessionData.intensity <= 3 ? 'text-green-600' :
                                 workout.sessionData.intensity <= 6 ? 'text-yellow-600' :
                                 'text-red-600'
                               }`} />
                             </div>
                             <div>
-                              <p className="text-[10px] text-gray-500 uppercase">{t('intensity')}</p>
+                              <p className="text-[10px] text-muted-foreground uppercase">{t('intensity')}</p>
                               <p className={`font-bold text-sm ${
                                 workout.sessionData.intensity <= 3 ? 'text-green-600' :
                                 workout.sessionData.intensity <= 6 ? 'text-yellow-600' :
@@ -858,27 +866,27 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, onFindCoach, onView
                           </div>
                         ) : (
                           <div className="flex items-center gap-2">
-                            <div className="bg-gray-100 p-1.5 rounded-lg">
-                              <Trophy className="w-4 h-4 text-gray-400" />
+                            <div className="bg-muted p-1.5 rounded-lg">
+                              <Flame className="w-4 h-4 text-muted-foreground" />
                             </div>
                             <div>
-                              <p className="text-[10px] text-gray-500 uppercase">{t('intensity')}</p>
-                              <p className="font-bold text-sm text-gray-400">--</p>
+                              <p className="text-[10px] text-muted-foreground uppercase">{t('intensity')}</p>
+                              <p className="font-bold text-sm text-muted-foreground">--</p>
                             </div>
                           </div>
                         )}
 
                         {workout.sessionData?.quality ? (
                           <div className="flex items-center gap-2">
-                            <div className="bg-gray-100 p-1.5 rounded-lg">
-                              <CheckCircle className={`w-4 h-4 ${
+                            <div className="bg-muted p-1.5 rounded-lg">
+                              <Star className={`w-4 h-4 ${
                                 workout.sessionData.quality <= 2 ? 'text-red-600' :
                                 workout.sessionData.quality <= 3 ? 'text-yellow-600' :
                                 'text-green-600'
                               }`} />
                             </div>
                             <div>
-                              <p className="text-[10px] text-gray-500 uppercase">{t('quality')}</p>
+                              <p className="text-[10px] text-muted-foreground uppercase">{t('quality')}</p>
                               <p className={`font-bold text-sm ${
                                 workout.sessionData.quality <= 2 ? 'text-red-600' :
                                 workout.sessionData.quality <= 3 ? 'text-yellow-600' :
@@ -890,12 +898,12 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, onFindCoach, onView
                           </div>
                         ) : (
                           <div className="flex items-center gap-2">
-                            <div className="bg-gray-100 p-1.5 rounded-lg">
-                              <CheckCircle className="w-4 h-4 text-gray-400" />
+                            <div className="bg-muted p-1.5 rounded-lg">
+                              <Star className="w-4 h-4 text-muted-foreground" />
                             </div>
                             <div>
-                              <p className="text-[10px] text-gray-500 uppercase">{t('quality')}</p>
-                              <p className="font-bold text-sm text-gray-400">--</p>
+                              <p className="text-[10px] text-muted-foreground uppercase">{t('quality')}</p>
+                              <p className="font-bold text-sm text-muted-foreground">--</p>
                             </div>
                           </div>
                         )}
@@ -908,7 +916,7 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, onFindCoach, onView
                         {isCompleted && isToday ? (
                           <button
                             onClick={() => handleStartScheduledWorkout(workout.instanceId, workout.planId)}
-                            className="flex-1 py-3 rounded-xl font-bold transition-all flex items-center justify-center gap-2 shadow-lg shadow-green-500/10 text-sm bg-green-600 text-white hover:bg-green-700"
+                            className="flex-1 py-3 rounded-xl font-bold transition-all flex items-center justify-center gap-2 shadow-sm text-sm bg-tint text-tint-fg hover:bg-tint-2"
                           >
                             <Play className="w-4 h-4 fill-current" />
                             {t('repeatWorkout')}
@@ -919,7 +927,7 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, onFindCoach, onView
                             disabled={!canStartToday || scheduleLoading}
                             className={`flex-1 py-3 rounded-xl font-bold transition-all flex items-center justify-center gap-2 shadow-lg shadow-tint-ink/10 text-sm ${
                               !canStartToday || scheduleLoading
-                                ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                                ? 'bg-muted text-muted-foreground cursor-not-allowed'
                                 : 'bg-tint text-tint-fg hover:bg-tint-2'
                             }`}
                             title={!canStartToday ? t('onlyStartTodayTitle') : undefined}
@@ -938,29 +946,29 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, onFindCoach, onView
           {canStartToday && (
             <button
               onClick={() => onStartSession()}
-              className="w-full mt-3 px-6 py-3 bg-card text-foreground border-2 border-tint/10 rounded-xl font-bold hover:bg-gray-50 transition-colors"
+              className="w-full mt-3 px-6 py-3 bg-card text-foreground border-2 border-tint/10 rounded-xl font-bold hover:bg-muted transition-colors"
             >
               {t('startFreestyle')}
             </button>
           )}
           </div>
         ) : (
-          <div className="bg-card rounded-2xl p-8 shadow-lg border border-gray-100 text-center relative overflow-hidden">
-             <div className="absolute inset-0 border-2 border-dashed border-gray-200 rounded-2xl pointer-events-none"></div>
+          <div className="bg-card rounded-2xl p-8 shadow-lg border border-border text-center relative overflow-hidden">
+             <div className="absolute inset-0 border-2 border-dashed border-border rounded-2xl pointer-events-none"></div>
 
-             <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4 relative z-10">
-               <Calendar className="w-8 h-8 text-gray-400" />
+             <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4 relative z-10">
+               <Calendar className="w-8 h-8 text-muted-foreground" />
              </div>
 
              {selectedDate < normalizeDate(new Date()) ? (
                <>
                  <h3 className="text-lg font-bold text-foreground mb-2">{t('noActivity')}</h3>
-                 <p className="text-gray-500">{t('noWorkoutsLogged', { date: selectedDate.toLocaleDateString(dateLocale, { weekday: 'long', month: 'short', day: 'numeric' }) })}</p>
+                 <p className="text-muted-foreground">{t('noWorkoutsLogged', { date: selectedDate.toLocaleDateString(dateLocale, { weekday: 'long', month: 'short', day: 'numeric' }) })}</p>
                </>
              ) : (
                <>
                  <h3 className="text-lg font-bold text-foreground mb-2">{t('restDay')}</h3>
-                 <p className="text-gray-500 mb-6">{t('noWorkoutsScheduled', { day: selectedDate.toLocaleDateString(dateLocale, { weekday: 'long' }) })}</p>
+                 <p className="text-muted-foreground mb-6">{t('noWorkoutsScheduled', { day: selectedDate.toLocaleDateString(dateLocale, { weekday: 'long' }) })}</p>
 
                  <div className="grid grid-cols-1 gap-3">
                    <Button variant="brand" size="block" icon={<Plus className="size-5" />} onClick={() => setIsScheduling(true)} className="rounded-xl font-bold">
@@ -970,7 +978,7 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, onFindCoach, onView
                    {dateKey(selectedDate) === dateKey(new Date()) && (
                      <button
                         onClick={() => onStartSession()}
-                        className="w-full px-6 py-3 bg-card text-foreground border-2 border-tint/10 rounded-xl font-bold hover:bg-gray-50 transition-colors"
+                        className="w-full px-6 py-3 bg-card text-foreground border-2 border-tint/10 rounded-xl font-bold hover:bg-muted transition-colors"
                       >
                         {t('startFreestyle')}
                      </button>
@@ -988,14 +996,14 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, onFindCoach, onView
                 <h3 className="text-xl font-bold text-foreground">{t('selectAPlan')}</h3>
                 <button 
                   onClick={() => setIsScheduling(false)}
-                  className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors"
+                  className="p-2 bg-muted rounded-full hover:bg-muted transition-colors"
                 >
-                  <X className="w-5 h-5 text-gray-500" />
+                  <X className="w-5 h-5 text-muted-foreground" />
                 </button>
               </div>
               
               {loadingPlans && (
-                <p className="text-xs text-gray-500 mb-3">{t('loadingYourPlans')}</p>
+                <p className="text-xs text-muted-foreground mb-3">{t('loadingYourPlans')}</p>
               )}
               {planError && (
                 <p className="text-xs text-red-600 mb-3">{planError}</p>
@@ -1006,29 +1014,29 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, onFindCoach, onView
                   <button
                     key={plan.id}
                     onClick={() => handleScheduleWorkout(plan.id)}
-                    className="w-full text-left bg-card p-4 rounded-xl border border-gray-200 hover:border-yellow-500 hover:shadow-md transition-all group"
+                    className="w-full text-left bg-card p-4 rounded-xl border border-border hover:border-tint hover:shadow-md transition-all group"
                   >
                     <div className="flex items-start justify-between">
                       <div>
-                        <h4 className="font-bold text-foreground group-hover:text-yellow-600 transition-colors">{plan.name}</h4>
+                        <h4 className="font-bold text-foreground group-hover:text-tint-ink transition-colors">{plan.name}</h4>
                         <div className="flex items-center gap-2 mt-1">
                           {plan.source === 'assigned' ? (
                             <span className="text-xs text-tint-ink bg-tint-soft px-2 py-0.5 rounded">
                               {t('coachLabel', { coach: plan.coachName || '' })}
                             </span>
                           ) : (
-                            <span className="text-xs text-green-600 bg-green-50 px-2 py-0.5 rounded">
+                            <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded">
                               {t('myPlan')}
                             </span>
                           )}
-                          <span className="text-xs text-gray-400">• {t('exercisesCount', { count: plan.exercises.toLocaleString(language === 'fa' ? 'fa-IR' : 'en-US') })}</span>
+                          <span className="text-xs text-muted-foreground">• {t('exercisesCount', { count: plan.exercises.toLocaleString(language === 'fa' ? 'fa-IR' : 'en-US') })}</span>
                           {plan.estimatedSeconds > 0 && (
-                            <span className="text-xs text-gray-400">• {t('estMinutes', { count: Math.max(1, Math.round(plan.estimatedSeconds / 60)).toLocaleString(language === 'fa' ? 'fa-IR' : 'en-US') })}</span>
+                            <span className="text-xs text-muted-foreground">• {t('estMinutes', { count: Math.max(1, Math.round(plan.estimatedSeconds / 60)).toLocaleString(language === 'fa' ? 'fa-IR' : 'en-US') })}</span>
                           )}
                         </div>
                       </div>
-                      <div className="h-8 w-8 rounded-full bg-gray-50 flex items-center justify-center group-hover:bg-yellow-500 transition-colors">
-                        <Plus className="w-4 h-4 text-gray-400 group-hover:text-foreground" />
+                      <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center group-hover:bg-tint transition-colors">
+                        <Plus className="w-4 h-4 text-muted-foreground group-hover:text-tint-fg" />
                       </div>
                     </div>
                   </button>
@@ -1038,62 +1046,84 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, onFindCoach, onView
           </div>
         )}
 
-        <div>
-          <h3 className="text-foreground font-bold text-lg mb-3">{t('quickActions')}</h3>
+        {/* Quick actions adapt to how full the library is: prominent cards guide a
+            first-time user, but once there are plans they collapse to a slim row so
+            the library stays visible without scrolling. */}
+        {libraryPlans.length > 0 ? (
           <div className="grid grid-cols-2 gap-3">
-            <button 
+            <button
               onClick={onCreatePlan}
-              className="bg-card p-4 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all text-left group"
+              className="flex items-center justify-center gap-2 bg-card border border-border rounded-xl py-2.5 px-3 shadow-sm hover:shadow-md transition-all text-sm font-semibold text-foreground"
             >
-              <div className="w-10 h-10 bg-tint-soft rounded-full flex items-center justify-center mb-3 group-hover:bg-tint-soft transition-colors">
-                <Plus className="w-5 h-5 text-tint-ink" />
-              </div>
-              <h4 className="font-bold text-foreground">{t('createPlan')}</h4>
-              <p className="text-xs text-gray-500 mt-1">{t('buildCustomRoutine')}</p>
+              <FilePlus className="w-4 h-4 text-tint-ink" />
+              {t('createPlan')}
             </button>
-
             <button
               onClick={() => (onFindCoach ? onFindCoach() : onNavigate('athlete-search'))}
-              className="bg-card p-4 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all text-left group"
+              className="flex items-center justify-center gap-2 bg-card border border-border rounded-xl py-2.5 px-3 shadow-sm hover:shadow-md transition-all text-sm font-semibold text-foreground"
             >
-              <div className="w-10 h-10 bg-purple-50 rounded-full flex items-center justify-center mb-3 group-hover:bg-purple-100 transition-colors">
-                <Calendar className="w-5 h-5 text-purple-600" />
-              </div>
-              <h4 className="font-bold text-foreground">{t('findPlans')}</h4>
-              <p className="text-xs text-gray-500 mt-1">{t('browseCoachLibrary')}</p>
+              <Search className="w-4 h-4 text-tint-ink" />
+              {t('findPlans')}
             </button>
           </div>
-        </div>
+        ) : (
+          <div>
+            <h3 className="text-foreground font-bold text-lg mb-3">{t('quickActions')}</h3>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                onClick={onCreatePlan}
+                className="bg-card p-4 rounded-xl border border-border shadow-sm hover:shadow-md transition-all text-left group"
+              >
+                <div className="w-10 h-10 bg-tint-soft rounded-full flex items-center justify-center mb-3">
+                  <FilePlus className="w-5 h-5 text-tint-ink" />
+                </div>
+                <h4 className="font-bold text-foreground">{t('createPlan')}</h4>
+                <p className="text-xs text-muted-foreground mt-1">{t('buildCustomRoutine')}</p>
+              </button>
+
+              <button
+                onClick={() => (onFindCoach ? onFindCoach() : onNavigate('athlete-search'))}
+                className="bg-card p-4 rounded-xl border border-border shadow-sm hover:shadow-md transition-all text-left group"
+              >
+                <div className="w-10 h-10 bg-tint-soft rounded-full flex items-center justify-center mb-3">
+                  <Search className="w-5 h-5 text-tint-ink" />
+                </div>
+                <h4 className="font-bold text-foreground">{t('findPlans')}</h4>
+                <p className="text-xs text-muted-foreground mt-1">{t('browseCoachLibrary')}</p>
+              </button>
+            </div>
+          </div>
+        )}
 
         <div>
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-foreground font-bold text-lg">{t('yourLibrary')}</h3>
-            <button className="text-yellow-600 text-sm font-medium">{t('viewAll')}</button>
+            <button className="text-tint-ink text-sm font-medium">{t('viewAll')}</button>
           </div>
           {planError && (
             <p className="text-sm text-red-600 mb-2">{planError}</p>
           )}
           {loadingPlans && (
-            <p className="text-sm text-gray-500 mb-2">{t('loading')}</p>
+            <p className="text-sm text-muted-foreground mb-2">{t('loading')}</p>
           )}
           {!loadingPlans && !planError && libraryPlans.length === 0 && (
-            <div className="bg-card rounded-xl p-6 text-center border border-gray-100 shadow-sm">
-              <p className="text-gray-600 mb-1">{t('noPlansYet')}</p>
-              <p className="text-gray-400 text-sm">{t('noPlansHint')}</p>
+            <div className="bg-card rounded-xl p-6 text-center border border-border shadow-sm">
+              <p className="text-muted-foreground mb-1">{t('noPlansYet')}</p>
+              <p className="text-muted-foreground text-sm">{t('noPlansHint')}</p>
             </div>
           )}
 
           <div className="space-y-3">
             {libraryPlans.map((plan) => (
-              <div key={plan.id} className="bg-card p-4 rounded-xl border border-gray-100 flex items-center justify-between shadow-sm">
+              <div key={plan.id} className="bg-card p-4 rounded-xl border border-border flex items-center justify-between shadow-sm">
                 <button onClick={() => onViewPlan?.(plan.id)} className="flex items-center gap-3 flex-1 min-w-0 text-left hover:opacity-80 transition-opacity">
                   <div className={`w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0 ${
-                    plan.source === 'assigned' ? 'bg-tint-soft' : 'bg-green-50'
+                    plan.source === 'assigned' ? 'bg-tint-soft' : 'bg-muted'
                   }`}>
                     {plan.source === 'assigned' ? (
                       <User className="w-6 h-6 text-tint-ink" />
                     ) : (
-                      <Dumbbell className="w-6 h-6 text-green-500" />
+                      <ClipboardList className="w-6 h-6 text-muted-foreground" />
                     )}
                   </div>
                   <div className="min-w-0">
@@ -1102,14 +1132,14 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, onFindCoach, onView
                       {plan.source === 'assigned' ? (
                         <span className="text-tint-ink font-medium">{plan.coachName ? t('assignedByCoach', { coach: plan.coachName }) : t('assignedPlan')}</span>
                       ) : (
-                        <span className="text-green-600 font-medium">{t('myPlan')}</span>
+                        <span className="text-muted-foreground font-medium">{t('myPlan')}</span>
                       )}
-                      <span className="text-gray-300">|</span>
-                      <span className="text-gray-500">{t('exercisesCount', { count: plan.exercises.toLocaleString(language === 'fa' ? 'fa-IR' : 'en-US') })}</span>
+                      <span className="text-border">|</span>
+                      <span className="text-muted-foreground">{t('exercisesCount', { count: plan.exercises.toLocaleString(language === 'fa' ? 'fa-IR' : 'en-US') })}</span>
                       {plan.estimatedSeconds > 0 && (
                         <>
-                          <span className="text-gray-300">|</span>
-                          <span className="text-gray-500">{t('estMinutes', { count: Math.max(1, Math.round(plan.estimatedSeconds / 60)).toLocaleString(language === 'fa' ? 'fa-IR' : 'en-US') })}</span>
+                          <span className="text-border">|</span>
+                          <span className="text-muted-foreground">{t('estMinutes', { count: Math.max(1, Math.round(plan.estimatedSeconds / 60)).toLocaleString(language === 'fa' ? 'fa-IR' : 'en-US') })}</span>
                         </>
                       )}
                     </div>
@@ -1117,7 +1147,7 @@ export function WorkoutsHome({ onStartSession, onCreatePlan, onFindCoach, onView
                 </button>
                 <button
                   onClick={() => handleScheduleWorkout(plan.id)}
-                  className="p-2 hover:bg-gray-100 rounded-full text-gray-400 hover:text-foreground transition-colors flex-shrink-0"
+                  className="p-2 hover:bg-muted rounded-full text-muted-foreground hover:text-foreground transition-colors flex-shrink-0"
                   title={t('addToSchedule')}
                 >
                   <Plus className="w-5 h-5" />
