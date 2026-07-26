@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Globe, KeyRound, Smartphone, ArrowLeft, ChevronDown } from 'lucide-react';
 import { Button } from './ui/button';
 import { Brand } from './ui/logo';
+import { InputOTP, InputOTPGroup, InputOTPSlot } from './ui/input-otp';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
 import * as AuthAPI from '../api/auth';
@@ -163,26 +164,30 @@ export function Auth({ onLogin }: AuthProps) {
 
               {/* PHONE: enter code */}
               {mode === 'phone-code' && (
-                <div>
-                  <label className="block text-foreground text-sm mb-2">{t('smsCode')}</label>
-                  <div className="relative">
-                    <KeyRound className={`absolute top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 ${isRTL ? 'right-3' : 'left-3'}`} />
-                    <input
-                      type="text"
-                      inputMode="numeric"
-                      dir="ltr"
-                      value={code}
-                      onChange={(e) => setCode(e.target.value)}
-                      placeholder="- - - - - -"
+                <div className="space-y-4">
+                  <label className="block text-foreground text-sm font-medium">{t('smsCode')}</label>
+                  <div className="flex justify-center" dir="ltr">
+                    <InputOTP
                       maxLength={6}
-                      className={`w-full bg-gray-50 border border-gray-200 rounded-lg py-3 ${isRTL ? 'pr-10 pl-4' : 'pl-10 pr-4'} text-foreground text-center text-lg tracking-[0.5em] focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent`}
-                      required
+                      value={code}
+                      onChange={setCode}
                       autoFocus
-                    />
+                      autoComplete="one-time-code"
+                    >
+                      <InputOTPGroup className="gap-2">
+                        {[...Array(6)].map((_, i) => (
+                          <InputOTPSlot
+                            key={i}
+                            index={i}
+                            className="w-11 h-14 text-xl font-bold bg-gray-50 border-gray-200"
+                          />
+                        ))}
+                      </InputOTPGroup>
+                    </InputOTP>
                   </div>
                   <div className="flex items-center justify-between mt-2 text-sm">
                     <span className="text-gray-500" dir="ltr">{t('codeSentTo', { phone: sentPhone })}</span>
-                    <button type="button" className="text-yellow-600" onClick={resend} disabled={loading}>{t('resendCode')}</button>
+                    <button type="button" className="text-yellow-600 font-medium" onClick={resend} disabled={loading}>{t('resendCode')}</button>
                   </div>
                 </div>
               )}
