@@ -47,10 +47,9 @@ export function ExerciseBuilder({ onCancel, onSaved, exercise }: ExerciseBuilder
   const [error, setError] = useState<string | null>(null);
   const [sets, setSets] = useState<EditableSet[]>(() => {
     if (!exercise?.sets?.length) {
-      return [
-        { id: uuid(), name: 'Warm-up', type: 'reps', value: 10, restSeconds: 60 },
-        { id: uuid(), name: 'Working', type: 'reps', value: 10, restSeconds: 90 },
-      ];
+      // Start from a single plain set — a suggested default the coach can flesh
+      // out, not a form they must fill. The real prescription lives in the plan.
+      return [{ id: uuid(), name: '', type: 'reps', value: 10, restSeconds: 60 }];
     }
     return exercise.sets.map((set, idx) => ({
       id: set.id || uuid(),
@@ -67,7 +66,9 @@ export function ExerciseBuilder({ onCancel, onSaved, exercise }: ExerciseBuilder
   const [bulkValue, setBulkValue] = useState(10);
   const [bulkRest, setBulkRest] = useState(5);
 
-  const canSave = useMemo(() => name.trim() !== '' && description.trim() !== '' && sets.length > 0, [name, description, sets.length]);
+  // A movement only needs a name; description and sets are optional suggestions.
+  const canSave = useMemo(() => name.trim() !== '', [name]);
+  const [showQuickAdd, setShowQuickAdd] = useState(false);
 
   const updateSet = (id: string, updates: Partial<EditableSet>) => {
     setSets((prev) => prev.map((set) => (set.id === id ? { ...set, ...updates } : set)));
@@ -218,7 +219,7 @@ export function ExerciseBuilder({ onCancel, onSaved, exercise }: ExerciseBuilder
           </div>
 
           <div>
-            <label className="text-foreground mb-2 block">{t('descriptionLabel')}</label>
+            <label className="text-foreground mb-2 block">{t('descriptionOptional')}</label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
@@ -326,14 +327,20 @@ export function ExerciseBuilder({ onCancel, onSaved, exercise }: ExerciseBuilder
         <div className="bg-card rounded-lg shadow-md p-4 border border-gray-200">
           <div className="flex items-center justify-between mb-3">
             <div>
-              <h3 className="text-foreground">{t('setsLabel')}</h3>
-              <p className="text-sm text-gray-600">{t('repsOrTimedHolds')}</p>
+              <h3 className="text-foreground">{t('suggestedSetsTitle')}</h3>
+              <p className="text-sm text-gray-600">{t('suggestedSetsHint')}</p>
             </div>
-            <Button variant="brand" size="sm" icon={<Plus />} onClick={addSet}>
-              {t('addSet')}
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" onClick={() => setShowQuickAdd((v) => !v)}>
+                {t('quickAddTitle')}
+              </Button>
+              <Button variant="brand" size="sm" icon={<Plus />} onClick={addSet}>
+                {t('addSet')}
+              </Button>
+            </div>
           </div>
 
+          {showQuickAdd && (
           <div className="mb-4 rounded-lg border border-yellow-300 bg-yellow-50 p-3">
             <div className="mb-2">
               <h4 className="text-sm font-medium text-foreground">{t('quickAddTitle')}</h4>
@@ -375,6 +382,7 @@ export function ExerciseBuilder({ onCancel, onSaved, exercise }: ExerciseBuilder
               </button>
             </div>
           </div>
+          )}
 
           <div className="space-y-3">
             {sets.map((set, index) => (

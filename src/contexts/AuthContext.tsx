@@ -80,23 +80,48 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // always reads the current refresh token, not a stale closure.
   const tokensRef = useRef<AuthTokens | null>(tokens);
   const refreshingRef = useRef<Promise<string | null> | null>(null);
+  // Circuit breaker: count refreshes within a short window. If a refreshed token
+  // keeps yielding 401s the refresh "succeeds" but never fixes anything, which
+  // would otherwise spin getMe → refresh → getMe forever and spam the API.
+  const refreshWindowRef = useRef<{ count: number; since: number }>({ count: 0, since: 0 });
+
+  // Clear all auth state and drop to the Auth page (no API call, unlike logout()).
+  const forceLogout = () => {
+    setTokens(null);
+    setUser(null);
+  };
 
   // Register a single token-refresh handler the API client calls on a 401: swap
   // the expired access token for a fresh one, dedupe concurrent refreshes, and
-  // log out if the refresh token itself is dead.
+  // log out if the refresh token is dead or refreshing is stuck in a loop.
   useEffect(() => {
     setTokenRefreshHandler(() => {
       if (refreshingRef.current) return refreshingRef.current;
       const rt = tokensRef.current?.refresh_token;
       if (!rt) return Promise.resolve(null);
+
+      // Too many refreshes too fast means the fresh token isn't clearing the
+      // 401s — the session is unrecoverable. Bail to the login screen instead of
+      // hammering the API in an endless refresh loop.
+      const now = Date.now();
+      const w = refreshWindowRef.current;
+      if (now - w.since > 10000) {
+        w.count = 0;
+        w.since = now;
+      }
+      w.count += 1;
+      if (w.count > 3) {
+        forceLogout();
+        return Promise.resolve(null);
+      }
+
       refreshingRef.current = (async () => {
         try {
           const next = await AuthAPI.refresh(rt);
           setTokens(next);
           return next.access_token;
         } catch {
-          setTokens(null);
-          setUser(null);
+          forceLogout();
           return null;
         } finally {
           refreshingRef.current = null;
@@ -118,6 +143,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (body: LoginPayload) => {
     const result = await AuthAPI.login(body);
+    // Fresh human-initiated session — clear any stale refresh-loop count so the
+    // circuit breaker starts clean.
+    refreshWindowRef.current = { count: 0, since: 0 };
     setTokens(result);
     await refreshUser();
   };

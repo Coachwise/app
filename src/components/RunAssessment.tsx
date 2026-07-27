@@ -107,9 +107,9 @@ export function RunAssessment({ token, protocolId, onCancel, onSaved }: RunAsses
                   return (
                     <div key={it.id} className="bg-card rounded-2xl border border-gray-100 shadow-sm p-4">
                       <div className="text-foreground font-medium mb-2.5">{localized(it.exercise_name_i18n, it.exercise_name, language)}</div>
-                      <div className="flex gap-2">
+                      <div className="flex flex-wrap gap-2">
                         {fields.map((f) => (
-                          <div key={f.field} className="flex-1">
+                          <div key={f.field} className="flex-1 min-w-28">
                             <NumberInput
                               allowDecimal
                               min={0}

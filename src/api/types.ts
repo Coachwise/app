@@ -149,6 +149,9 @@ export interface PlanExercise {
   intensity: number; // 1-10 scale
   created_at: string;
   exercise?: Exercise; // Populated when joined from backend
+  // This plan-exercise's own prescription (sets/reps/rest), seeded from the
+  // exercise's default sets on add. Always an array from the backend.
+  sets: ExerciseSet[];
 }
 
 export interface PlanAssignee {
@@ -694,6 +697,14 @@ export interface PlanExercisePayload {
   exercise_order: number;
   rest_time: number;
   intensity?: number; // 1-10 scale, optional (defaults to 5 on backend)
+  // The prescription for this exercise in this plan. Each set carries reps XOR
+  // duration (nanoseconds) plus rest_time (nanoseconds).
+  sets?: {
+    name?: string;
+    rep_count?: number | null;
+    duration?: number | null;
+    rest_time: number;
+  }[];
 }
 
 export interface PlanAssignPayload {

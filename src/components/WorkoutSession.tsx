@@ -169,7 +169,9 @@ export function WorkoutSession({ planId, scheduleId, onBack, onEndSession, isPro
           const planExercises = await PlansAPI.listPlanExercises(tokens.access_token, planId);
 
           const loadedExercises: SessionExercise[] = planExercises.map((pe, idx) => {
-            const exerciseSets = pe.exercise?.sets || [];
+            // Run the plan's own prescription; fall back to the exercise's default
+            // sets for plans saved before prescriptions existed.
+            const exerciseSets = (pe.sets?.length ? pe.sets : pe.exercise?.sets) || [];
             return {
               id: pe.id,
               name: localized(pe.exercise?.name_i18n, pe.exercise?.name || `Exercise ${idx + 1}`, language),

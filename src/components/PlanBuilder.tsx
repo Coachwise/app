@@ -3,7 +3,7 @@ import { Plus, GripVertical, Trash2, RefreshCw, Search, Dumbbell, Save } from 'l
 import { BackButton } from './ui/back-button';
 import { Button } from './ui/button';
 import { NumberInput } from './ui/number-input';
-import type { Exercise, ExerciseCategory, ExerciseSportType } from '../api/types';
+import type { Exercise, ExerciseCategory, ExerciseSet, ExerciseSportType } from '../api/types';
 import * as ExercisesAPI from '../api/exercises';
 import * as PlansAPI from '../api/plans';
 import { useAuth } from '../contexts/AuthContext';
@@ -20,15 +20,38 @@ interface PlanBuilderProps {
   planId?: string; // when set, open an existing plan (view, or edit if owned)
 }
 
+// A plan-exercise's prescription, edited right here in the plan. `sets` is the
+// source of truth (per-set reps/time + rest). The `custom` flag picks the editor:
+// a simple uniform "N × target, rest" by default, or a per-set list when the sets
+// differ (climbing repeaters, pyramids, drop sets). Last set gets no rest on save.
+type PlanSet = {
+  key: string;
+  type: 'reps' | 'time';
+  value: number; // reps, or duration in seconds
+  restSeconds: number; // rest after this set
+};
 type PlanExercise = {
   key: string;
   exerciseId: string;
   name: string;
-  type: 'reps' | 'time';
-  sets: number;
-  repsOrDuration: number;
-  restInterval: number;
+  custom: boolean;
+  sets: PlanSet[];
   intensity: number;
+};
+
+const planSetKey = () => Math.random().toString(36).slice(2);
+
+// Uniform = every set shares type+value, with equal rests except the final one
+// (0 by convention). Decides whether the simple or per-set editor is shown.
+const isUniform = (sets: PlanSet[]) => {
+  if (sets.length <= 1) return true;
+  const first = sets[0];
+  return sets.every(
+    (s, i) =>
+      s.type === first.type &&
+      s.value === first.value &&
+      (i === sets.length - 1 || s.restSeconds === first.restSeconds),
+  );
 };
 
 // Helper component for sport type badge
@@ -77,6 +100,19 @@ export function PlanBuilder({ onCancel, onSave, planId }: PlanBuilderProps) {
   const nsToSeconds = (value?: number | null) => Math.max(0, Math.round((value ?? 0) / 1e9));
   const secondsToNs = (value: number) => Math.max(0, Math.round(value) * 1e9);
 
+  // Map a raw set list (plan prescription or exercise default) into editor sets.
+  const toPlanSets = (raw: ExerciseSet[]): PlanSet[] =>
+    raw.map((s) => {
+      const type: 'reps' | 'time' = s.duration ? 'time' : 'reps';
+      return {
+        key: planSetKey(),
+        type,
+        value: type === 'reps' ? s.rep_count ?? 0 : nsToSeconds(s.duration),
+        restSeconds: nsToSeconds(s.rest_time),
+      };
+    });
+  const blankSet = (): PlanSet => ({ key: planSetKey(), type: 'reps', value: 10, restSeconds: 60 });
+
   // Load an existing plan (name, visibility, exercises) when a planId is given.
   useEffect(() => {
     const token = tokens?.access_token;
@@ -92,16 +128,16 @@ export function PlanBuilder({ onCancel, onSave, planId }: PlanBuilderProps) {
         setPlanName(plan.name);
         setIsOwner(plan.user_id === user?.id);
         const mapped: PlanExercise[] = (planExercises || []).map((pe) => {
-          const summary = pe.exercise?.sets?.[0];
-          const type: 'reps' | 'time' = summary?.duration ? 'time' : 'reps';
+          // Prefer this plan-exercise's own prescription; fall back to the
+          // exercise's default sets for plans saved before prescriptions existed.
+          const rx = (pe.sets && pe.sets.length ? pe.sets : pe.exercise?.sets) ?? [];
+          const sets = rx.length ? toPlanSets(rx) : [blankSet()];
           return {
             key: pe.id,
             exerciseId: pe.exercise_id,
-            name: pe.exercise?.name ?? '',
-            type,
-            sets: pe.exercise?.sets?.length || 1,
-            repsOrDuration: type === 'reps' ? summary?.rep_count ?? 0 : nsToSeconds(summary?.duration),
-            restInterval: nsToSeconds(pe.rest_time),
+            name: localized(pe.exercise?.name_i18n, pe.exercise?.name ?? '', language),
+            custom: !isUniform(sets),
+            sets,
             intensity: pe.intensity ?? 5,
           };
         });
@@ -184,21 +220,17 @@ export function PlanBuilder({ onCancel, onSave, planId }: PlanBuilderProps) {
   };
 
   const addExerciseToPlan = (exercise: Exercise) => {
-    const summary = exercise.sets?.[0];
-    const type: 'reps' | 'time' = summary?.duration ? 'time' : 'reps';
-    const repsOrDuration = type === 'reps' ? summary?.rep_count ?? 0 : nsToSeconds(summary?.duration);
-    const restInterval =
-      summary && summary.rest_time !== undefined ? nsToSeconds(summary.rest_time) : 60;
+    // Seed the plan prescription from the exercise's suggested default sets. A
+    // non-uniform default (e.g. a repeater ladder) opens straight in per-set mode.
+    const seeded = exercise.sets?.length ? toPlanSets(exercise.sets) : [blankSet()];
     setExercises((prev) => [
       ...prev,
       {
         key: `${exercise.id}-${Date.now()}`,
         exerciseId: exercise.id,
         name: localized(exercise.name_i18n, exercise.name, language),
-        type,
-        sets: exercise.sets?.length || 1,
-        repsOrDuration,
-        restInterval,
+        custom: !isUniform(seeded),
+        sets: seeded,
         intensity: 5,
       },
     ]);
@@ -224,10 +256,22 @@ export function PlanBuilder({ onCancel, onSave, planId }: PlanBuilderProps) {
     }
     setSaving(true);
     setError(null);
+    // Send each set as its own row; the final set gets no rest by convention.
+    const payloadFor = (exercise: PlanExercise, index: number) => ({
+      exercise_id: exercise.exerciseId,
+      exercise_order: index + 1,
+      rest_time: secondsToNs(exercise.sets[0]?.restSeconds ?? 0),
+      intensity: exercise.intensity,
+      sets: exercise.sets.map((s, i) => ({
+        rep_count: s.type === 'reps' ? Math.max(0, Math.round(s.value)) : null,
+        duration: s.type === 'time' ? secondsToNs(s.value) : null,
+        rest_time: i === exercise.sets.length - 1 ? 0 : secondsToNs(s.restSeconds),
+      })),
+    });
     try {
       if (planId) {
         // Update the existing plan, then resync its exercises (remove all, re-add
-        // in order) to reflect adds/removes/reorders/rest+intensity changes.
+        // in order) to reflect adds/removes/reorders/prescription changes.
         await PlansAPI.updatePlan(token, planId, { name: planName.trim() });
         await Promise.all(
           originalExerciseIds.map((exerciseId) =>
@@ -235,13 +279,7 @@ export function PlanBuilder({ onCancel, onSave, planId }: PlanBuilderProps) {
           )
         );
         for (let index = 0; index < exercises.length; index++) {
-          const exercise = exercises[index];
-          await PlansAPI.addPlanExercise(token, planId, {
-            exercise_id: exercise.exerciseId,
-            exercise_order: index + 1,
-            rest_time: secondsToNs(exercise.restInterval),
-            intensity: exercise.intensity,
-          });
+          await PlansAPI.addPlanExercise(token, planId, payloadFor(exercises[index], index));
         }
       } else {
         const plan = await PlansAPI.createPlan(token, {
@@ -249,12 +287,7 @@ export function PlanBuilder({ onCancel, onSave, planId }: PlanBuilderProps) {
         });
         await Promise.all(
           exercises.map((exercise, index) =>
-            PlansAPI.addPlanExercise(token, plan.id, {
-              exercise_id: exercise.exerciseId,
-              exercise_order: index + 1,
-              rest_time: secondsToNs(exercise.restInterval),
-              intensity: exercise.intensity,
-            })
+            PlansAPI.addPlanExercise(token, plan.id, payloadFor(exercise, index))
           )
         );
       }
@@ -272,17 +305,80 @@ export function PlanBuilder({ onCancel, onSave, planId }: PlanBuilderProps) {
     setExercises((prev) => prev.filter((ex) => ex.key !== key));
   };
 
-  const updateRest = (key: string, next: number) => {
-    setExercises((prev) =>
-      prev.map((ex) => (ex.key === key ? { ...ex, restInterval: Math.max(0, next) } : ex))
-    );
+  const patchExercise = (key: string, patch: Partial<PlanExercise>) => {
+    setExercises((prev) => prev.map((ex) => (ex.key === key ? { ...ex, ...patch } : ex)));
   };
+  const updateIntensity = (key: string, next: number) =>
+    patchExercise(key, { intensity: Math.max(1, Math.min(10, next)) });
 
-  const updateIntensity = (key: string, next: number) => {
+  // --- Simple (uniform) editor: derive one spec, rewrite all sets from it. ---
+  const uniformSpec = (ex: PlanExercise) => ({
+    count: ex.sets.length,
+    type: ex.sets[0]?.type ?? ('reps' as 'reps' | 'time'),
+    value: ex.sets[0]?.value ?? 0,
+    rest: ex.sets[0]?.restSeconds ?? 60,
+  });
+  const applyUniform = (
+    key: string,
+    patch: Partial<{ count: number; type: 'reps' | 'time'; value: number; rest: number }>,
+  ) =>
     setExercises((prev) =>
-      prev.map((ex) => (ex.key === key ? { ...ex, intensity: Math.max(1, Math.min(10, next)) } : ex))
+      prev.map((ex) => {
+        if (ex.key !== key) return ex;
+        const next = { ...uniformSpec(ex), ...patch };
+        const count = Math.max(1, Math.round(next.count));
+        const sets = Array.from({ length: count }, () => ({
+          key: planSetKey(),
+          type: next.type,
+          value: Math.max(0, next.value),
+          restSeconds: Math.max(0, next.rest),
+        }));
+        return { ...ex, sets };
+      }),
     );
-  };
+
+  // --- Per-set editor ---
+  const updateSet = (key: string, setK: string, patch: Partial<PlanSet>) =>
+    setExercises((prev) =>
+      prev.map((ex) =>
+        ex.key === key
+          ? { ...ex, sets: ex.sets.map((s) => (s.key === setK ? { ...s, ...patch } : s)) }
+          : ex,
+      ),
+    );
+  const addSet = (key: string) =>
+    setExercises((prev) =>
+      prev.map((ex) => {
+        if (ex.key !== key) return ex;
+        const last = ex.sets[ex.sets.length - 1] ?? blankSet();
+        return { ...ex, sets: [...ex.sets, { ...last, key: planSetKey() }] };
+      }),
+    );
+  const removeSet = (key: string, setK: string) =>
+    setExercises((prev) =>
+      prev.map((ex) =>
+        ex.key === key && ex.sets.length > 1
+          ? { ...ex, sets: ex.sets.filter((s) => s.key !== setK) }
+          : ex,
+      ),
+    );
+  // Flip between simple and per-set editing. Returning to simple collapses every
+  // set to the first one's shape (per-set variation is intentionally discarded).
+  const toggleCustom = (key: string) =>
+    setExercises((prev) =>
+      prev.map((ex) => {
+        if (ex.key !== key) return ex;
+        if (!ex.custom) return { ...ex, custom: true };
+        const t = ex.sets[0] ?? blankSet();
+        const sets = Array.from({ length: ex.sets.length }, () => ({
+          key: planSetKey(),
+          type: t.type,
+          value: t.value,
+          restSeconds: t.restSeconds,
+        }));
+        return { ...ex, custom: false, sets };
+      }),
+    );
 
   const existingExerciseIds = useMemo(() => new Set(exercises.map((ex) => ex.exerciseId)), [exercises]);
 
@@ -498,7 +594,13 @@ export function PlanBuilder({ onCancel, onSave, planId }: PlanBuilderProps) {
                         <div className="flex-1 min-w-0">
                           <div className="font-medium text-foreground mb-1">{exercise.name}</div>
                           <div className="text-sm text-muted-foreground">
-                            {t('setsReps', { sets: exercise.sets, reps: exercise.repsOrDuration, unit: exercise.type === 'reps' ? t('repsUnit') : t('secUnit') })}
+                            {exercise.custom
+                              ? t('setsVaried', { sets: exercise.sets.length })
+                              : t('setsReps', {
+                                  sets: exercise.sets.length,
+                                  reps: exercise.sets[0]?.value ?? 0,
+                                  unit: exercise.sets[0]?.type === 'time' ? t('secUnit') : t('repsUnit'),
+                                })}
                           </div>
                         </div>
                         {!readOnly && (
@@ -513,28 +615,178 @@ export function PlanBuilder({ onCancel, onSave, planId }: PlanBuilderProps) {
                       </div>
 
                       {readOnly ? (
-                        <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                          <span>{t('restBetweenSets')}: {exercise.restInterval} {t('secondsUnit')}</span>
-                          <span>{t('intensityLevel')}: {exercise.intensity}/10</span>
+                        <div className="space-y-2">
+                          {exercise.custom ? (
+                            <div className="space-y-1 text-sm text-muted-foreground">
+                              {exercise.sets.map((s, i) => (
+                                <div key={s.key}>
+                                  {t('setNumber', { n: i + 1 })}: {s.value}{' '}
+                                  {s.type === 'time' ? t('secUnit') : t('repsUnit')}
+                                  {i < exercise.sets.length - 1 && ` · ${s.restSeconds} ${t('secondsUnit')}`}
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <div className="text-sm text-muted-foreground">
+                              {t('restBetweenSets')}: {exercise.sets[0]?.restSeconds ?? 0} {t('secondsUnit')}
+                            </div>
+                          )}
+                          <div className="text-sm text-muted-foreground">
+                            {t('intensityLevel')}: {exercise.intensity}/10
+                          </div>
                         </div>
                       ) : (
                         <div className="space-y-3">
-                          {/* Rest Interval */}
-                          <div>
-                            <label className="text-xs font-medium text-foreground mb-1.5 block">
-                              {t('restBetweenSets')}
-                            </label>
-                            <div className="flex items-center gap-2">
-                              <NumberInput
-                                min={0}
-                                step={5}
-                                value={exercise.restInterval}
-                                onChange={(v) => updateRest(exercise.key, v)}
-                                className="w-32"
-                              />
-                              <span className="text-sm text-muted-foreground">{t('secondsUnit')}</span>
+                          {exercise.custom ? (
+                            /* Per-set list — each set edited independently */
+                            <div className="space-y-2">
+                              {exercise.sets.map((s, i) => {
+                                const isLast = i === exercise.sets.length - 1;
+                                return (
+                                  <div key={s.key} className="rounded-lg border border-border p-2.5 space-y-2">
+                                    <div className="flex items-center justify-between">
+                                      <span className="text-xs font-medium text-foreground">
+                                        {t('setNumber', { n: i + 1 })}
+                                      </span>
+                                      {exercise.sets.length > 1 && (
+                                        <button
+                                          onClick={() => removeSet(exercise.key, s.key)}
+                                          className="text-red-500 hover:text-red-600 p-1"
+                                          aria-label={t('removeSetAria')}
+                                        >
+                                          <Trash2 className="w-3.5 h-3.5" />
+                                        </button>
+                                      )}
+                                    </div>
+                                    <div className="flex gap-1">
+                                      <Button
+                                        size="sm"
+                                        variant={s.type === 'reps' ? 'brand' : 'outline'}
+                                        onClick={() => updateSet(exercise.key, s.key, { type: 'reps' })}
+                                      >
+                                        {t('repsLabel')}
+                                      </Button>
+                                      <Button
+                                        size="sm"
+                                        variant={s.type === 'time' ? 'brand' : 'outline'}
+                                        onClick={() => updateSet(exercise.key, s.key, { type: 'time' })}
+                                      >
+                                        {t('timeLabel')}
+                                      </Button>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-2">
+                                      <div>
+                                        <label className="text-xs text-muted-foreground mb-1 block">
+                                          {s.type === 'reps' ? t('repsLabel') : t('durationSec')}
+                                        </label>
+                                        <NumberInput
+                                          min={0}
+                                          value={s.value}
+                                          onChange={(v) => updateSet(exercise.key, s.key, { value: v })}
+                                          className="w-full"
+                                        />
+                                      </div>
+                                      <div>
+                                        <label className="text-xs text-muted-foreground mb-1 block">
+                                          {t('restSecondsLabel')}
+                                        </label>
+                                        <NumberInput
+                                          min={0}
+                                          step={5}
+                                          value={isLast ? 0 : s.restSeconds}
+                                          disabled={isLast}
+                                          onChange={(v) => updateSet(exercise.key, s.key, { restSeconds: v })}
+                                          className="w-full"
+                                        />
+                                        {isLast && (
+                                          <p className="mt-1 text-xs text-muted-foreground">{t('lastSetNoRest')}</p>
+                                        )}
+                                      </div>
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                              <div className="flex items-center justify-between">
+                                <Button variant="outline" size="sm" icon={<Plus />} onClick={() => addSet(exercise.key)}>
+                                  {t('addSet')}
+                                </Button>
+                                <button
+                                  onClick={() => toggleCustom(exercise.key)}
+                                  className="text-xs text-tint-ink hover:underline"
+                                >
+                                  {t('sameEverySet')}
+                                </button>
+                              </div>
                             </div>
-                          </div>
+                          ) : (
+                            /* Simple uniform editor */
+                            <>
+                              <div className="grid grid-cols-2 gap-3">
+                                <div>
+                                  <label className="text-xs font-medium text-foreground mb-1.5 block">
+                                    {t('setsLabel')}
+                                  </label>
+                                  <NumberInput
+                                    min={1}
+                                    value={exercise.sets.length}
+                                    onChange={(v) => applyUniform(exercise.key, { count: v })}
+                                    className="w-full"
+                                  />
+                                </div>
+                                <div>
+                                  <label className="text-xs font-medium text-foreground mb-1.5 block">
+                                    {exercise.sets[0]?.type === 'time' ? t('durationSec') : t('repsLabel')}
+                                  </label>
+                                  <NumberInput
+                                    min={0}
+                                    value={exercise.sets[0]?.value ?? 0}
+                                    onChange={(v) => applyUniform(exercise.key, { value: v })}
+                                    className="w-full"
+                                  />
+                                </div>
+                              </div>
+
+                              <div className="flex gap-1">
+                                <Button
+                                  size="sm"
+                                  variant={exercise.sets[0]?.type !== 'time' ? 'brand' : 'outline'}
+                                  onClick={() => applyUniform(exercise.key, { type: 'reps' })}
+                                >
+                                  {t('repsLabel')}
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant={exercise.sets[0]?.type === 'time' ? 'brand' : 'outline'}
+                                  onClick={() => applyUniform(exercise.key, { type: 'time' })}
+                                >
+                                  {t('timeLabel')}
+                                </Button>
+                              </div>
+
+                              <div>
+                                <label className="text-xs font-medium text-foreground mb-1.5 block">
+                                  {t('restBetweenSets')}
+                                </label>
+                                <div className="flex items-center gap-2">
+                                  <NumberInput
+                                    min={0}
+                                    step={5}
+                                    value={exercise.sets[0]?.restSeconds ?? 0}
+                                    onChange={(v) => applyUniform(exercise.key, { rest: v })}
+                                    className="w-32"
+                                  />
+                                  <span className="text-sm text-muted-foreground">{t('secondsUnit')}</span>
+                                </div>
+                              </div>
+
+                              <button
+                                onClick={() => toggleCustom(exercise.key)}
+                                className="text-xs text-tint-ink hover:underline"
+                              >
+                                {t('customizeEachSet')}
+                              </button>
+                            </>
+                          )}
 
                           {/* Intensity Slider */}
                           <HeatSlider
