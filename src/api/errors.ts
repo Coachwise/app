@@ -35,6 +35,8 @@ export const ErrorCode = {
   UnsupportedCurrency: 1306,
   NoProvider: 1307,
   PayoutAccountMissing: 1308,
+  AiDisabled: 1400,
+  AiFailed: 1401,
 } as const;
 
 // code → i18n key for the localized message shown to users.
@@ -73,6 +75,8 @@ const messageKey: Record<number, string> = {
   1306: 'errUnsupportedCurrency',
   1307: 'errNoProvider',
   1308: 'errPayoutAccountMissing',
+  1400: 'errAiDisabled',
+  1401: 'errAiFailed',
 };
 
 export class ApiError extends Error {

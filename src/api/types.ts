@@ -696,7 +696,7 @@ export interface PlanExercisePayload {
   exercise_id: UUID;
   exercise_order: number;
   rest_time: number;
-  intensity?: number; // 1-10 scale, optional (defaults to 5 on backend)
+  intensity?: number; // 1-10 scale; the API requires it — callers must send a value
   // The prescription for this exercise in this plan. Each set carries reps XOR
   // duration (nanoseconds) plus rest_time (nanoseconds).
   sets?: {

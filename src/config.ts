@@ -29,4 +29,6 @@ export const FEATURES = {
   channels: false,
   /** Social feed tab + create-post. Deferred to a later phase. */
   feed: false,
+  /** AI assistant: header robot button + chat overlay. */
+  ai: false,
 } as const;

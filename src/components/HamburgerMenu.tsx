@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { X, Bell, Shield, LogOut, Settings, Users, DollarSign, Globe, User, Crown, Coins, ClipboardList, Info, LifeBuoy, Sun, Moon, Palette, Activity, ChevronDown } from 'lucide-react';
+import { AiRobot } from './ui/ai-robot';
 import { getTheme, setTheme } from '../lib/theme';
 import { APP_VERSION, APP_IS_BETA } from '../config';
 import type { UserRole } from '../App';
@@ -441,12 +442,21 @@ export function HamburgerMenu({
         document.body,
       )}
 
-      {/* Beta flag + Bell + Hamburger triggers */}
+      {/* Beta flag + AI + Bell + Hamburger triggers */}
       <div className="flex items-center gap-1">
         {APP_IS_BETA && (
           <span className="mr-1 px-1.5 py-0.5 rounded bg-yellow-500 text-foreground text-[10px] font-bold tracking-wide leading-none">
             {t('beta')}
           </span>
+        )}
+        {FEATURES.ai && (
+          <button
+            onClick={() => onNavigate('ai-assistant')}
+            aria-label={t('aiAssistant')}
+            className="p-1.5 hover:bg-tint-2 rounded-lg transition-colors text-primary"
+          >
+            <AiRobot className="h-7 w-auto" />
+          </button>
         )}
         <button
           onClick={openNotifications}

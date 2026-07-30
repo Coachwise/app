@@ -14,6 +14,7 @@ import { PlanBuilder } from './components/PlanBuilder';
 import { CoachApplication } from './components/CoachApplication';
 import { SubscriptionTierBuilder } from './components/SubscriptionTierBuilder';
 import { Navigation } from './components/Navigation';
+import { AiAssistant } from './components/AiAssistant';
 import { CoachDashboard } from './components/CoachDashboard';
 import { TestBuilder } from './components/TestBuilder';
 import { AthleteTests } from './components/AthleteTests';
@@ -46,7 +47,7 @@ const DEFAULT_VIEW: ViewType = FEATURES.feed ? 'feed' : 'workouts-home';
 export type SportType = 'fitness' | 'climbing';
 export type UserRole = 'athlete' | 'coach';
 export type UserTier = 'free' | 'pro';
-export type ViewType = 'sport-selection' | 'logging' | 'feed' | 'profile' | 'coach-dashboard' | 'post-creation' | 'exercise-builder' | 'plan-builder' | 'coach-application' | 'tier-builder' | 'test-builder' | 'athlete-tests' | 'assessment-run' | 'assessment-history' | 'workouts-home' | 'workout-session' | 'analytics' | 'athlete-search' | 'athletes-coaches' | 'messages' | 'message-thread' | 'channel-view' | 'privacy-settings' | 'profile-settings' | 'notifications' | 'wallet' | 'about' | 'support';
+export type ViewType = 'sport-selection' | 'logging' | 'feed' | 'profile' | 'coach-dashboard' | 'post-creation' | 'exercise-builder' | 'plan-builder' | 'coach-application' | 'tier-builder' | 'test-builder' | 'athlete-tests' | 'assessment-run' | 'assessment-history' | 'workouts-home' | 'workout-session' | 'analytics' | 'athlete-search' | 'athletes-coaches' | 'messages' | 'message-thread' | 'channel-view' | 'privacy-settings' | 'profile-settings' | 'notifications' | 'wallet' | 'about' | 'support' | 'ai-assistant';
 
 export default function App() {
   const { isAuthenticated, user, tokens, refreshUser } = useAuth();
@@ -531,6 +532,11 @@ export default function App() {
               />
             )}
           </div>
+
+          {/* The AI assistant is a full-screen chat overlay, like the threads. */}
+          {FEATURES.ai && currentView === 'ai-assistant' && (
+            <AiAssistant onBack={() => setCurrentView(DEFAULT_VIEW)} />
+          )}
 
           {/* Render MessageThread and ChannelView as overlays */}
           {currentView === 'message-thread' && (

@@ -361,3 +361,23 @@ html {
 /* Persian used to fall back to whatever sans the device had. It now gets
    Vazirmatn like everything else (see the @font-face block at the top) — this
    rule would have overridden it on exactly the language that needs it most. */
+
+/* AI assistant mascot "Bolt" (see ui/ai-robot.tsx): float + blink + antenna pulse. */
+@keyframes ai-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-1.5px); } }
+@keyframes ai-blink { 0%, 94%, 100% { transform: scaleY(1); } 97% { transform: scaleY(0.1); } }
+@keyframes ai-pulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.25); opacity: 0.55; } }
+.ai-robot .ai-robot-body {
+  transform-box: fill-box; transform-origin: 50% 92%;
+  animation: ai-float 3.8s ease-in-out infinite;
+}
+.ai-robot .ai-robot-eyes {
+  transform-box: fill-box; transform-origin: center;
+  animation: ai-blink 4.6s infinite;
+}
+.ai-robot .ai-robot-drop {
+  transform-box: fill-box; transform-origin: center;
+  animation: ai-pulse 1.8s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ai-robot .ai-robot-body, .ai-robot .ai-robot-eyes, .ai-robot .ai-robot-drop { animation: none; }
+}
