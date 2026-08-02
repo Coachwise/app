@@ -1,0 +1,30 @@
+/* Push copy. The backend sends only these key names + args (it never authors
+   localized text), so every notification's wording lives here and in fa.lproj.
+   Placeholder counts must match the args for that type (src/events/push.go). */
+
+"push_connection_request_title" = "New connection request";
+"push_connection_request_body" = "%1$@ sent you a connection request";
+"push_connection_accepted_title" = "Connection accepted";
+"push_connection_accepted_body" = "%1$@ accepted your connection request";
+"push_message_received_title" = "New message";
+"push_message_received_body" = "%1$@ sent you a message";
+"push_plan_assigned_title" = "New plan";
+"push_plan_assigned_body" = "%1$@ assigned you the “%2$@” plan";
+"push_plan_removed_title" = "Plan removed";
+"push_plan_removed_body" = "%1$@ unassigned the “%2$@” plan";
+"push_package_assigned_title" = "New package";
+"push_package_assigned_body" = "%1$@ gave you the “%2$@” package";
+"push_package_removed_title" = "Package removed";
+"push_package_removed_body" = "%1$@ removed you from “%2$@”";
+"push_package_subscribed_title" = "New subscriber";
+"push_package_subscribed_body" = "%1$@ subscribed to “%2$@”";
+"push_assessment_assigned_title" = "New test";
+"push_assessment_assigned_body" = "%1$@ assigned you “%2$@”";
+"push_assessment_submitted_title" = "Test submitted";
+"push_assessment_submitted_body" = "%1$@ recorded a run of “%2$@”";
+"push_badge_granted_title" = "New achievement";
+"push_badge_granted_body" = "You were awarded “%1$@”";
+"push_support_reply_title" = "Support replied";
+"push_support_reply_body" = "Your support ticket has a new reply";
+"push_support_update_title" = "Support update";
+"push_support_update_body" = "Your support ticket was updated";

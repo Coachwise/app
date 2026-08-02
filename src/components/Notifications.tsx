@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Bell, UserPlus, CheckCircle2, ClipboardList, Send, Award, Package, Dumbbell, CheckCheck, LifeBuoy } from 'lucide-react';
+import { Bell, UserPlus, CheckCircle2, ClipboardList, Send, Award, Package, Dumbbell, CheckCheck, LifeBuoy, MessageCircle } from 'lucide-react';
 import { BackButton } from './ui/back-button';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -14,6 +14,7 @@ interface NotificationsProps {
   onNavigate: (view: string) => void;
   onViewProfile?: (userId: string) => void;
   onOpenSupport?: (ticketId: string) => void;
+  onOpenThread?: (peerId: string) => void;
 }
 
 // Icon + tint per notification type (fallback for actors without an avatar).
@@ -30,9 +31,10 @@ const TYPE_META: Record<string, { icon: typeof Bell; cls: string }> = {
   PLAN_REMOVED: { icon: Dumbbell, cls: 'bg-gray-100 text-gray-500' },
   SUPPORT_REPLY: { icon: LifeBuoy, cls: 'bg-yellow-100 text-yellow-700' },
   SUPPORT_UPDATE: { icon: LifeBuoy, cls: 'bg-gray-100 text-gray-500' },
+  MESSAGE_RECEIVED: { icon: MessageCircle, cls: 'bg-tint-soft text-tint-ink' },
 };
 
-export function Notifications({ onBack, onNavigate, onViewProfile, onOpenSupport }: NotificationsProps) {
+export function Notifications({ onBack, onNavigate, onViewProfile, onOpenSupport, onOpenThread }: NotificationsProps) {
   const { t, language } = useLanguage();
   const { tokens } = useAuth();
   const token = tokens?.access_token || '';
@@ -79,6 +81,7 @@ export function Notifications({ onBack, onNavigate, onViewProfile, onOpenSupport
       case 'PACKAGE_REMOVED': return t('notifPackageRemoved', { who, name });
       case 'PLAN_ASSIGNED': return t('notifPlanAssigned', { who, name });
       case 'PLAN_REMOVED': return t('notifPlanRemoved', { who, name });
+      case 'MESSAGE_RECEIVED': return t('notifMessageReceived', { who });
       case 'SUPPORT_REPLY': return t('notifSupportReply', { preview: n.data?.preview || '' });
       case 'SUPPORT_UPDATE':
         return n.data?.event === 'closed_by_support' ? t('notifSupportClosed') : t('notifSupportUpdate');
@@ -123,6 +126,10 @@ export function Notifications({ onBack, onNavigate, onViewProfile, onOpenSupport
       case 'PLAN_ASSIGNED':
       case 'PLAN_REMOVED':
         onNavigate('workouts-home');
+        break;
+      case 'MESSAGE_RECEIVED':
+        if (n.actor_id && onOpenThread) onOpenThread(n.actor_id);
+        else onNavigate('messages');
         break;
       case 'SUPPORT_REPLY':
       case 'SUPPORT_UPDATE':

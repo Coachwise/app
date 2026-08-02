@@ -1,0 +1,28 @@
+/* Persian push copy; keys and placeholder counts must match en.lproj. */
+
+"push_connection_request_title" = "درخواست ارتباط جدید";
+"push_connection_request_body" = "%1$@ برای شما درخواست ارتباط فرستاد";
+"push_connection_accepted_title" = "ارتباط پذیرفته شد";
+"push_connection_accepted_body" = "%1$@ درخواست ارتباط شما را پذیرفت";
+"push_message_received_title" = "پیام جدید";
+"push_message_received_body" = "%1$@ برای شما پیام فرستاد";
+"push_plan_assigned_title" = "برنامهٔ جدید";
+"push_plan_assigned_body" = "%1$@ برنامهٔ «%2$@» را به شما اختصاص داد";
+"push_plan_removed_title" = "برنامه لغو شد";
+"push_plan_removed_body" = "%1$@ برنامهٔ «%2$@» را لغو کرد";
+"push_package_assigned_title" = "بستهٔ جدید";
+"push_package_assigned_body" = "%1$@ بستهٔ «%2$@» را به شما داد";
+"push_package_removed_title" = "بسته حذف شد";
+"push_package_removed_body" = "%1$@ شما را از «%2$@» حذف کرد";
+"push_package_subscribed_title" = "مشترک جدید";
+"push_package_subscribed_body" = "%1$@ در «%2$@» مشترک شد";
+"push_assessment_assigned_title" = "آزمون جدید";
+"push_assessment_assigned_body" = "%1$@ «%2$@» را به شما اختصاص داد";
+"push_assessment_submitted_title" = "آزمون ثبت شد";
+"push_assessment_submitted_body" = "%1$@ یک اجرای «%2$@» را ثبت کرد";
+"push_badge_granted_title" = "دستاورد جدید";
+"push_badge_granted_body" = "نشان «%1$@» به شما اعطا شد";
+"push_support_reply_title" = "پاسخ پشتیبانی";
+"push_support_reply_body" = "تیکت پشتیبانی شما پاسخ جدیدی دارد";
+"push_support_update_title" = "به‌روزرسانی پشتیبانی";
+"push_support_update_body" = "تیکت پشتیبانی شما به‌روزرسانی شد";

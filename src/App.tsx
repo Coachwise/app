@@ -38,6 +38,7 @@ import * as SessionsAPI from './api/sessions';
 import { FEATURES } from './config';
 import { setReportView } from './lib/report';
 import { initAudio } from './lib/sound';
+import { registerPush, onPushOpened } from './lib/push';
 
 const SESSION_KEY = 'coachwise-active-session';
 // Where the app lands after login / when returning "home". Feed can be hidden
@@ -145,6 +146,46 @@ export default function App() {
       window.removeEventListener('keydown', unlock);
     };
   }, []);
+
+  // Native push: register this device once signed in, and route a tapped
+  // notification to the same screen its in-app twin opens.
+  useEffect(() => {
+    const token = tokens?.access_token;
+    if (!token || !isAuthenticated) return;
+    void registerPush(token, localStorage.getItem('coachwise-language') || 'fa');
+    onPushOpened((data) => {
+      switch (data.type) {
+        case 'MESSAGE_RECEIVED':
+          if (data.actor_id) {
+            setCurrentConversationId(data.actor_id);
+            setCurrentView('message-thread');
+          } else setCurrentView('messages');
+          break;
+        case 'CONNECTION_REQUEST':
+        case 'CONNECTION_ACCEPTED':
+          if (data.actor_id) handleViewProfile(data.actor_id);
+          else setCurrentView('athletes-coaches');
+          break;
+        case 'PLAN_ASSIGNED':
+        case 'PLAN_REMOVED':
+          setCurrentView('workouts-home');
+          break;
+        case 'ASSESSMENT_ASSIGNED':
+          setCurrentView('athlete-tests');
+          break;
+        case 'SUPPORT_REPLY':
+        case 'SUPPORT_UPDATE':
+          if (data.entity_id) setSupportTicketId(data.entity_id);
+          setCurrentView('support');
+          break;
+        default:
+          // Anything without a dedicated screen lands on the bell, where the
+          // in-app copy explains it.
+          setCurrentView('notifications');
+      }
+    });
+    return () => onPushOpened(null);
+  }, [isAuthenticated, tokens?.access_token]);
 
   const handleLogin = () => {
     if (user?.pro) {
@@ -381,6 +422,7 @@ export default function App() {
           onNavigate={handleNavigate}
           onViewProfile={handleViewProfile}
           onOpenSupport={(ticketId) => { setSupportTicketId(ticketId); setCurrentView('support'); }}
+          onOpenThread={(peerId) => { setCurrentConversationId(peerId); setCurrentView('message-thread'); }}
         />;
       case 'post-creation':
         return <PostCreation onCancel={() => setCurrentView(DEFAULT_VIEW)} onPost={handlePostCreated} />;

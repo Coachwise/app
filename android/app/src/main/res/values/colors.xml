@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Brand azure; tints the notification icon in the status bar. -->
+    <color name="brand_azure">#0097E6</color>
+</resources>

@@ -1,0 +1,30 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <!-- Persian push copy; keys and placeholder counts must match values/strings.xml. -->
+    <string name="push_connection_request_title">درخواست ارتباط جدید</string>
+    <string name="push_connection_request_body">%1$s برای شما درخواست ارتباط فرستاد</string>
+    <string name="push_connection_accepted_title">ارتباط پذیرفته شد</string>
+    <string name="push_connection_accepted_body">%1$s درخواست ارتباط شما را پذیرفت</string>
+    <string name="push_message_received_title">پیام جدید</string>
+    <string name="push_message_received_body">%1$s برای شما پیام فرستاد</string>
+    <string name="push_plan_assigned_title">برنامهٔ جدید</string>
+    <string name="push_plan_assigned_body">%1$s برنامهٔ «%2$s» را به شما اختصاص داد</string>
+    <string name="push_plan_removed_title">برنامه لغو شد</string>
+    <string name="push_plan_removed_body">%1$s برنامهٔ «%2$s» را لغو کرد</string>
+    <string name="push_package_assigned_title">بستهٔ جدید</string>
+    <string name="push_package_assigned_body">%1$s بستهٔ «%2$s» را به شما داد</string>
+    <string name="push_package_removed_title">بسته حذف شد</string>
+    <string name="push_package_removed_body">%1$s شما را از «%2$s» حذف کرد</string>
+    <string name="push_package_subscribed_title">مشترک جدید</string>
+    <string name="push_package_subscribed_body">%1$s در «%2$s» مشترک شد</string>
+    <string name="push_assessment_assigned_title">آزمون جدید</string>
+    <string name="push_assessment_assigned_body">%1$s «%2$s» را به شما اختصاص داد</string>
+    <string name="push_assessment_submitted_title">آزمون ثبت شد</string>
+    <string name="push_assessment_submitted_body">%1$s یک اجرای «%2$s» را ثبت کرد</string>
+    <string name="push_badge_granted_title">دستاورد جدید</string>
+    <string name="push_badge_granted_body">نشان «%1$s» به شما اعطا شد</string>
+    <string name="push_support_reply_title">پاسخ پشتیبانی</string>
+    <string name="push_support_reply_body">تیکت پشتیبانی شما پاسخ جدیدی دارد</string>
+    <string name="push_support_update_title">به‌روزرسانی پشتیبانی</string>
+    <string name="push_support_update_body">تیکت پشتیبانی شما به‌روزرسانی شد</string>
+</resources>

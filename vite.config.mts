@@ -9,6 +9,8 @@
     resolve: {
       extensions: ['.js', '.jsx', '.ts', '.tsx', '.json'],
       alias: {
+        // Push is native-only, so the Firebase web SDK never has to ship.
+        'firebase/messaging': path.resolve(__dirname, './src/lib/firebase-messaging-stub.ts'),
         'vaul@1.1.2': 'vaul',
         'sonner@2.0.3': 'sonner',
         'recharts@2.15.2': 'recharts',

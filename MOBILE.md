@@ -72,6 +72,46 @@ page** — no custom URL scheme. After the return page loads and the user closes
 the browser, the wallet refreshes; the primary refresh path is the realtime
 `wallet` socket signal that fires when the gateway callback settles.
 
+## Push notifications
+
+Push runs on FCM for both platforms (iOS goes through APNs, relayed by Firebase),
+via `@capacitor-firebase/messaging`. It is **native-only** — `registerPush()`
+no-ops on web, and `firebase/messaging` is aliased to a stub in `vite.config.mts`
+so the Firebase web SDK never enters the bundle.
+
+**The payload carries no text.** The backend is English-only, so it sends
+localization *keys* (`push_plan_assigned_title` / `_body`) plus args, and the OS
+renders them from the app's own catalogs:
+
+- Android — `android/app/src/main/res/values/strings.xml` (English) and
+  `values-fa/strings.xml` (Persian)
+- iOS — `ios/App/App/en.lproj/Localizable.strings` and `fa.lproj/…`
+
+A new notification type needs an entry in all four, with the same placeholder
+count the backend sends for it (`api/src/events/push.go`). A missing key shows the
+raw key name; too few placeholders shows a literal `%1$s`.
+
+Note the language follows the **phone's** locale, not the in-app toggle — that is
+the trade-off of letting the device own the copy.
+
+### One-time Firebase setup
+
+1. Create a Firebase project and add both apps with appId `com.coachwise.app`.
+2. Download `google-services.json` → `android/app/`. (`android/app/build.gradle`
+   already applies the plugin only when that file exists.)
+3. Download `GoogleService-Info.plist` → add to the Xcode project (`ios/App/App/`).
+4. iOS only: create an APNs auth key (`.p8`) in the Apple Developer portal and
+   upload it in Firebase → Project settings → Cloud Messaging. Enable the Push
+   Notifications capability on the app id. Without this, iOS pushes silently
+   never arrive.
+5. Backend: create a service account (Project settings → Service accounts →
+   generate a private key), put the JSON on the server, and set `push:` in
+   `config.yml` (`provider: fcm`, `credentials_file`, and `proxy` if Google is
+   unreachable from the host).
+
+Then `npx cap sync`. Both `.json`/`.plist` files identify the project publicly and
+are not secrets, but the **service-account JSON is** — it stays server-side only.
+
 ## App icon & splash
 
 Provide a 1024×1024 icon (and optional splash) and generate all sizes with:

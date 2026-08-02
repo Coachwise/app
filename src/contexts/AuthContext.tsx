@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useMemo, useRef, useState, ReactN
 import * as AuthAPI from '../api/auth';
 import * as UsersAPI from '../api/users';
 import { setTokenRefreshHandler } from '../api/client';
+import { unregisterPush } from '../lib/push';
 import type { AuthTokens, LoginPayload, User } from '../api/types';
 
 type AuthContextType = {
@@ -152,6 +153,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = async () => {
     if (tokens?.access_token) {
+      // Drop the push token first — after the access token is blacklisted the
+      // device would keep getting this account's notifications.
+      await unregisterPush(tokens.access_token);
       try {
         await AuthAPI.logout(tokens.access_token);
       } catch {

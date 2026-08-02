@@ -4,4 +4,34 @@
     <string name="title_activity_main">Coachwise</string>
     <string name="package_name">com.coachwise.app</string>
     <string name="custom_url_scheme">com.coachwise.app</string>
+
+    <!-- Push copy. The backend is English-only and sends only these key names +
+         args, so every notification's wording lives here and in values-fa.
+         Placeholder counts must match the args for that type (src/events/push.go). -->
+    <string name="push_connection_request_title">New connection request</string>
+    <string name="push_connection_request_body">%1$s sent you a connection request</string>
+    <string name="push_connection_accepted_title">Connection accepted</string>
+    <string name="push_connection_accepted_body">%1$s accepted your connection request</string>
+    <string name="push_message_received_title">New message</string>
+    <string name="push_message_received_body">%1$s sent you a message</string>
+    <string name="push_plan_assigned_title">New plan</string>
+    <string name="push_plan_assigned_body">%1$s assigned you the \"%2$s\" plan</string>
+    <string name="push_plan_removed_title">Plan removed</string>
+    <string name="push_plan_removed_body">%1$s unassigned the \"%2$s\" plan</string>
+    <string name="push_package_assigned_title">New package</string>
+    <string name="push_package_assigned_body">%1$s gave you the \"%2$s\" package</string>
+    <string name="push_package_removed_title">Package removed</string>
+    <string name="push_package_removed_body">%1$s removed you from \"%2$s\"</string>
+    <string name="push_package_subscribed_title">New subscriber</string>
+    <string name="push_package_subscribed_body">%1$s subscribed to \"%2$s\"</string>
+    <string name="push_assessment_assigned_title">New test</string>
+    <string name="push_assessment_assigned_body">%1$s assigned you \"%2$s\"</string>
+    <string name="push_assessment_submitted_title">Test submitted</string>
+    <string name="push_assessment_submitted_body">%1$s recorded a run of \"%2$s\"</string>
+    <string name="push_badge_granted_title">New achievement</string>
+    <string name="push_badge_granted_body">You were awarded \"%1$s\"</string>
+    <string name="push_support_reply_title">Support replied</string>
+    <string name="push_support_reply_body">Your support ticket has a new reply</string>
+    <string name="push_support_update_title">Support update</string>
+    <string name="push_support_update_body">Your support ticket was updated</string>
 </resources>

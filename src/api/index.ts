@@ -15,3 +15,4 @@ export * as AchievementsAPI from "./achievements";
 export * from "./client";
 export * from "./types";
 export * as NotificationsAPI from "./notifications";
+export * as DevicesAPI from "./devices";
