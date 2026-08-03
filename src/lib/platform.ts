@@ -2,6 +2,7 @@ import { Capacitor } from '@capacitor/core';
 import { Browser } from '@capacitor/browser';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import { SplashScreen } from '@capacitor/splash-screen';
+import { KeepAwake } from '@capacitor-community/keep-awake';
 
 /** True when running inside the Capacitor native shell (Android/iOS), false on web. */
 export function isNative(): boolean {
@@ -56,6 +57,30 @@ export async function initNative(): Promise<void> {
     await SplashScreen.hide();
   } catch {
     /* no splash */
+  }
+}
+
+/**
+ * Hold the screen on during a workout — the athlete is looking at the phone from
+ * across the room between sets, not touching it, so the OS would dim and lock.
+ * Always pair with allowSleep(); no-op on web.
+ */
+export async function keepAwake(): Promise<void> {
+  if (!isNative()) return;
+  try {
+    await KeepAwake.keepAwake();
+  } catch {
+    /* not fatal — the screen just sleeps as usual */
+  }
+}
+
+/** Release the wake lock. Safe to call even if it was never taken. */
+export async function allowSleep(): Promise<void> {
+  if (!isNative()) return;
+  try {
+    await KeepAwake.allowSleep();
+  } catch {
+    /* ignore */
   }
 }
 

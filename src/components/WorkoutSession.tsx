@@ -13,6 +13,7 @@ import type { Exercise } from '../api/types';
 import { SessionFeedbackDialog, type SessionFeedback } from './SessionFeedbackDialog';
 import { useLanguage } from '../contexts/LanguageContext';
 import { localized } from '../lib/localize';
+import { allowSleep, keepAwake } from '../lib/platform';
 
 const isVideoUrl = (url: string) => /\.(mp4|webm|mov|m4v)$/i.test(url);
 
@@ -122,6 +123,14 @@ export function WorkoutSession({ planId, scheduleId, onBack, onEndSession, isPro
     }
     return () => clearInterval(interval);
   }, [isTimerRunning]);
+
+  // Hold the screen on for the whole session — the phone sits propped up between
+  // sets, untouched, and a locked screen mid-set is the worst time to unlock one.
+  // Covers the guided run too, since it renders inside this screen.
+  useEffect(() => {
+    void keepAwake();
+    return () => { void allowSleep(); };
+  }, []);
 
   // Persist elapsed time into the session key so leaving and resuming continues
   // the timer instead of resetting it.

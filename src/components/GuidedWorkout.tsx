@@ -285,9 +285,10 @@ export function GuidedWorkout({ open, exercises, onLogSet, onClose, onFinish }: 
                 </p>
                 <Button
                   variant="ghost"
+                  size="xl"
                   onClick={() => setPaused((p) => !p)}
-                  icon={paused ? <Play className="size-5" /> : <Pause className="size-5" />}
-                  className="mt-5 px-5 rounded-full bg-white/10 hover:bg-white/20 text-white"
+                  icon={paused ? <Play className="size-7" /> : <Pause className="size-7" />}
+                  className="mt-6 min-w-44 rounded-full bg-white/15 hover:bg-white/25 text-white"
                 >
                   {paused ? t('resume') : t('pause')}
                 </Button>
@@ -323,17 +324,17 @@ export function GuidedWorkout({ open, exercises, onLogSet, onClose, onFinish }: 
           {/* Actions */}
           <div className="space-y-3">
             {phase === 'active' && (
-              <Button variant="brand" size="block" icon={<Check />} onClick={() => { initAudio(); finishActive(); }}>
+              <Button variant="brand" size="blockXl" icon={<Check className="size-6" />} onClick={() => { initAudio(); finishActive(); }}>
                 {t('doneSet')}
               </Button>
             )}
             {phase === 'ready' && (
-              <Button variant="brand" size="block" icon={<SkipForward />} onClick={() => { initAudio(); enter(stepIndex, 'active'); }}>
+              <Button variant="brand" size="blockXl" icon={<SkipForward className="size-6" />} onClick={() => { initAudio(); enter(stepIndex, 'active'); }}>
                 {t('startNow')}
               </Button>
             )}
             {phase === 'rest' && (
-              <Button variant="brand" size="block" icon={<SkipForward />} onClick={() => { initAudio(); endRest(); }}>
+              <Button variant="brand" size="blockXl" icon={<SkipForward className="size-6" />} onClick={() => { initAudio(); endRest(); }}>
                 {t('skipRest')}
               </Button>
             )}
