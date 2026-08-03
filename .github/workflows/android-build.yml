@@ -15,6 +15,16 @@ name: Android Build
 #                     Beta badge shown in the app.
 #   VITE_APP_VERSION  not configured — derived from the git tag (v1.2.0 → 1.2.0),
 #                     or 0.0.0+<sha> for non-tag builds.
+#
+# Signing secrets (REQUIRED — the build fails without them):
+#   ANDROID_KEYSTORE_BASE64    the upload keystore, `base64 -w0 coachwise.jks`
+#   ANDROID_KEYSTORE_PASSWORD  keystore password
+#   ANDROID_KEY_ALIAS          key alias inside the keystore
+#   ANDROID_KEY_PASSWORD       key password (same as the store password unless
+#                              you set a separate one)
+# The key must never change: Android identifies an app by its signature, so a
+# different key means the new APK cannot update the installed one. Back the
+# keystore up offline — losing it means never updating this app id again.
 
 on:
   push:
@@ -40,7 +50,7 @@ jobs:
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
-          node-version: .node-version
+          node-version-file: .node-version
           cache: npm
 
       - name: Set up JDK 21
@@ -102,14 +112,38 @@ jobs:
       - name: Sync Capacitor
         run: npx cap sync android
 
-      - name: Build debug APK
-        run: ./gradlew assembleDebug --no-daemon -PcoachwiseVersionCode=$VERSION_CODE -PcoachwiseVersionName=$VITE_APP_VERSION
+      - name: Decode signing keystore
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: |
+          # A debug build would be signed with a keystore the runner generates
+          # fresh every time, so each APK would refuse to update the last one.
+          if [ -z "$KEYSTORE_BASE64" ]; then
+            echo "::error::ANDROID_KEYSTORE_BASE64 is not set. Add the signing secrets, or every build ships an APK that can't update the previous install."
+            exit 1
+          fi
+          echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/coachwise.jks"
+          echo "ANDROID_KEYSTORE_PATH=$RUNNER_TEMP/coachwise.jks" >> "$GITHUB_ENV"
+
+      - name: Build release APK
+        env:
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: ./gradlew assembleRelease --no-daemon -PcoachwiseVersionCode=$VERSION_CODE -PcoachwiseVersionName=$VITE_APP_VERSION
         working-directory: android
+
+      - name: Verify APK signature
+        # Catches a silently unsigned build before it reaches a phone, where the
+        # only symptom is a refused install.
+        run: |
+          APKSIGNER=$(find "$ANDROID_HOME/build-tools" -name apksigner | sort | tail -1)
+          "$APKSIGNER" verify --print-certs android/app/build/outputs/apk/release/app-release.apk
 
       - name: Rename APK
         run: |
           mkdir -p dist
-          cp android/app/build/outputs/apk/debug/app-debug.apk \
+          cp android/app/build/outputs/apk/release/app-release.apk \
              "dist/coachwise-${{ github.ref_type == 'tag' && github.ref_name || github.sha }}.apk"
 
       - name: Upload APK artifact
