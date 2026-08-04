@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "610885759356",
+    "project_id": "coachwise-76a5c",
+    "storage_bucket": "coachwise-76a5c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:610885759356:android:c7ad835d606f88ac34b4f9",
+        "android_client_info": {
+          "package_name": "com.coachwise.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCaZama4_Q8XWKJ6VRc3_PZ5f9HV0cOFHs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
