@@ -845,6 +845,8 @@ export const translations = {
     // --- Exercises list ---
     notAuthenticated: 'Not authenticated',
     deleteExerciseConfirm: 'Delete this exercise?',
+    editSharedExerciseConfirm:
+      'This exercise is shared. Editing it changes it in every plan that uses it, including plans already assigned to your athletes. Continue?',
     unableToDeleteExercise: 'Unable to delete exercise',
     searchExercisesByName: 'Search exercises by name',
     refresh: 'Refresh',
@@ -2115,6 +2117,8 @@ export const translations = {
     // --- Exercises list ---
     notAuthenticated: 'احراز هویت نشده',
     deleteExerciseConfirm: 'این تمرین حذف شود؟',
+    editSharedExerciseConfirm:
+      'این تمرین مشترک است. با ویرایش آن، تغییرات در همهٔ برنامه‌هایی که از آن استفاده می‌کنند اعمال می‌شود، از جمله برنامه‌هایی که قبلاً به ورزشکاران شما اختصاص داده شده‌اند. ادامه می‌دهید؟',
     unableToDeleteExercise: 'حذف تمرین ممکن نشد',
     searchExercisesByName: 'جستجوی تمرین با نام',
     refresh: 'بازخوانی',

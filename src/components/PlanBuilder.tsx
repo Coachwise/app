@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Plus, GripVertical, Trash2, RefreshCw, Search, Dumbbell, Save } from 'lucide-react';
+import { Plus, GripVertical, Trash2, RefreshCw, Search, Dumbbell, Save, Edit3 } from 'lucide-react';
 import { BackButton } from './ui/back-button';
 import { Button } from './ui/button';
 import { NumberInput } from './ui/number-input';
@@ -34,6 +34,9 @@ type PlanExercise = {
   key: string;
   exerciseId: string;
   name: string;
+  // Who owns the underlying exercise — null for curated library rows. Only the
+  // owner gets the inline edit affordance.
+  ownerId: string | null;
   custom: boolean;
   sets: PlanSet[];
   intensity: number;
@@ -84,6 +87,7 @@ export function PlanBuilder({ onCancel, onSave, planId }: PlanBuilderProps) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showExerciseBuilder, setShowExerciseBuilder] = useState(false);
+  const [editingExercise, setEditingExercise] = useState<Exercise | null>(null);
   const [categories, setCategories] = useState<ExerciseCategory[]>([]);
   const [sports, setSports] = useState<string[]>([]);
   const [sport, setSport] = useState(''); // selected exercise_sport_type
@@ -136,6 +140,7 @@ export function PlanBuilder({ onCancel, onSave, planId }: PlanBuilderProps) {
             key: pe.id,
             exerciseId: pe.exercise_id,
             name: localized(pe.exercise?.name_i18n, pe.exercise?.name ?? '', language),
+            ownerId: pe.exercise?.user_id ?? null,
             custom: !isUniform(sets),
             sets,
             intensity: pe.intensity ?? 5,
@@ -229,6 +234,7 @@ export function PlanBuilder({ onCancel, onSave, planId }: PlanBuilderProps) {
         key: `${exercise.id}-${Date.now()}`,
         exerciseId: exercise.id,
         name: localized(exercise.name_i18n, exercise.name, language),
+        ownerId: exercise.user_id ?? null,
         custom: !isUniform(seeded),
         sets: seeded,
         intensity: 5,
@@ -303,6 +309,22 @@ export function PlanBuilder({ onCancel, onSave, planId }: PlanBuilderProps) {
 
   const removeExercise = (key: string) => {
     setExercises((prev) => prev.filter((ex) => ex.key !== key));
+  };
+
+  const ownsExercise = (ownerId: string | null | undefined) => !!user && !!ownerId && ownerId === user.id;
+
+  // Open one of your own exercises for editing without leaving the plan. The
+  // exercise is shared, so the change lands in every plan using it — including
+  // plans already assigned to athletes. Confirm before opening, not on save, so
+  // nobody fills in a form they're not allowed to keep.
+  const editOwnedExercise = async (exerciseId: string) => {
+    const token = tokens?.access_token;
+    if (!token || !window.confirm(t('editSharedExerciseConfirm'))) return;
+    try {
+      setEditingExercise(await ExercisesAPI.getExercise(token, exerciseId));
+    } catch (e) {
+      setError(e instanceof Error ? e.message : t('unableToLoadExercises'));
+    }
   };
 
   const patchExercise = (key: string, patch: Partial<PlanExercise>) => {
@@ -382,13 +404,30 @@ export function PlanBuilder({ onCancel, onSave, planId }: PlanBuilderProps) {
 
   const existingExerciseIds = useMemo(() => new Set(exercises.map((ex) => ex.exerciseId)), [exercises]);
 
-  if (showExerciseBuilder) {
+  if (showExerciseBuilder || editingExercise) {
     return (
       <ExerciseBuilder
-        onCancel={() => setShowExerciseBuilder(false)}
-        onSaved={(exercise) => {
+        exercise={editingExercise ?? undefined}
+        onCancel={() => {
           setShowExerciseBuilder(false);
-          addExerciseToPlan(exercise);
+          setEditingExercise(null);
+        }}
+        onSaved={(exercise) => {
+          if (editingExercise) {
+            // The plan owns its own prescription, so only refresh what the plan
+            // displays — the sets you've dialled in here stay as they are.
+            setEditingExercise(null);
+            setExercises((prev) =>
+              prev.map((ex) =>
+                ex.exerciseId === exercise.id
+                  ? { ...ex, name: localized(exercise.name_i18n, exercise.name, language) }
+                  : ex,
+              ),
+            );
+          } else {
+            setShowExerciseBuilder(false);
+            addExerciseToPlan(exercise);
+          }
           loadExercises();
         }}
       />
@@ -544,17 +583,29 @@ export function PlanBuilder({ onCancel, onSave, planId }: PlanBuilderProps) {
                             <div className="text-xs text-muted-foreground mt-1 line-clamp-1">{localized(exercise.description_i18n, exercise.description, language)}</div>
                           )}
                         </div>
-                        <button
-                          onClick={() => addExerciseToPlan(exercise)}
-                          disabled={alreadyAdded}
-                          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
-                            alreadyAdded
-                              ? 'bg-muted text-muted-foreground cursor-not-allowed'
-                              : 'bg-tint text-tint-fg hover:bg-tint-2'
-                          }`}
-                        >
-                          {alreadyAdded ? t('added') : t('add')}
-                        </button>
+                        <div className="flex items-center gap-1 shrink-0">
+                          {ownsExercise(exercise.user_id) && (
+                            <button
+                              onClick={() => editOwnedExercise(exercise.id)}
+                              className="text-muted-foreground hover:text-foreground p-2"
+                              title={t('editExercise')}
+                              aria-label={t('editExercise')}
+                            >
+                              <Edit3 className="w-4 h-4" />
+                            </button>
+                          )}
+                          <button
+                            onClick={() => addExerciseToPlan(exercise)}
+                            disabled={alreadyAdded}
+                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
+                              alreadyAdded
+                                ? 'bg-muted text-muted-foreground cursor-not-allowed'
+                                : 'bg-tint text-tint-fg hover:bg-tint-2'
+                            }`}
+                          >
+                            {alreadyAdded ? t('added') : t('add')}
+                          </button>
+                        </div>
                       </div>
                     </div>
                   );
@@ -604,13 +655,25 @@ export function PlanBuilder({ onCancel, onSave, planId }: PlanBuilderProps) {
                           </div>
                         </div>
                         {!readOnly && (
-                          <button
-                            onClick={() => removeExercise(exercise.key)}
-                            className="text-red-500 hover:text-red-600 p-1"
-                            title={t('removeExerciseTitle')}
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
+                          <div className="flex items-center gap-1 shrink-0">
+                            {ownsExercise(exercise.ownerId) && (
+                              <button
+                                onClick={() => editOwnedExercise(exercise.exerciseId)}
+                                className="text-muted-foreground hover:text-foreground p-1"
+                                title={t('editExercise')}
+                                aria-label={t('editExercise')}
+                              >
+                                <Edit3 className="w-4 h-4" />
+                              </button>
+                            )}
+                            <button
+                              onClick={() => removeExercise(exercise.key)}
+                              className="text-red-500 hover:text-red-600 p-1"
+                              title={t('removeExerciseTitle')}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
                         )}
                       </div>
 
