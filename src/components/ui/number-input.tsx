@@ -1,6 +1,9 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Minus, Plus } from 'lucide-react';
 import { cn } from './utils';
+
+// Thousands separators on the integer part only, so a decimal tail is untouched.
+const group = (s: string) => s.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 
 interface NumberInputProps extends Omit<React.ComponentProps<'input'>, 'value' | 'onChange' | 'type'> {
   value: number;
@@ -13,6 +16,8 @@ interface NumberInputProps extends Omit<React.ComponentProps<'input'>, 'value' |
   allowDecimal?: boolean;
   /** Hide the +/- buttons (plain typed field). */
   noStepper?: boolean;
+  /** Separate thousands while typing — for money, where Toman runs to millions. */
+  grouped?: boolean;
   /** Class for the outer group (e.g. width). */
   className?: string;
 }
@@ -33,19 +38,45 @@ export function NumberInput({
   step = 1,
   allowDecimal = false,
   noStepper = false,
+  grouped = false,
   disabled,
   className,
   onFocus,
   onBlur,
   ...rest
 }: NumberInputProps) {
-  const fmt = (n: number) => (Number.isFinite(n) ? String(n) : '');
+  const display = (digits: string) => {
+    if (!grouped) return digits;
+    const [int, ...dec] = digits.split('.');
+    return dec.length ? `${group(int)}.${dec.join('')}` : group(int);
+  };
+  const fmt = (n: number) => (Number.isFinite(n) ? display(String(n)) : '');
   const [text, setText] = useState(fmt(value));
   const focused = useRef(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+  // Separators shift every character after them, so the caret is restored by
+  // digit count rather than by index — otherwise it drifts as groups form.
+  const caret = useRef<number | null>(null);
 
   useEffect(() => {
     if (!focused.current) setText(fmt(value));
   }, [value]);
+
+  useLayoutEffect(() => {
+    if (caret.current == null || !inputRef.current) return;
+    const target = caret.current;
+    caret.current = null;
+    let seen = 0;
+    let pos = text.length;
+    for (let i = 0; i < text.length; i++) {
+      if (/[0-9]/.test(text[i])) seen++;
+      if (seen === target) {
+        pos = i + 1;
+        break;
+      }
+    }
+    inputRef.current.setSelectionRange(target === 0 ? 0 : pos, target === 0 ? 0 : pos);
+  }, [text]);
 
   const clamp = (n: number) => {
     if (min != null) n = Math.max(min, n);
@@ -59,7 +90,7 @@ export function NumberInput({
       const dot = cleaned.indexOf('.');
       if (dot !== -1) cleaned = cleaned.slice(0, dot + 1) + cleaned.slice(dot + 1).replace(/\./g, '');
     }
-    setText(cleaned);
+    setText(display(cleaned));
     if (cleaned === '' || cleaned === '.') {
       onChange(min ?? 0);
       return;
@@ -90,15 +121,26 @@ export function NumberInput({
         </button>
       )}
       <input
+        ref={inputRef}
         type="text"
         inputMode={allowDecimal ? 'decimal' : 'numeric'}
         pattern={allowDecimal ? undefined : '[0-9]*'}
         disabled={disabled}
         value={text}
-        onChange={(e) => commit(e.target.value)}
+        onChange={(e) => {
+          if (grouped) {
+            const upto = e.target.value.slice(0, e.target.selectionStart ?? 0);
+            caret.current = upto.replace(/[^0-9]/g, '').length;
+          }
+          commit(e.target.value);
+        }}
         onFocus={(e) => {
           focused.current = true;
-          e.target.select();
+          // An empty box beats a placeholder 0: the click that focuses the field
+          // collapses any select-all, so a leftover 0 would swallow a keystroke
+          // and turn 30 into 300. Blur commits back to min when nothing is typed.
+          if (value === (min ?? 0)) setText('');
+          else e.target.select();
           onFocus?.(e);
         }}
         onBlur={(e) => {

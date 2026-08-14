@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Plus, GripVertical, Trash2, RefreshCw, Search, Dumbbell, Save, Edit3 } from 'lucide-react';
+import { Plus, GripVertical, Trash2, RefreshCw, Search, Dumbbell, Save, Edit3, Clock } from 'lucide-react';
 import { BackButton } from './ui/back-button';
 import { Button } from './ui/button';
 import { NumberInput } from './ui/number-input';
@@ -9,6 +9,7 @@ import * as PlansAPI from '../api/plans';
 import { useAuth } from '../contexts/AuthContext';
 import { ExerciseBuilder } from './ExerciseBuilder';
 import { HeatSlider } from './ui';
+import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } from './ui/drawer';
 import { useLanguage } from '../contexts/LanguageContext';
 import { localized } from '../lib/localize';
 
@@ -40,9 +41,33 @@ type PlanExercise = {
   custom: boolean;
   sets: PlanSet[];
   intensity: number;
+  // A GROUP runs its own exercises as rounds instead of the sets above. The
+  // round values start from the group's own and are overridden per plan.
+  kind: 'SINGLE' | 'GROUP';
+  timeMode: boolean;
+  rounds: number;
+  roundMinutes: number;
+  roundRest: number;
 };
 
 const planSetKey = () => Math.random().toString(36).slice(2);
+const toSeconds = (ns?: number | null) => Math.max(0, Math.round((ns ?? 0) / 1e9));
+
+// The round settings a plan row starts with: the group's own, then whatever this
+// plan already overrode. A SINGLE exercise gets harmless defaults it never uses.
+const roundStateOf = (
+  exercise?: Exercise | null,
+  override?: { rounds?: number | null; round_rest?: number | null; round_duration?: number | null },
+) => {
+  const timeNs = override?.round_duration ?? exercise?.round_duration ?? null;
+  return {
+    kind: (exercise?.kind === 'GROUP' ? 'GROUP' : 'SINGLE') as 'SINGLE' | 'GROUP',
+    timeMode: timeNs != null,
+    rounds: override?.rounds ?? exercise?.rounds ?? 5,
+    roundMinutes: timeNs != null ? Math.max(1, Math.round(toSeconds(timeNs) / 60)) : 20,
+    roundRest: toSeconds(override?.round_rest ?? exercise?.round_rest),
+  };
+};
 
 // Uniform = every set shares type+value, with equal rests except the final one
 // (0 by convention). Decides whether the simple or per-set editor is shown.
@@ -81,6 +106,10 @@ export function PlanBuilder({ onCancel, onSave, planId }: PlanBuilderProps) {
   const [planName, setPlanName] = useState('');
   const [exercises, setExercises] = useState<PlanExercise[]>([]);
   const [showExerciseSelector, setShowExerciseSelector] = useState(false);
+  // Rows collapse to one line; only the one you're editing opens, so a long plan
+  // stays scannable instead of being screens of always-open forms.
+  const [expandedKey, setExpandedKey] = useState<string | null>(null);
+  const [drag, setDrag] = useState<{ key: string; from: number; to: number; dy: number } | null>(null);
   const [exerciseLibrary, setExerciseLibrary] = useState<Exercise[]>([]);
   const [exerciseSearch, setExerciseSearch] = useState('');
   const [loadingExercises, setLoadingExercises] = useState(false);
@@ -141,6 +170,7 @@ export function PlanBuilder({ onCancel, onSave, planId }: PlanBuilderProps) {
             exerciseId: pe.exercise_id,
             name: localized(pe.exercise?.name_i18n, pe.exercise?.name ?? '', language),
             ownerId: pe.exercise?.user_id ?? null,
+            ...roundStateOf(pe.exercise, pe),
             custom: !isUniform(sets),
             sets,
             intensity: pe.intensity ?? 5,
@@ -235,12 +265,14 @@ export function PlanBuilder({ onCancel, onSave, planId }: PlanBuilderProps) {
         exerciseId: exercise.id,
         name: localized(exercise.name_i18n, exercise.name, language),
         ownerId: exercise.user_id ?? null,
+        ...roundStateOf(exercise),
         custom: !isUniform(seeded),
         sets: seeded,
         intensity: 5,
       },
     ]);
-    setShowExerciseSelector(false);
+    // The sheet stays open: adding several in a row is the common case, and the
+    // row flips to "added" so you can see what you've taken. Close it with Done.
   };
 
   // Load exercises on open and whenever the search changes (debounced) — no sport
@@ -263,17 +295,31 @@ export function PlanBuilder({ onCancel, onSave, planId }: PlanBuilderProps) {
     setSaving(true);
     setError(null);
     // Send each set as its own row; the final set gets no rest by convention.
-    const payloadFor = (exercise: PlanExercise, index: number) => ({
-      exercise_id: exercise.exerciseId,
-      exercise_order: index + 1,
-      rest_time: secondsToNs(exercise.sets[0]?.restSeconds ?? 0),
-      intensity: exercise.intensity,
-      sets: exercise.sets.map((s, i) => ({
-        rep_count: s.type === 'reps' ? Math.max(0, Math.round(s.value)) : null,
-        duration: s.type === 'time' ? secondsToNs(s.value) : null,
-        rest_time: i === exercise.sets.length - 1 ? 0 : secondsToNs(s.restSeconds),
-      })),
-    });
+    // A group has no sets — it sends this plan's round overrides instead.
+    const payloadFor = (exercise: PlanExercise, index: number) => {
+      const base = {
+        exercise_id: exercise.exerciseId,
+        exercise_order: index + 1,
+        rest_time: secondsToNs(exercise.sets[0]?.restSeconds ?? 0),
+        intensity: exercise.intensity,
+      };
+      if (exercise.kind === 'GROUP') {
+        return {
+          ...base,
+          rounds: exercise.timeMode ? null : Math.max(1, Math.round(exercise.rounds)),
+          round_duration: exercise.timeMode ? secondsToNs(exercise.roundMinutes * 60) : null,
+          round_rest: secondsToNs(exercise.roundRest),
+        };
+      }
+      return {
+        ...base,
+        sets: exercise.sets.map((s, i) => ({
+          rep_count: s.type === 'reps' ? Math.max(0, Math.round(s.value)) : null,
+          duration: s.type === 'time' ? secondsToNs(s.value) : null,
+          rest_time: i === exercise.sets.length - 1 ? 0 : secondsToNs(s.restSeconds),
+        })),
+      };
+    };
     try {
       if (planId) {
         // Update the existing plan, then resync its exercises (remove all, re-add
@@ -310,6 +356,94 @@ export function PlanBuilder({ onCancel, onSave, planId }: PlanBuilderProps) {
   const removeExercise = (key: string) => {
     setExercises((prev) => prev.filter((ex) => ex.key !== key));
   };
+
+  // Order is the plan's running order — it's what exercise_order saves.
+  const moveExercise = (from: number, to: number) => {
+    setExercises((prev) => {
+      if (to < 0 || to >= prev.length || to === from) return prev;
+      const next = [...prev];
+      const [moved] = next.splice(from, 1);
+      next.splice(to, 0, moved);
+      return next;
+    });
+  };
+
+  // Drag to reorder. The card follows the finger and its neighbours slide out of
+  // the way; the list only commits the move on release. Rows are collapsed first
+  // so every row is the same height and the travelled distance maps to an index.
+  const dragStartY = useRef(0);
+  const rowHeight = useRef(76);
+  const startDrag = (e: React.PointerEvent, index: number, key: string) => {
+    if (readOnly) return;
+    e.preventDefault();
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    const card = (e.currentTarget as HTMLElement).closest('[data-plan-row]') as HTMLElement | null;
+    if (card) rowHeight.current = card.offsetHeight + 8; // + the list's gap
+    setExpandedKey(null);
+    dragStartY.current = e.clientY;
+    setDrag({ key, from: index, to: index, dy: 0 });
+  };
+  const onDragMove = (e: React.PointerEvent) => {
+    setDrag((d) => {
+      if (!d) return d;
+      const dy = e.clientY - dragStartY.current;
+      const shift = Math.round(dy / rowHeight.current);
+      const to = Math.max(0, Math.min(exercises.length - 1, d.from + shift));
+      return { ...d, dy, to };
+    });
+  };
+  const endDrag = () => {
+    setDrag((d) => {
+      if (d && d.to !== d.from) moveExercise(d.from, d.to);
+      return null;
+    });
+  };
+
+  // Where a row sits while a drag is in flight: the dragged one tracks the
+  // finger, the ones it passed shuffle up or down by exactly one slot.
+  const dragOffset = (index: number) => {
+    if (!drag) return undefined;
+    if (index === drag.from) return `translateY(${drag.dy}px)`;
+    if (drag.to > drag.from && index > drag.from && index <= drag.to) return `translateY(${-rowHeight.current}px)`;
+    if (drag.to < drag.from && index < drag.from && index >= drag.to) return `translateY(${rowHeight.current}px)`;
+    return undefined;
+  };
+
+  // Digits follow the UI language, matching how WorkoutsHome renders plan cards.
+  const num = (n: number) => n.toLocaleString(language === 'fa' ? 'fa-IR' : 'en-US');
+
+  // One-line summary of what an exercise prescribes, for the collapsed row.
+  const summaryOf = (ex: PlanExercise) => {
+    if (ex.kind === 'GROUP') {
+      return ex.timeMode
+        ? t('roundsForMinutes', { minutes: ex.roundMinutes })
+        : t('roundsCount', { rounds: ex.rounds });
+    }
+    const first = ex.sets[0];
+    const unit = first?.type === 'time' ? ` ${t('secUnit')}` : '';
+    const target = ex.custom
+      ? t('setsVaried', { sets: num(ex.sets.length) })
+      : `${num(ex.sets.length)}\u00d7${num(first?.value ?? 0)}${unit}`;
+    const rest = first?.restSeconds ? ` \u00b7 ${num(first.restSeconds)} ${t('secUnit')}` : '';
+    return `${target}${rest}`;
+  };
+
+  // Rough plan length, mirroring what WorkoutsHome shows on a plan card: work
+  // plus rest, with rep sets assumed at ~3s each.
+  const estimatedMinutes = useMemo(() => {
+    const seconds = exercises.reduce((total, ex) => {
+      if (ex.kind === 'GROUP') {
+        const rounds = ex.timeMode ? 1 : Math.max(1, ex.rounds);
+        if (ex.timeMode) return total + ex.roundMinutes * 60;
+        return total + rounds * (30 + ex.roundRest);
+      }
+      return (
+        total +
+        ex.sets.reduce((sum, s) => sum + (s.type === 'time' ? s.value : s.value * 3) + s.restSeconds, 0)
+      );
+    }, 0);
+    return Math.max(1, Math.round(seconds / 60));
+  }, [exercises]);
 
   const ownsExercise = (ownerId: string | null | undefined) => !!user && !!ownerId && ownerId === user.id;
 
@@ -440,7 +574,20 @@ export function PlanBuilder({ onCancel, onSave, planId }: PlanBuilderProps) {
       <div className="bg-card border-b border-border px-4 py-4 sticky top-0 z-10">
         <div className="flex items-center justify-between">
           <BackButton onClick={onCancel} aria-label={t('back')} />
-          <h2 className="text-foreground">{planId ? (isOwner ? t('editPlan') : t('viewPlan')) : t('createPlan')}</h2>
+          <div className="min-w-0 text-center">
+            <h2 className="text-foreground truncate">{planId ? (isOwner ? t('editPlan') : t('viewPlan')) : t('createPlan')}</h2>
+            {/* What the plan actually amounts to, so its size is visible while editing. */}
+            {exercises.length > 0 && (
+              <p className="text-xs text-muted-foreground mt-0.5 flex items-center justify-center gap-1.5">
+                <span>{t('exercisesCount', { count: num(exercises.length) })}</span>
+                <span aria-hidden="true">·</span>
+                <span className="inline-flex items-center gap-1">
+                  <Clock className="w-3 h-3" />
+                  {t('estMinutes', { count: num(estimatedMinutes) })}
+                </span>
+              </p>
+            )}
+          </div>
           {readOnly ? (
             <div className="w-10" />
           ) : (
@@ -470,7 +617,7 @@ export function PlanBuilder({ onCancel, onSave, planId }: PlanBuilderProps) {
         {/* Exercises List */}
         <div className="bg-card rounded-lg shadow-md p-4 border border-border">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-foreground">{t('exercisesCount', { count: exercises.length })}</h3>
+            <h3 className="text-foreground">{t('exercisesCount', { count: num(exercises.length) })}</h3>
             {!readOnly && (
               <button
                 onClick={() => setShowExerciseSelector(!showExerciseSelector)}
@@ -482,8 +629,15 @@ export function PlanBuilder({ onCancel, onSave, planId }: PlanBuilderProps) {
             )}
           </div>
 
-          {showExerciseSelector && (
-            <div className="mb-4 border border-border rounded-lg p-4 bg-card shadow-sm">
+          {/* The library opens as a sheet over the plan, so what you are building
+              stays visible and dismissing it puts you back where you were. */}
+          <Drawer open={showExerciseSelector} onOpenChange={setShowExerciseSelector}>
+            <DrawerContent className="max-h-[85vh]">
+              <DrawerHeader className="pb-2 text-start">
+                <DrawerTitle>{t('addExerciseTitle')}</DrawerTitle>
+                <DrawerDescription className="sr-only">{t('tapAddExerciseToBuild')}</DrawerDescription>
+              </DrawerHeader>
+              <div className="px-4 pb-2 overflow-y-auto">
               <div className="flex gap-2 mb-3">
                 <div className="flex-1 relative">
                   <Search className="w-4 h-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2" />
@@ -622,8 +776,17 @@ export function PlanBuilder({ onCancel, onSave, planId }: PlanBuilderProps) {
                   </div>
                 )}
               </div>
-            </div>
-          )}
+              </div>
+              <div className="border-t border-border px-4 py-3 flex items-center justify-between gap-3">
+                <span className="text-sm text-muted-foreground">
+                  {t('exercisesCount', { count: num(exercises.length) })}
+                </span>
+                <Button variant="brand" size="sm" onClick={() => setShowExerciseSelector(false)}>
+                  {t('done')}
+                </Button>
+              </div>
+            </DrawerContent>
+          </Drawer>
 
           {exercises.length === 0 ? (
             <div className="bg-card border-2 border-dashed border-border rounded-lg p-8 text-center">
@@ -631,53 +794,147 @@ export function PlanBuilder({ onCancel, onSave, planId }: PlanBuilderProps) {
               <p className="text-muted-foreground text-sm">{t('tapAddExerciseToBuild')}</p>
             </div>
           ) : (
-            <div className="space-y-3">
-              {exercises.map((exercise, index) => (
-                <div key={exercise.key} className="bg-card border border-border rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
-                  <div className="flex items-start gap-3">
+            <div className="space-y-2">
+              {exercises.map((exercise, index) => {
+                const open = expandedKey === exercise.key;
+                return (
+                <div
+                  key={exercise.key}
+                  data-plan-row
+                  style={{ transform: dragOffset(index) }}
+                  className={`bg-card border rounded-lg shadow-sm ${
+                    open ? 'border-tint' : 'border-border'
+                  } ${
+                    drag?.from === index
+                      ? 'relative z-20 shadow-lg scale-[1.02] border-tint'
+                      : drag
+                      ? 'transition-transform duration-150'
+                      : 'transition-colors'
+                  }`}
+                >
+                  {/* Collapsed row: position, name, and what it prescribes. */}
+                  <div className="flex items-center gap-2 p-3">
                     {!readOnly && (
-                      <button className="mt-2 text-muted-foreground hover:text-foreground cursor-grab active:cursor-grabbing">
-                        <GripVertical className="w-5 h-5" />
-                      </button>
+                      // Grab anywhere on this column — a full-height target, and
+                      // touch-none so dragging the handle never scrolls the list.
+                      <div
+                        role="button"
+                        tabIndex={0}
+                        aria-label={t('dragToReorder')}
+                        onPointerDown={(e) => startDrag(e, index, exercise.key)}
+                        onPointerMove={onDragMove}
+                        onPointerUp={endDrag}
+                        onPointerCancel={endDrag}
+                        onKeyDown={(e) => {
+                          // Keyboard equivalent, so reordering isn't drag-only.
+                          if (e.key === 'ArrowUp') { e.preventDefault(); moveExercise(index, index - 1); }
+                          if (e.key === 'ArrowDown') { e.preventDefault(); moveExercise(index, index + 1); }
+                        }}
+                        className="shrink-0 -my-3 -ms-2 px-3.5 py-4 touch-none select-none cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground"
+                      >
+                        <GripVertical className="w-5 h-5 pointer-events-none" />
+                      </div>
                     )}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="flex-1 min-w-0">
-                          <div className="font-medium text-foreground mb-1">{exercise.name}</div>
-                          <div className="text-sm text-muted-foreground">
-                            {exercise.custom
-                              ? t('setsVaried', { sets: exercise.sets.length })
-                              : t('setsReps', {
-                                  sets: exercise.sets.length,
-                                  reps: exercise.sets[0]?.value ?? 0,
-                                  unit: exercise.sets[0]?.type === 'time' ? t('secUnit') : t('repsUnit'),
-                                })}
-                          </div>
-                        </div>
-                        {!readOnly && (
-                          <div className="flex items-center gap-1 shrink-0">
-                            {ownsExercise(exercise.ownerId) && (
-                              <button
-                                onClick={() => editOwnedExercise(exercise.exerciseId)}
-                                className="text-muted-foreground hover:text-foreground p-1"
-                                title={t('editExercise')}
-                                aria-label={t('editExercise')}
-                              >
-                                <Edit3 className="w-4 h-4" />
-                              </button>
-                            )}
-                            <button
-                              onClick={() => removeExercise(exercise.key)}
-                              className="text-red-500 hover:text-red-600 p-1"
-                              title={t('removeExerciseTitle')}
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          </div>
+                    <button
+                      onClick={() => setExpandedKey(open ? null : exercise.key)}
+                      className="flex-1 min-w-0 text-start"
+                      aria-expanded={open}
+                    >
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-xs text-muted-foreground tabular-nums">{index + 1}</span>
+                        <span className="font-medium text-foreground truncate">{exercise.name}</span>
+                        {exercise.kind === 'GROUP' && (
+                          <span className="text-xs px-2 py-0.5 rounded-full bg-tint-soft text-tint-ink shrink-0">
+                            {t('kindGroup')}
+                          </span>
                         )}
                       </div>
+                      <div className="text-xs text-muted-foreground mt-0.5">{summaryOf(exercise)}</div>
+                    </button>
+                    {!readOnly && (
+                      <div className="flex items-center gap-1 shrink-0">
+                        {ownsExercise(exercise.ownerId) && (
+                          <button
+                            onClick={() => editOwnedExercise(exercise.exerciseId)}
+                            className="text-muted-foreground hover:text-foreground p-1"
+                            title={t('editExercise')}
+                            aria-label={t('editExercise')}
+                          >
+                            <Edit3 className="w-4 h-4" />
+                          </button>
+                        )}
+                        <button
+                          onClick={() => removeExercise(exercise.key)}
+                          className="text-red-500 hover:text-red-600 p-1"
+                          title={t('removeExerciseTitle')}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    )}
+                  </div>
 
-                      {readOnly ? (
+                  {(open || readOnly) && (
+                  <div className="px-3 pb-3 pt-3 border-t border-border">
+                    <div className="flex-1 min-w-0">
+                      {exercise.kind === 'GROUP' ? (
+                        // A group runs its own exercises; the plan only decides
+                        // how many rounds and how long to rest between them.
+                        readOnly ? null : (
+                          <div className="space-y-2">
+                            <div className="text-xs text-muted-foreground">{t('planRoundsHint')}</div>
+                            <div className="flex gap-2">
+                              {([
+                                [false, t('repeatRounds')],
+                                [true, t('repeatTime')],
+                              ] as const).map(([mode, label]) => (
+                                <button
+                                  key={label}
+                                  onClick={() => patchExercise(exercise.key, { timeMode: mode })}
+                                  className={`flex-1 px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors ${
+                                    exercise.timeMode === mode
+                                      ? 'bg-tint text-tint-fg border-tint'
+                                      : 'bg-card text-muted-foreground border-border'
+                                  }`}
+                                >
+                                  {label}
+                                </button>
+                              ))}
+                            </div>
+                            <div className="grid grid-cols-2 gap-2">
+                              <div>
+                                <label className="block text-xs text-muted-foreground mb-1">
+                                  {exercise.timeMode ? t('roundMinutes') : t('planRoundsOverride')}
+                                </label>
+                                {exercise.timeMode ? (
+                                  <NumberInput
+                                    min={1}
+                                    value={exercise.roundMinutes}
+                                    onChange={(v) => patchExercise(exercise.key, { roundMinutes: v })}
+                                    className="w-full"
+                                  />
+                                ) : (
+                                  <NumberInput
+                                    min={1}
+                                    value={exercise.rounds}
+                                    onChange={(v) => patchExercise(exercise.key, { rounds: v })}
+                                    className="w-full"
+                                  />
+                                )}
+                              </div>
+                              <div>
+                                <label className="block text-xs text-muted-foreground mb-1">{t('restBetweenRounds')}</label>
+                                <NumberInput
+                                  min={0}
+                                  value={exercise.roundRest}
+                                  onChange={(v) => patchExercise(exercise.key, { roundRest: v })}
+                                  className="w-full"
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        )
+                      ) : readOnly ? (
                         <div className="space-y-2">
                           {exercise.custom ? (
                             <div className="space-y-1 text-sm text-muted-foreground">
@@ -863,8 +1120,10 @@ export function PlanBuilder({ onCancel, onSave, planId }: PlanBuilderProps) {
                       )}
                     </div>
                   </div>
+                  )}
                 </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>

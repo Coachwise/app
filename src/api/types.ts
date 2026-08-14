@@ -123,9 +123,31 @@ export interface Exercise {
   track_distance?: boolean;
   track_grade?: boolean;
   track_height?: boolean;
+  // SINGLE is a movement; GROUP is a circuit that references other exercises and
+  // repeats them as rounds. round_duration set = run for that long (AMRAP)
+  // instead of a fixed count. Only a GROUP has items.
+  kind?: ExerciseKind;
+  rounds?: number | null;
+  round_rest?: number;
+  round_duration?: number | null;
+  items?: ExerciseItem[];
   sets: ExerciseSet[];
   created_at: string;
   updated_at: string;
+}
+
+export type ExerciseKind = 'SINGLE' | 'GROUP';
+
+/** One exercise inside a group, with its prescription for a single round. */
+export interface ExerciseItem {
+  id: UUID;
+  group_id: UUID;
+  exercise_id: UUID;
+  item_order: number;
+  rep_count?: number | null;
+  duration?: number | null;
+  rest_time: number;
+  exercise?: Exercise;
 }
 
 export interface Plan {
@@ -148,6 +170,10 @@ export interface PlanExercise {
   rest_time: number;
   intensity: number; // 1-10 scale
   created_at: string;
+  // Per-plan override of a group's rounds; null inherits the group's own.
+  rounds?: number | null;
+  round_rest?: number | null;
+  round_duration?: number | null;
   exercise?: Exercise; // Populated when joined from backend
   // This plan-exercise's own prescription (sets/reps/rest), seeded from the
   // exercise's default sets on add. Always an array from the backend.
@@ -178,6 +204,7 @@ export interface CoachPackage {
   billing_type: 'SUBSCRIPTION' | 'ONE_TIME';
   currency: string;
   price_monthly?: number | null;
+  price_quarterly?: number | null;
   price_annual?: number | null;
   price_one_time?: number | null;
   trial_days: number;
@@ -499,8 +526,11 @@ export interface UserAchievements {
 
 export interface PackagePayload {
   name: string;
+  // Omit to keep the package's current currency (platform default on create).
+  currency?: string;
   description?: string | null;
   price_monthly?: number | null;
+  price_quarterly?: number | null;
   price_annual?: number | null;
   price_one_time?: number | null;
   trial_days?: number;
@@ -680,6 +710,17 @@ export interface ExerciseForm {
     rep_count?: number | null;
     duration?: number | null;
   }>;
+  // Group half: omit kind (or send SINGLE) for an ordinary exercise.
+  kind?: ExerciseKind;
+  rounds?: number | null;
+  round_rest?: number;
+  round_duration?: number | null;
+  items?: Array<{
+    exercise_id: UUID;
+    rep_count?: number | null;
+    duration?: number | null;
+    rest_time: number;
+  }>;
 }
 
 export interface CreatePlanPayload {
@@ -705,6 +746,10 @@ export interface PlanExercisePayload {
     duration?: number | null;
     rest_time: number;
   }[];
+  // Override a group's rounds for this plan only; omit to inherit.
+  rounds?: number | null;
+  round_rest?: number | null;
+  round_duration?: number | null;
 }
 
 export interface PlanAssignPayload {

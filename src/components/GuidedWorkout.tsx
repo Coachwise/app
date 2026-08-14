@@ -29,7 +29,48 @@ interface GuidedWorkoutProps {
 }
 
 type Phase = 'ready' | 'active' | 'rest' | 'done';
-type Step = { exIdx: number; setIdx: number };
+// `round` is only set for a step inside a group, where it labels which round of
+// the circuit this is. `lastOfRound` marks the step the round's rest follows.
+type Step = { exIdx: number; setIdx: number; round?: number; rounds?: number; lastOfRound?: boolean };
+
+/**
+ * Flattens the session into the order it is actually performed. Plain exercises
+ * run set by set, as they always have. A group's rows (which share a groupKey and
+ * hold one set per round) are interleaved instead: every exercise once, then the
+ * next round — which is what makes it a circuit rather than three exercises done
+ * back to back.
+ */
+function buildSteps(exercises: SessionExercise[]): Step[] {
+  const steps: Step[] = [];
+  let i = 0;
+  while (i < exercises.length) {
+    const key = exercises[i].groupKey;
+    if (!key) {
+      exercises[i].sets.forEach((s, setIdx) => {
+        if (!s.completed) steps.push({ exIdx: i, setIdx });
+      });
+      i++;
+      continue;
+    }
+    // Collect the contiguous run of rows belonging to this group.
+    const members: number[] = [];
+    while (i < exercises.length && exercises[i].groupKey === key) members.push(i++);
+    const rounds = Math.max(...members.map((m) => exercises[m].sets.length));
+    for (let round = 0; round < rounds; round++) {
+      const inRound = members.filter((m) => exercises[m].sets[round] && !exercises[m].sets[round].completed);
+      inRound.forEach((m, idx) => {
+        steps.push({
+          exIdx: m,
+          setIdx: round,
+          round: round + 1,
+          rounds,
+          lastOfRound: idx === inRound.length - 1,
+        });
+      });
+    }
+  }
+  return steps;
+}
 
 /**
  * The guided run: a full-screen overlay that walks the athlete through each set
@@ -42,18 +83,8 @@ type Step = { exIdx: number; setIdx: number };
 export function GuidedWorkout({ open, exercises, onLogSet, onClose, onFinish }: GuidedWorkoutProps) {
   const { t } = useLanguage();
 
-  // Only the sets still to do, in order. Built once per open.
-  const steps = useMemo<Step[]>(() => {
-    if (!open) return [];
-    const list: Step[] = [];
-    exercises.forEach((ex, exIdx) =>
-      ex.sets.forEach((s, setIdx) => {
-        if (!s.completed) list.push({ exIdx, setIdx });
-      }),
-    );
-    return list;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open]);
+  // Only the sets still to do, in the order they're performed. Built once per open.
+  const steps = useMemo<Step[]>(() => (open ? buildSteps(exercises) : []), [open]);
 
   const [stepIndex, setStepIndex] = useState(0);
   const [phase, setPhase] = useState<Phase>('ready');
@@ -121,12 +152,16 @@ export function GuidedWorkout({ open, exercises, onLogSet, onClose, onFinish }: 
   const finishActive = () => {
     if (!cur || !curSet) return;
     const next = steps[stepIndex + 1];
-    const goRest = !!next && next.exIdx === cur.exIdx && curSet.restSeconds > 0;
+    const inGroup = cur.round != null;
+    // Inside a circuit you rest between exercises too, and the gap after the
+    // round's last exercise is the group's own rest, not that exercise's.
+    const restSeconds = inGroup && cur.lastOfRound ? curEx?.groupRestSeconds ?? 0 : curSet.restSeconds;
+    const goRest = !!next && restSeconds > 0 && (inGroup || next.exIdx === cur.exIdx);
     if (goRest) {
       // Log at the end of rest so the athlete can adjust during it.
       soundStartRest();
       setPhase('rest');
-      setRemaining(curSet.restSeconds);
+      setRemaining(restSeconds);
     } else {
       commitCurrent();
       if (!next) {
@@ -134,7 +169,10 @@ export function GuidedWorkout({ open, exercises, onLogSet, onClose, onFinish }: 
         setPhase('done');
         return;
       }
-      if (next.exIdx !== cur.exIdx) soundExerciseDone(); // finished an exercise
+      // In a circuit every step changes exercise, so only chime when the whole
+      // block is behind you rather than on each movement.
+      const leavingGroup = !inGroup || exercises[next.exIdx]?.groupKey !== curEx?.groupKey;
+      if (next.exIdx !== cur.exIdx && leavingGroup) soundExerciseDone();
       enter(stepIndex + 1, 'ready');
     }
   };
@@ -250,6 +288,14 @@ export function GuidedWorkout({ open, exercises, onLogSet, onClose, onFinish }: 
             <p className={`text-sm font-semibold uppercase tracking-wide ${phase === 'rest' ? 'text-emerald-300' : 'text-tint-ink'}`}>
               {phase === 'ready' ? t('nextUp') : phase === 'rest' ? t('restNow') : t('work')}
             </p>
+            {/* Inside a circuit, which round you're on matters more than anything
+                else on screen — the exercise changes every step. */}
+            {cur?.round != null && (
+              <p className="text-xs font-medium text-white/70 mt-1">
+                {curEx?.groupName ? `${curEx.groupName} · ` : ''}
+                {t('roundOf', { current: cur.round, total: cur.rounds ?? 0 })}
+              </p>
+            )}
             <h2 className="text-2xl font-bold mt-1">{curEx?.name}</h2>
             {phase === 'ready' ? (
               <div className="mt-2">

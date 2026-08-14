@@ -653,7 +653,7 @@ export function CoachDashboard({ onBack, onNavigate, userRole = 'coach', isPro =
                           </div>
                           <p className="text-muted-foreground text-sm">
                             {t('plansIncludedCount', { count: String(pkg.plan_count) })}
-                            {pkg.price_monthly != null && ` • ${pkg.price_monthly.toLocaleString()}${t('perMoShort')}`}
+                            {pkg.price_monthly != null && ` • ${formatMoney(pkg.price_monthly, pkg.currency, language)}${t('perMoShort')}`}
                           </p>
                         </div>
                       </div>

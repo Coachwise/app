@@ -56,6 +56,13 @@ export interface SessionExercise {
   targetSets: number;
   targetReps: number;
   targetWeight: number;
+  // Set when this row came out of a group (circuit). Rows sharing a groupKey are
+  // performed round by round rather than one exercise at a time, and each of
+  // their "sets" is one round — so set_number stays the round number in the log.
+  groupKey?: string;
+  groupName?: string;
+  groupRounds?: number;
+  groupRestSeconds?: number;
 }
 
 const SESSION_KEY = 'coachwise-active-session';
@@ -80,6 +87,25 @@ const metricValues = (ex: SessionExercise, set: ExerciseSet) => ({
 });
 
 type SetTemplate = { rep_count?: number | null; duration?: number | null; rest_time: number };
+// How many rounds a group runs here: the plan's override, else the group's own.
+// A time-capped group has no count, so estimate one from how long a round takes
+// and cap it — the run ends on the clock, this just allocates rounds to log into.
+const roundsForGroup = (
+  override: { rounds?: number | null; round_duration?: number | null },
+  group: { rounds?: number | null; round_duration?: number | null; items?: { duration?: number | null; rest_time: number }[] },
+): number => {
+  const explicit = override.rounds ?? group.rounds;
+  if (explicit && explicit > 0) return explicit;
+  const totalNs = override.round_duration ?? group.round_duration ?? 0;
+  const perRound = (group.items || []).reduce(
+    // A rep-based item has no known duration; assume a working 30s.
+    (sum, it) => sum + (it.duration ?? 30e9) + it.rest_time,
+    0,
+  );
+  if (!totalNs || perRound <= 0) return 1;
+  return Math.min(50, Math.max(1, Math.ceil(totalNs / perRound)));
+};
+
 const makeSet = (s: SetTemplate): ExerciseSet => ({
   type: s.duration ? 'time' : 'reps',
   reps: s.rep_count || 10,
@@ -177,11 +203,40 @@ export function WorkoutSession({ planId, scheduleId, onBack, onEndSession, isPro
         if (planId) {
           const planExercises = await PlansAPI.listPlanExercises(tokens.access_token, planId);
 
-          const loadedExercises: SessionExercise[] = planExercises.map((pe, idx) => {
+          const loadedExercises: SessionExercise[] = [];
+          planExercises.forEach((pe, idx) => {
+            const group = pe.exercise;
+            // A group becomes one row per child, each holding one set per round.
+            // The guided run interleaves them; logging still keys on the child's
+            // real exercise id with set_number = the round.
+            if (group?.kind === 'GROUP' && group.items?.length) {
+              const rounds = roundsForGroup(pe, group);
+              const restSeconds = nsToSeconds(pe.round_rest ?? group.round_rest);
+              group.items.forEach((item) => {
+                loadedExercises.push({
+                  id: `${pe.id}:${item.exercise_id}`,
+                  name: localized(item.exercise?.name_i18n, item.exercise?.name || '', language),
+                  exerciseId: item.exercise_id,
+                  mediaUrl: item.exercise?.media?.url,
+                  metrics: metricsOf(item.exercise),
+                  targetSets: rounds,
+                  targetReps: item.rep_count || 0,
+                  targetWeight: 0,
+                  groupKey: pe.id,
+                  groupName: localized(group.name_i18n, group.name, language),
+                  groupRounds: rounds,
+                  groupRestSeconds: restSeconds,
+                  sets: Array.from({ length: rounds }, () =>
+                    makeSet({ rep_count: item.rep_count, duration: item.duration, rest_time: item.rest_time }),
+                  ),
+                });
+              });
+              return;
+            }
             // Run the plan's own prescription; fall back to the exercise's default
             // sets for plans saved before prescriptions existed.
             const exerciseSets = (pe.sets?.length ? pe.sets : pe.exercise?.sets) || [];
-            return {
+            loadedExercises.push({
               id: pe.id,
               name: localized(pe.exercise?.name_i18n, pe.exercise?.name || `Exercise ${idx + 1}`, language),
               exerciseId: pe.exercise_id,
@@ -191,7 +246,7 @@ export function WorkoutSession({ planId, scheduleId, onBack, onEndSession, isPro
               targetReps: exerciseSets[0]?.rep_count || 10,
               targetWeight: 0,
               sets: (exerciseSets.length > 0 ? exerciseSets : [{ rep_count: 10, rest_time: 60e9 }]).map(makeSet),
-            };
+            });
           });
 
           // Restore already-logged sets so resuming keeps progress intact.

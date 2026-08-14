@@ -6,7 +6,9 @@ import { NumberInput } from './ui/number-input';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
 import { PackagesAPI, PlansAPI } from '../api';
-import type { Plan } from '../api/types';
+import * as PricingAPI from '../api/pricing';
+import type { Currency, Plan } from '../api/types';
+import { currencyLabel, formatAmount, formatMoney } from '../lib/money';
 import { toast } from 'sonner';
 
 interface SubscriptionTierBuilderProps {
@@ -18,29 +20,66 @@ interface SubscriptionTierBuilderProps {
 
 const TOTAL_STEPS = 4;
 
+// A new package takes the server's default currency (coach_packages.currency
+// defaults to IRR) — the builder can't choose one yet, so mirror that default
+// rather than guessing, and show an existing package's own currency when editing.
+const DEFAULT_CURRENCY = 'IRR';
+
 const toIntOrNull = (v: number): number | null => (v > 0 ? v : null);
 
+// The optional price points. Monthly is the anchor: switching one of these on
+// seeds it from the monthly price, and it keeps following until the coach types
+// their own number. A zero price means the coach doesn't offer it, so it's off.
+// One-time is lifetime access, not a duration — it has no discount to show.
+type PriceKey = 'quarterly' | 'annual' | 'oneTime';
+const OPTIONAL_PRICES: { key: PriceKey; label: string; months?: number; derive: (monthly: number) => number }[] = [
+  { key: 'quarterly', label: 'quarterlyPrice', months: 3, derive: (m) => Math.round(m * 3 * 0.85) },
+  { key: 'annual', label: 'annualPrice', months: 12, derive: (m) => Math.round(m * 12 * 0.7) },
+  { key: 'oneTime', label: 'oneTimePurchase', derive: (m) => m * 12 },
+];
+
 export function SubscriptionTierBuilder({ onCancel, onSave, token, packageId }: SubscriptionTierBuilderProps) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { user } = useAuth();
   const [step, setStep] = useState(1);
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [monthlyPrice, setMonthlyPrice] = useState(0);
-  const [annualPrice, setAnnualPrice] = useState(0);
-  const [oneTimePrice, setOneTimePrice] = useState(0);
+  const [prices, setPrices] = useState<Record<PriceKey, number>>({ quarterly: 0, annual: 0, oneTime: 0 });
+  // 3-month and yearly are offered by default; one-time is opt-in.
+  const [enabled, setEnabled] = useState<Record<PriceKey, boolean>>({ quarterly: true, annual: true, oneTime: false });
+  // Which of the above the coach typed themselves — those stop tracking monthly.
+  const [manual, setManual] = useState<Record<PriceKey, boolean>>({ quarterly: false, annual: false, oneTime: false });
   const [checkInFrequency, setCheckInFrequency] = useState('weekly');
   const [videoAccess, setVideoAccess] = useState(false);
   const [nutritionGuides, setNutritionGuides] = useState(false);
   const [customFeatures, setCustomFeatures] = useState<string[]>([]);
-  const [trialDays, setTrialDays] = useState(0);
   const [popular, setPopular] = useState(false);
   const [newFeature, setNewFeature] = useState('');
+  const [currency, setCurrency] = useState(DEFAULT_CURRENCY);
 
   const [plans, setPlans] = useState<Plan[]>([]);
+  const [currencies, setCurrencies] = useState<Currency[]>([]);
   const [selectedPlanIds, setSelectedPlanIds] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
   const isEdit = Boolean(packageId);
+
+  // The currencies the platform sells in. A single one needs no picker, so the
+  // label alone carries it; the select appears once there's a real choice.
+  useEffect(() => {
+    let active = true;
+    PricingAPI.listCurrencies(token)
+      .then((res) => {
+        if (!active) return;
+        setCurrencies(res);
+        // A new package defaults to the first enabled currency the server offers.
+        if (!packageId && res.length > 0) setCurrency((cur) => (res.some((c) => c.code === cur) ? cur : res[0].code));
+      })
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, [token, packageId]);
 
   // Load the coach's plans (for bundling) and, when editing, the package itself.
   useEffect(() => {
@@ -59,14 +98,26 @@ export function SubscriptionTierBuilder({ onCancel, onSave, token, packageId }: 
         if (!active) return;
         setName(pkg.name);
         setDescription(pkg.description || '');
+        setCurrency(pkg.currency || DEFAULT_CURRENCY);
         setMonthlyPrice(pkg.price_monthly ?? 0);
-        setAnnualPrice(pkg.price_annual ?? 0);
-        setOneTimePrice(pkg.price_one_time ?? 0);
+        setPrices({
+          quarterly: pkg.price_quarterly ?? 0,
+          annual: pkg.price_annual ?? 0,
+          oneTime: pkg.price_one_time ?? 0,
+        });
+        // 3-month and yearly stay on even for a package saved without them;
+        // lifetime stays off unless this package actually sells one.
+        setEnabled({ quarterly: true, annual: true, oneTime: (pkg.price_one_time ?? 0) > 0 });
+        // A saved price is the coach's own — never re-derive it behind their back.
+        setManual({
+          quarterly: (pkg.price_quarterly ?? 0) > 0,
+          annual: (pkg.price_annual ?? 0) > 0,
+          oneTime: true,
+        });
         setCheckInFrequency(pkg.check_in_frequency || 'weekly');
         setVideoAccess(pkg.video_access);
         setNutritionGuides(pkg.nutrition_guides);
         setCustomFeatures(pkg.custom_features || []);
-        setTrialDays(pkg.trial_days);
         setPopular(pkg.popular);
         setSelectedPlanIds((pkg.plans || []).map((p) => p.id));
       } catch (e) {
@@ -95,7 +146,33 @@ export function SubscriptionTierBuilder({ onCancel, onSave, token, packageId }: 
     setCustomFeatures(customFeatures.filter((_, i) => i !== index));
   };
 
-  const hasPrice = Boolean(monthlyPrice || annualPrice || oneTimePrice);
+  // Typing a monthly price pulls every enabled, still-auto option along with it.
+  const changeMonthly = (v: number) => {
+    setMonthlyPrice(v);
+    setPrices((prev) => {
+      const next = { ...prev };
+      for (const { key, derive } of OPTIONAL_PRICES) {
+        if (enabled[key] && !manual[key]) next[key] = derive(v);
+      }
+      return next;
+    });
+  };
+
+  // Switching an option on seeds it from monthly; switching it off drops its
+  // price, which is how "not offered" reaches the backend.
+  const toggleOptionalPrice = (key: PriceKey, on: boolean) => {
+    const spec = OPTIONAL_PRICES.find((p) => p.key === key)!;
+    setEnabled((prev) => ({ ...prev, [key]: on }));
+    setPrices((prev) => ({ ...prev, [key]: on ? spec.derive(monthlyPrice) : 0 }));
+    setManual((prev) => ({ ...prev, [key]: false }));
+  };
+
+  const editOptionalPrice = (key: PriceKey, v: number) => {
+    setPrices((prev) => ({ ...prev, [key]: v }));
+    setManual((prev) => ({ ...prev, [key]: true }));
+  };
+
+  const hasPrice = Boolean(monthlyPrice || prices.quarterly || prices.annual || prices.oneTime);
   const isFormValid = () => Boolean(name.trim()) && hasPrice;
 
   // A step must be valid before you can advance past it.
@@ -106,17 +183,20 @@ export function SubscriptionTierBuilder({ onCancel, onSave, token, packageId }: 
   };
 
   const stepTitles = [t('stepBasics'), t('stepPlans'), t('stepPricing'), t('stepFeatures')];
+  const currencyName = currencyLabel(currency, language);
 
   const handleSave = async () => {
     if (!isFormValid() || saving) return;
     setSaving(true);
     const payload = {
       name: name.trim(),
+      currency,
       description: description.trim() || null,
       price_monthly: toIntOrNull(monthlyPrice),
-      price_annual: toIntOrNull(annualPrice),
-      price_one_time: toIntOrNull(oneTimePrice),
-      trial_days: trialDays || 0,
+      price_quarterly: toIntOrNull(enabled.quarterly ? prices.quarterly : 0),
+      price_annual: toIntOrNull(enabled.annual ? prices.annual : 0),
+      price_one_time: toIntOrNull(enabled.oneTime ? prices.oneTime : 0),
+      trial_days: 0,
       check_in_frequency: checkInFrequency,
       video_access: videoAccess,
       nutrition_guides: nutritionGuides,
@@ -252,38 +332,75 @@ export function SubscriptionTierBuilder({ onCancel, onSave, token, packageId }: 
         {/* STEP 3 — Pricing & trial */}
         {step === 3 && (
           <>
-            <div>
-              <label className="block text-sm text-gray-600 mb-1">{t('monthlyPrice')}</label>
-              <NumberInput noStepper min={0} value={monthlyPrice} onChange={setMonthlyPrice} className="w-full" />
-            </div>
-            <div>
-              <label className="block text-sm text-gray-600 mb-1">{t('annualPrice')}</label>
-              <NumberInput noStepper min={0} value={annualPrice} onChange={setAnnualPrice} className="w-full" />
-              {annualPrice > 0 && monthlyPrice > 0 && (
-                <p className="text-green-600 text-sm mt-1">
-                  {t('savePerYear', { amount: ((monthlyPrice * 12) - annualPrice).toLocaleString() })}
-                </p>
-              )}
-            </div>
-            <div>
-              <label className="block text-sm text-gray-600 mb-1">{t('oneTimePurchase')}</label>
-              <NumberInput noStepper min={0} value={oneTimePrice} onChange={setOneTimePrice} className="w-full" />
-            </div>
-            <div>
-              <label className="block mb-2 text-gray-900">{t('freeTrialDays')}</label>
-              <NumberInput min={0} max={365} value={trialDays} onChange={setTrialDays} className="w-full" />
-              <div className="mt-2 flex gap-2">
-                {[0, 7, 14, 30].map((days) => (
-                  <button
-                    key={days}
-                    onClick={() => setTrialDays(days)}
-                    className="px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded-lg hover:bg-gray-200 transition-colors"
-                  >
-                    {days === 0 ? t('none') : `${days}${t('daysSuffix')}`}
-                  </button>
-                ))}
+            {currencies.length > 1 && (
+              <div>
+                <label className="block text-sm text-gray-600 mb-1" htmlFor="package-currency">{t('currencyLabel')}</label>
+                <select
+                  id="package-currency"
+                  value={currency}
+                  onChange={(e) => setCurrency(e.target.value)}
+                  className="w-full px-3 py-2 bg-card border border-gray-300 rounded-lg text-foreground focus:ring-2 focus:ring-tint focus:border-transparent"
+                >
+                  {currencies.map((c) => (
+                    <option key={c.code} value={c.code}>
+                      {currencyLabel(c.code, language)} ({c.code})
+                    </option>
+                  ))}
+                </select>
               </div>
+            )}
+            <div>
+              <label className="block text-sm text-gray-600 mb-1">{t('monthlyPrice', { currency: currencyName })}</label>
+              <NumberInput noStepper grouped min={0} value={monthlyPrice} onChange={changeMonthly} className="w-full" />
             </div>
+
+            {OPTIONAL_PRICES.map(({ key, label, months }) => {
+              const amount = prices[key];
+              const on = enabled[key];
+              const full = months ? monthlyPrice * months : 0;
+              // Read the discount off the real numbers, so it tracks whatever the
+              // coach types rather than the percentage we happened to seed with.
+              const off = full > 0 && amount > 0 && amount < full ? Math.round(((full - amount) / full) * 100) : null;
+              const title = t(label, { currency: currencyName });
+              return (
+                <div key={key}>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="text-sm text-gray-600" htmlFor={`price-${key}`}>{title}</label>
+                    <div className="flex items-center gap-2">
+                      {on && off !== null && (
+                        <span className="text-xs text-green-600">
+                          {t('percentOff', { percent: formatAmount(off, language) })}
+                        </span>
+                      )}
+                      {on && !months && <span className="text-xs text-muted-foreground">{t('lifetimeAccess')}</span>}
+                      <input
+                        type="checkbox"
+                        aria-label={title}
+                        checked={on}
+                        onChange={(e) => toggleOptionalPrice(key, e.target.checked)}
+                        className="size-4 accent-yellow-500"
+                      />
+                    </div>
+                  </div>
+                  {on && (
+                    <NumberInput
+                      id={`price-${key}`}
+                      noStepper
+                      grouped
+                      min={0}
+                      value={amount}
+                      onChange={(v) => editOptionalPrice(key, v)}
+                      className="w-full"
+                    />
+                  )}
+                  {on && off !== null && (
+                    <p className="text-green-600 text-sm mt-1">
+                      {t('saveVsMonthly', { amount: formatMoney(full - amount, currency, language) })}
+                    </p>
+                  )}
+                </div>
+              );
+            })}
             {!hasPrice && <p className="text-red-500 text-sm">{t('pricingOptions')}</p>}
           </>
         )}
@@ -360,12 +477,22 @@ export function SubscriptionTierBuilder({ onCancel, onSave, token, packageId }: 
                 <div className="flex gap-2 mb-3 flex-wrap">
                   {monthlyPrice > 0 && (
                     <span className="px-3 py-1 bg-tint-soft text-blue-700 rounded text-sm">
-                      {monthlyPrice.toLocaleString()}{t('perMoShort')}
+                      {formatMoney(monthlyPrice, currency, language)}{t('perMoShort')}
                     </span>
                   )}
-                  {annualPrice > 0 && (
+                  {prices.quarterly > 0 && (
+                    <span className="px-3 py-1 bg-tint-soft text-blue-700 rounded text-sm">
+                      {formatMoney(prices.quarterly, currency, language)}{t('perQuarterShort')}
+                    </span>
+                  )}
+                  {prices.annual > 0 && (
                     <span className="px-3 py-1 bg-green-100 text-green-700 rounded text-sm">
-                      {annualPrice.toLocaleString()}{t('perYrShort')}
+                      {formatMoney(prices.annual, currency, language)}{t('perYrShort')}
+                    </span>
+                  )}
+                  {prices.oneTime > 0 && (
+                    <span className="px-3 py-1 bg-muted text-foreground rounded text-sm">
+                      {formatMoney(prices.oneTime, currency, language)} {t('oneTimeShort')}
                     </span>
                   )}
                 </div>

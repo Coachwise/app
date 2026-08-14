@@ -8,10 +8,21 @@ import * as MediaAPI from '../api/media';
 import type { Exercise, ExerciseSportType } from '../api/types';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
+import { ExercisePicker } from './ExercisePicker';
+import { localized } from '../lib/localize';
 
 type EditableSet = {
   id: string;
   name: string;
+  type: 'reps' | 'time';
+  value: number;
+  restSeconds: number;
+};
+
+/** One exercise inside a group, with its prescription for a single round. */
+type GroupItem = {
+  exercise_id: string;
+  exercise_name: string;
   type: 'reps' | 'time';
   value: number;
   restSeconds: number;
@@ -29,7 +40,7 @@ const uuid = () => (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.
 
 export function ExerciseBuilder({ onCancel, onSaved, exercise }: ExerciseBuilderProps) {
   const { tokens } = useAuth();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [name, setName] = useState(exercise?.name || '');
   const [description, setDescription] = useState(exercise?.description || '');
@@ -60,6 +71,27 @@ export function ExerciseBuilder({ onCancel, onSaved, exercise }: ExerciseBuilder
     }));
   });
 
+  // A group performs its children in order and repeats them, either a fixed
+  // number of rounds or for a fixed time (AMRAP). Children are plain exercises.
+  const [isGroup, setIsGroup] = useState(exercise?.kind === 'GROUP');
+  const [repeatMode, setRepeatMode] = useState<'rounds' | 'time'>(
+    exercise?.round_duration ? 'time' : 'rounds',
+  );
+  const [rounds, setRounds] = useState(exercise?.rounds ?? 5);
+  const [roundMinutes, setRoundMinutes] = useState(
+    exercise?.round_duration ? Math.round(nsToSeconds(exercise.round_duration) / 60) : 20,
+  );
+  const [roundRest, setRoundRest] = useState(nsToSeconds(exercise?.round_rest) || 90);
+  const [items, setItems] = useState<GroupItem[]>(() =>
+    (exercise?.items || []).map((it) => ({
+      exercise_id: it.exercise_id,
+      exercise_name: localized(it.exercise?.name_i18n, it.exercise?.name ?? '', language),
+      type: it.duration ? 'time' : 'reps',
+      value: it.duration ? nsToSeconds(it.duration) : it.rep_count ?? 0,
+      restSeconds: nsToSeconds(it.rest_time),
+    })),
+  );
+
   // Quick-add builds N identical sets in one go (e.g. 12 hangboard repeaters).
   const [bulkCount, setBulkCount] = useState(12);
   const [bulkType, setBulkType] = useState<'reps' | 'time'>('time');
@@ -67,7 +99,11 @@ export function ExerciseBuilder({ onCancel, onSaved, exercise }: ExerciseBuilder
   const [bulkRest, setBulkRest] = useState(5);
 
   // A movement only needs a name; description and sets are optional suggestions.
-  const canSave = useMemo(() => name.trim() !== '', [name]);
+  // A group also needs at least one exercise to perform.
+  const canSave = useMemo(
+    () => name.trim() !== '' && (!isGroup || items.length > 0),
+    [name, isGroup, items.length],
+  );
   const [showQuickAdd, setShowQuickAdd] = useState(false);
 
   const updateSet = (id: string, updates: Partial<EditableSet>) => {
@@ -170,13 +206,28 @@ export function ExerciseBuilder({ onCancel, onSaved, exercise }: ExerciseBuilder
         track_distance: trackDistance,
         track_grade: trackGrade,
         track_height: trackHeight,
-        sets: sets.map((set, idx) => ({
-          name: set.name || `Set ${idx + 1}`,
-          // There is no rest after the final set.
-          rest_time: idx === sets.length - 1 ? 0 : secondsToNs(set.restSeconds),
-          rep_count: set.type === 'reps' ? Math.max(0, Math.round(set.value)) : undefined,
-          duration: set.type === 'time' ? secondsToNs(set.value) : undefined,
-        })),
+        // A group repeats its items instead of running its own sets.
+        kind: isGroup ? ('GROUP' as const) : ('SINGLE' as const),
+        rounds: isGroup && repeatMode === 'rounds' ? Math.max(1, Math.round(rounds)) : null,
+        round_duration: isGroup && repeatMode === 'time' ? secondsToNs(roundMinutes * 60) : null,
+        round_rest: isGroup ? secondsToNs(roundRest) : 0,
+        items: isGroup
+          ? items.map((it) => ({
+              exercise_id: it.exercise_id,
+              rep_count: it.type === 'reps' ? Math.max(0, Math.round(it.value)) : undefined,
+              duration: it.type === 'time' ? secondsToNs(it.value) : undefined,
+              rest_time: secondsToNs(it.restSeconds),
+            }))
+          : [],
+        sets: isGroup
+          ? []
+          : sets.map((set, idx) => ({
+              name: set.name || `Set ${idx + 1}`,
+              // There is no rest after the final set.
+              rest_time: idx === sets.length - 1 ? 0 : secondsToNs(set.restSeconds),
+              rep_count: set.type === 'reps' ? Math.max(0, Math.round(set.value)) : undefined,
+              duration: set.type === 'time' ? secondsToNs(set.value) : undefined,
+            })),
       };
 
       const saved = exercise
@@ -216,6 +267,28 @@ export function ExerciseBuilder({ onCancel, onSaved, exercise }: ExerciseBuilder
               placeholder={t('exerciseNamePlaceholder')}
               className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-tint focus:border-transparent text-foreground"
             />
+          </div>
+
+          <div>
+            <label className="text-foreground mb-2 block">{t('exerciseKindLabel')}</label>
+            <div className="grid grid-cols-2 gap-2">
+              {([
+                [false, t('kindSingle'), t('kindSingleHint')],
+                [true, t('kindGroup'), t('kindGroupHint')],
+              ] as const).map(([value, label, hint]) => (
+                <button
+                  key={label}
+                  type="button"
+                  onClick={() => setIsGroup(value)}
+                  className={`px-3 py-2 rounded-lg border text-start transition-colors ${
+                    isGroup === value ? 'bg-yellow-500 text-foreground border-yellow-500' : 'bg-card text-gray-600 border-gray-300'
+                  }`}
+                >
+                  <div className="text-sm font-medium">{label}</div>
+                  <div className="text-xs opacity-80">{hint}</div>
+                </button>
+              ))}
+            </div>
           </div>
 
           <div>
@@ -324,7 +397,118 @@ export function ExerciseBuilder({ onCancel, onSaved, exercise }: ExerciseBuilder
           </div>
         </div>
 
-        <div className="bg-card rounded-lg shadow-md p-4 border border-gray-200">
+        {isGroup && (
+          <div className="bg-card rounded-lg shadow-md p-4 border border-gray-200 space-y-3">
+            <div>
+              <h3 className="text-foreground">{t('roundsTitle')}</h3>
+              <p className="text-sm text-gray-600">{t('roundsHint')}</p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              {([
+                ['rounds', t('repeatRounds')],
+                ['time', t('repeatTime')],
+              ] as const).map(([mode, label]) => (
+                <button
+                  key={mode}
+                  type="button"
+                  onClick={() => setRepeatMode(mode)}
+                  className={`px-3 py-2 rounded-lg text-sm font-medium border transition-colors ${
+                    repeatMode === mode ? 'bg-yellow-500 text-foreground border-yellow-500' : 'bg-card text-gray-600 border-gray-300'
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-sm text-gray-700 mb-1">
+                  {repeatMode === 'rounds' ? t('roundCount') : t('roundMinutes')}
+                </label>
+                {repeatMode === 'rounds' ? (
+                  <NumberInput min={1} value={rounds} onChange={setRounds} className="w-full" />
+                ) : (
+                  <NumberInput min={1} value={roundMinutes} onChange={setRoundMinutes} className="w-full" />
+                )}
+              </div>
+              <div>
+                <label className="block text-sm text-gray-700 mb-1">{t('restBetweenRounds')}</label>
+                <NumberInput min={0} value={roundRest} onChange={setRoundRest} className="w-full" />
+              </div>
+            </div>
+
+            <ExercisePicker
+              token={tokens?.access_token || ''}
+              title={t('roundExercises')}
+              emptyHint={t('roundExercisesHint')}
+              items={items.map((it) => ({ exercise_id: it.exercise_id, exercise_name: it.exercise_name }))}
+              onAdd={(ex) =>
+                setItems((prev) => [
+                  ...prev,
+                  {
+                    exercise_id: ex.id,
+                    exercise_name: localized(ex.name_i18n, ex.name, language),
+                    // Seed from the exercise's own first set, else a plain 10 reps.
+                    type: ex.sets?.[0]?.duration ? 'time' : 'reps',
+                    value: ex.sets?.[0]?.duration
+                      ? nsToSeconds(ex.sets[0].duration)
+                      : ex.sets?.[0]?.rep_count ?? 10,
+                    restSeconds: 30,
+                  },
+                ])
+              }
+              onRemove={(idx) => setItems((prev) => prev.filter((_, i) => i !== idx))}
+              renderControl={(_item, idx) => {
+                const it = items[idx];
+                if (!it) return null;
+                const patch = (next: Partial<GroupItem>) =>
+                  setItems((prev) => prev.map((p, i) => (i === idx ? { ...p, ...next } : p)));
+                return (
+                  <div className="grid grid-cols-3 gap-2">
+                    <div>
+                      <label className="block text-xs text-gray-600 mb-1">{t('typeLabel')}</label>
+                      <div className="flex gap-1">
+                        {(['reps', 'time'] as const).map((mode) => (
+                          <button
+                            key={mode}
+                            type="button"
+                            onClick={() => patch({ type: mode })}
+                            className={`flex-1 px-2 py-1.5 rounded text-xs font-medium border transition-colors ${
+                              it.type === mode
+                                ? 'bg-yellow-500 text-foreground border-yellow-500'
+                                : 'bg-card text-gray-600 border-gray-300'
+                            }`}
+                          >
+                            {mode === 'reps' ? t('repsLabel') : t('timeLabel')}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-xs text-gray-600 mb-1">
+                        {it.type === 'reps' ? t('repsLabel') : t('durationSec')}
+                      </label>
+                      <NumberInput min={0} value={it.value} onChange={(v) => patch({ value: v })} className="w-full" />
+                    </div>
+                    <div>
+                      <label className="block text-xs text-gray-600 mb-1">{t('restSec')}</label>
+                      <NumberInput
+                        min={0}
+                        value={it.restSeconds}
+                        onChange={(v) => patch({ restSeconds: v })}
+                        className="w-full"
+                      />
+                    </div>
+                  </div>
+                );
+              }}
+            />
+          </div>
+        )}
+
+        <div className={`bg-card rounded-lg shadow-md p-4 border border-gray-200 ${isGroup ? 'hidden' : ''}`}>
           <div className="flex items-center justify-between mb-3">
             <div>
               <h3 className="text-foreground">{t('suggestedSetsTitle')}</h3>
